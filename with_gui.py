@@ -44,6 +44,9 @@ class AppGui(gui.Gui):
     def _tick(self):
         if STATE.closing:
             self._running = False
+
+        # dpg.draw_image()
+
         return super()._tick() 
 
 def create_window():
@@ -56,6 +59,21 @@ def create_window():
 
 def glfw_thread():
     window = create_window()
+
+    # TODO: code to draw the scene in a framebuffer and send it to the dearpygui window
+    # fbo = gl.glGenFramebuffers(1)
+    # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+    # #TODO: glDeleteFramebuffers(1, &frameBuffer);
+
+
+    # gl_tex_id = gl.glGenTextures(1)
+    # gl.glBindTexture(gl.GL_TEXTURE_2D, gl_tex_id)
+    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, 640, 480, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+
+    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, 0, 0)
 
     vao = gl.glGenVertexArrays(1)
     vbo = gl.glGenBuffers(1)
