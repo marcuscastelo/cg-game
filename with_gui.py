@@ -15,6 +15,7 @@ import dearpygui.dearpygui as dpg
 
 @dataclass
 class AppState:
+    closing: bool = False
     scale: float = 1.0
 
 STATE = AppState()
@@ -28,12 +29,22 @@ class MainWindow(gui.Window):
         with self:
             el.Text("Hello World!").construct()
             el.Slider(STATE, 'scale').construct(width=200, height=20)
+    
 
 class AppGui(gui.Gui):
     def _init_windows(self):
         self.windows['main'] = MainWindow()
         return super()._init_windows()
 
+    def _before_exit(self):
+        LOGGER.log_info("Gui is closing", 'AppGui')
+        STATE.closing = True
+        super()._before_exit()
+
+    def _tick(self):
+        if STATE.closing:
+            self._running = False
+        return super()._tick() 
 
 def create_window():
     glfw.init()
@@ -63,7 +74,7 @@ def glfw_thread():
     gl.glEnableVertexAttribArray(0)
     gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
-    while not glfw.window_should_close(window):
+    while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
@@ -78,18 +89,33 @@ def glfw_thread():
 
 
         glfw.swap_buffers(glfw.get_current_context())
+    
+    LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
+    STATE.closing = True
 
 def main():
+    LOGGER.log_info("Starting app", 'main')
+
+    LOGGER.log_trace("Init Glfw", 'main')
     glfw.init()
+    
+    LOGGER.log_trace("Init GUI", 'main')
     gui = AppGui()
 
+    LOGGER.log_trace("Start GLFW thread", 'main')
     t = Thread(target=glfw_thread)
     t.start()
+
+    LOGGER.log_trace("Start GUI", 'main')
     gui.run()
 
+    LOGGER.log_info("GUI Has been closed, waiting for GLFW to close...", 'main')
     t.join()
+    LOGGER.log_info("GLFW thread has been closed", 'main')
 
-
+    LOGGER.log_trace("Terminating Glfw", 'main')
     glfw.terminate()
+    LOGGER.log_info("App has been closed gracefully", 'main')
+
 if __name__ == "__main__":
     main()
