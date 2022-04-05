@@ -16,19 +16,31 @@ import dearpygui.dearpygui as dpg
 @dataclass
 class AppState:
     closing: bool = False
-    scale: float = 1.0
+    mvp: np.ndarray = np.eye(4, dtype=np.float32)
+
 
 STATE = AppState()
+
+WINDOW_SIZE = (2*640, 2*480)
 
 class MainWindow(gui.Window):
     @metsig(gui.Window.__init__)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.scale = 1.0
+
+    def _on_value_changed(self):
+        # Recalculate MVP
+        mvp = np.eye(4, dtype=np.float32)
+        mvp = np.dot(mvp, np.diag([self.scale, self.scale, 1, 1]))
+        STATE.mvp = mvp
+        pass
 
     def describe(self):
         with self:
             el.Text("Hello World!").construct()
-            el.Slider(STATE, 'scale').construct(width=200, height=20)
+            el.Slider(self, 'scale').construct(width=200, height=20, callback=self._on_value_changed, min_value=0.1, max_value=10.0)
+
     
 
 class AppGui(gui.Gui):
@@ -52,7 +64,7 @@ class AppGui(gui.Gui):
 def create_window():
     glfw.init()
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
-    window = glfw.create_window(640, 480, "Simple Window", monitor=None, share=None)
+    window = glfw.create_window(*WINDOW_SIZE, "Simple Window", monitor=None, share=None)
     glfw.make_context_current(window)
     glfw.show_window(window)
     return window
@@ -68,7 +80,7 @@ def glfw_thread():
 
     # gl_tex_id = gl.glGenTextures(1)
     # gl.glBindTexture(gl.GL_TEXTURE_2D, gl_tex_id)
-    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, 640, 480, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
 
     # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
     # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
@@ -79,9 +91,9 @@ def glfw_thread():
     vertex_shader = """
     #version 330
     in vec2 position;
-    uniform float scale;
+    uniform mat4 mvp;
     void main() {
-        gl_Position = vec4(position * scale, 0.0, 1.0);
+        gl_Position = vec4(position, 0.0, 1.0) * mvp;
     }
     """
 
@@ -100,6 +112,7 @@ def glfw_thread():
     gl.glShaderSource(fragment, fragment_shader)
 
     gl.glCompileShader(vertex)
+    
     gl.glCompileShader(fragment)
 
     gl.glAttachShader(program, vertex)
@@ -129,12 +142,12 @@ def glfw_thread():
     
     gl.glEnableVertexAttribArray(1)
     gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-    scale_loc = gl.glGetUniformLocation(program, 'scale')
+    mvp_loc = gl.glGetUniformLocation(program, 'mvp')
 
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
-        gl.glUniform1f(scale_loc, STATE.scale)
+        gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp)
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(1.0, 1.0, 1.0, 1.0)
