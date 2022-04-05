@@ -2,8 +2,8 @@ import dearpygui.dearpygui as dpg
 
 from dpgext import gui
 from dpgext import elements as el
-from dpgext.utils.sig import metsig
-from dpgext.utils.logger import LOGGER
+from utils.sig import metsig
+from utils.logger import LOGGER
 
 import numpy as np
 from app_state import STATE

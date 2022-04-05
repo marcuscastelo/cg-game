@@ -8,7 +8,7 @@ import OpenGL.GL as gl
 
 from threading import Thread
 
-from dpgext.utils.logger import LOGGER
+from utils.logger import LOGGER
 
 from constants import WINDOW_SIZE
 from app_state import STATE

@@ -1,3 +1,6 @@
 [submodule "vendor/dpgext"]
 	path = vendor/dpgext
 	url = https://github.com/marcuscastelo/dpgext
+[submodule "vendor/utils"]
+	path = vendor/utils
+	url = https://github.com/marcuscastelo/utils
