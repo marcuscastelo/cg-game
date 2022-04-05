@@ -75,6 +75,41 @@ def glfw_thread():
 
     # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, 0, 0)
 
+
+    vertex_shader = """
+    #version 330
+    in vec2 position;
+    uniform float scale;
+    void main() {
+        gl_Position = vec4(position * scale, 0.0, 1.0);
+    }
+    """
+
+    fragment_shader = """
+    #version 330
+    void main() {
+        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+    }
+    """
+
+    program = gl.glCreateProgram()
+    vertex = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+    fragment = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+
+    gl.glShaderSource(vertex, vertex_shader)
+    gl.glShaderSource(fragment, fragment_shader)
+
+    gl.glCompileShader(vertex)
+    gl.glCompileShader(fragment)
+
+    gl.glAttachShader(program, vertex)
+    gl.glAttachShader(program, fragment)
+
+    gl.glLinkProgram(program)
+
+    gl.glUseProgram(program)
+    # return
+
     vao = gl.glGenVertexArrays(1)
     vbo = gl.glGenBuffers(1)
 
@@ -91,9 +126,15 @@ def glfw_thread():
 
     gl.glEnableVertexAttribArray(0)
     gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+    
+    gl.glEnableVertexAttribArray(1)
+    gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+    scale_loc = gl.glGetUniformLocation(program, 'scale')
 
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
+
+        gl.glUniform1f(scale_loc, STATE.scale)
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(1.0, 1.0, 1.0, 1.0)
