@@ -48,7 +48,7 @@ class MainWindow(gui.Window):
     def _update_mvp(self):
         mvp = np.matmul(self.scale_mat, self.rotation_mat) 
         mvp = np.matmul(mvp, self.translation_mat)
-        STATE.mvp = mvp
+        STATE.mvp_manager = mvp
 
     def describe(self):
         with self:

@@ -1,5 +1,7 @@
 from dataclasses import dataclass
+import math
 from threading import Thread
+from typing import Callable
 
 import glfw
 import OpenGL.GL as gl
@@ -11,6 +13,10 @@ from dpgext.utils.logger import LOGGER
 from constants import WINDOW_SIZE
 from app_state import STATE
 from gui import AppGui
+
+import numpy as np
+
+import keyboard
 
 def create_window():
     glfw.init()
@@ -81,9 +87,9 @@ def glfw_thread():
     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
 
     vertices = [
-        0.0,  0.5, 0.0,
-        0.5, -0.5, 0.0,
-        -0.5, -0.5, 0.0
+        0.0,  0.866025403784-0.5+0.183012701892, 0.0,
+        0.5, -0.5+0.183012701892, 0.0,
+        -0.5, -0.5+0.183012701892, 0.0
     ]
     # Set the vertex buffer data
     gl.glBufferData(gl.GL_ARRAY_BUFFER, len(vertices)*4, (gl.GLfloat * len(vertices))(*vertices), gl.GL_STATIC_DRAW)
@@ -98,7 +104,7 @@ def glfw_thread():
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
-        gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp)
+        gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp_manager.mvp)
 
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(1.0, 1.0, 1.0, 1.0)
@@ -116,7 +122,37 @@ def glfw_thread():
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
     STATE.closing = True
 
+def register_keyboard_controls():
+    TRANSLATION_STEP = 0.04
+    ROTATION_STEP = 2*math.pi/360 * 5
+    SCALE_STEP = 0.2
+
+    def callback_gen(step: float, callback: Callable[[float], None]):
+        # if shift is pressed, the step is increased
+        def callback_wrapper(*_args):
+            print(f"shift is pressed: {keyboard.is_pressed('shift')}")
+            if keyboard.is_pressed('shift'):
+                callback(step * 2)
+            elif keyboard.is_pressed('ctrl'):
+                callback(step / 2)
+            else:
+                callback(step)
+        
+        return callback_wrapper
+
+
+    keyboard.on_press_key('w', callback_gen(TRANSLATION_STEP, lambda step: STATE.mvp_manager.translate(0.0, step)))
+    keyboard.on_press_key('s', callback_gen(TRANSLATION_STEP, lambda step: STATE.mvp_manager.translate(0.0, -step)))
+    keyboard.on_press_key('a', callback_gen(TRANSLATION_STEP, lambda step: STATE.mvp_manager.translate(-step, 0.0)))
+    keyboard.on_press_key('d', callback_gen(TRANSLATION_STEP, lambda step: STATE.mvp_manager.translate(step, 0.0)))
+    keyboard.on_press_key('q', callback_gen(ROTATION_STEP, lambda step: STATE.mvp_manager.rotate(step)))
+    keyboard.on_press_key('e', callback_gen(ROTATION_STEP, lambda step: STATE.mvp_manager.rotate(-step)))
+    keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: STATE.mvp_manager.zoom(step)))
+    keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: STATE.mvp_manager.zoom(-step)))
+
 def main():
+    register_keyboard_controls()
+
     LOGGER.log_info("Starting app", 'main')
 
     LOGGER.log_trace("Init Glfw", 'main')
