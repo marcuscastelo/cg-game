@@ -45,35 +45,25 @@ def glfw_thread():
     # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, 0, 0)
 
 
-    vertex_shader = """
-    #version 330
-    in vec2 position;
-    uniform mat4 mvp;
-    void main() {
-        gl_Position = vec4(position, 0.0, 1.0) * mvp;
-    }
-    """
+    with open('shaders/vertex_shader.vert', 'r') as f:
+        vertex_shader_source = f.read()
 
-    fragment_shader = """
-    #version 330
-    void main() {
-        gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-    }
-    """
+    with open('shaders/fragment_shader.frag', 'r') as f:
+        fragment_shader_source = f.read()
 
     program = gl.glCreateProgram()
-    vertex = gl.glCreateShader(gl.GL_VERTEX_SHADER)
-    fragment = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+    vertex_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
+    fragment_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
 
-    gl.glShaderSource(vertex, vertex_shader)
-    gl.glShaderSource(fragment, fragment_shader)
+    gl.glShaderSource(vertex_shader, vertex_shader_source)
+    gl.glShaderSource(fragment_shader, fragment_shader_source)
 
-    gl.glCompileShader(vertex)
+    gl.glCompileShader(vertex_shader)
     
-    gl.glCompileShader(fragment)
+    gl.glCompileShader(fragment_shader)
 
-    gl.glAttachShader(program, vertex)
-    gl.glAttachShader(program, fragment)
+    gl.glAttachShader(program, vertex_shader)
+    gl.glAttachShader(program, fragment_shader)
 
     gl.glLinkProgram(program)
 
