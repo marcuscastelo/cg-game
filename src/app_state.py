@@ -113,6 +113,7 @@ class MVPState:
         
 @dataclass
 class AppState:
+    texture: int = 0
     closing: bool = False
     mvp_manager: MVPState = MVPState()
   

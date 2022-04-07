@@ -29,22 +29,6 @@ def create_window():
 def glfw_thread():
     window = create_window()
 
-    # TODO: code to draw the scene in a framebuffer and send it to the dearpygui window
-    # fbo = gl.glGenFramebuffers(1)
-    # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
-    # #TODO: glDeleteFramebuffers(1, &frameBuffer);
-
-
-    # gl_tex_id = gl.glGenTextures(1)
-    # gl.glBindTexture(gl.GL_TEXTURE_2D, gl_tex_id)
-    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
-
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-
-    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, 0, 0)
-
-
     with open('shaders/vertex_shader.vert', 'r') as f:
         vertex_shader_source = f.read()
 
@@ -91,21 +75,48 @@ def glfw_thread():
     gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     mvp_loc = gl.glGetUniformLocation(program, 'mvp')
 
+
+
+    # Use a FBO instead of the default framebuffer
+    fbo = gl.glGenFramebuffers(1)
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+
+    # Create a texture to render to
+    texture = gl.glGenTextures(1)
+    gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
+    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
+
+    # Attach the texture to the FBO
+    gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, texture, 0)
+
+    STATE.texture = texture
+
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
-        gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp_manager.mvp)
+        def render():
+            gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp_manager.mvp)
 
-        gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-        gl.glClearColor(1.0, 1.0, 1.0, 1.0)
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
-        gl.glBindVertexArray(vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
+            gl.glBindVertexArray(vao)
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
 
-        # Draw the triangle
-        gl.glColor3f(1.0, 0.0, 0.0)
-        gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3)
+            # Draw the triangle
+            gl.glColor3f(1.0, 0.0, 0.0)
+            gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3)
 
+
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+        render()
+
+        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        render()
 
         glfw.swap_buffers(glfw.get_current_context())
     
