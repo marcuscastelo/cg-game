@@ -30,10 +30,26 @@ class MVPState:
     def _on_rotation_changed(self):
         # Recalculate MVP
         self._rotation_mat = np.eye(4, dtype=np.float32)
-        self._rotation_mat[0, 0] = np.cos(self._rotation_angle)
-        self._rotation_mat[0, 1] = -np.sin(self._rotation_angle)
-        self._rotation_mat[1, 0] = np.sin(self._rotation_angle)
-        self._rotation_mat[1, 1] = np.cos(self._rotation_angle)
+        # self._rotation_mat[0, 0] = np.cos(self._rotation_angle)
+        # self._rotation_mat[0, 1] = -np.sin(self._rotation_angle)
+        # self._rotation_mat[1, 0] = np.sin(self._rotation_angle)
+        # self._rotation_mat[1, 1] = np.cos(self._rotation_angle)
+
+        ISOMETRIC_ANGLE = np.radians(-45)
+        x_rot_mat = np.eye(4, dtype=np.float32)
+        x_rot_mat[1, 1] = np.cos(ISOMETRIC_ANGLE)
+        x_rot_mat[1, 2] = -np.sin(ISOMETRIC_ANGLE)
+        x_rot_mat[2, 1] = np.sin(ISOMETRIC_ANGLE)
+        x_rot_mat[2, 2] = np.cos(ISOMETRIC_ANGLE)
+
+        y_rot_mat = np.eye(4, dtype=np.float32)
+        y_rot_mat[0, 0] = np.cos(ISOMETRIC_ANGLE)
+        y_rot_mat[0, 2] = np.sin(ISOMETRIC_ANGLE)
+        y_rot_mat[2, 0] = -np.sin(ISOMETRIC_ANGLE)
+        y_rot_mat[2, 2] = np.cos(ISOMETRIC_ANGLE)
+
+        self._rotation_mat = np.matmul(x_rot_mat, y_rot_mat)
+
         self._update_mvp()
         pass
 

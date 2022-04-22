@@ -9,6 +9,7 @@ import OpenGL.GL as gl
 from threading import Thread
 
 from utils.logger import LOGGER
+from utils.geometry import Vec2Int
 
 from constants import WINDOW_SIZE
 from app_state import STATE
@@ -25,6 +26,99 @@ def create_window():
     glfw.make_context_current(window)
     glfw.show_window(window)
     return window
+
+
+def gen_cubes_pos():
+    CENTER = np.array([0.0, 0.0, 0.0])
+    MINCUBE_LENGTH = 1
+
+    x, y, z = -MINCUBE_LENGTH, -MINCUBE_LENGTH, -MINCUBE_LENGTH
+
+    while True:
+        yield np.array([x, y, z])
+        x += MINCUBE_LENGTH
+        if x > MINCUBE_LENGTH:
+            x = -MINCUBE_LENGTH
+            y += MINCUBE_LENGTH
+        if y > MINCUBE_LENGTH:
+            y = -MINCUBE_LENGTH
+            z += MINCUBE_LENGTH
+        if z > MINCUBE_LENGTH:
+            z = -MINCUBE_LENGTH
+            x = -MINCUBE_LENGTH
+
+def gen_face_vertices():
+
+    for cube_pos in gen_cubes_pos():
+        pass
+
+    pass
+
+'''
+(2, 2, -2)
+(0, 2, -2)
+(2, 2, 0)
+(0, 2, 0)
+
+(2, 0, 0)
+(2, 0, -2)
+(2, 2, 0)
+(2, 2, -2)
+
+(0, 0, -2)
+(2, 0, -2)
+(2, 2, -2)
+(0, 2, -2)
+'''
+
+
+@dataclass
+class Vec3:
+    x: float
+    y: float
+    z: float = 0.0
+
+def gen_face_vertices(face_pos: Vec3) -> np.ndarray:
+
+    return np.array([
+        # FRONTAL FACE (Z does not change)
+        -0.33+face_pos.x     , -0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , -0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+
+        -0.33+face_pos.x     , -0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+        -0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+
+        # SIDE FACES (X does not change)
+        -0.33+face_pos.x     , -0.33+face_pos.y   , -0.33+face_pos.z,
+        -0.33+face_pos.x     , -0.33+face_pos.y   , +0.33+face_pos.z,
+        -0.33+face_pos.x     , +0.33+face_pos.y   , +0.33+face_pos.z,
+
+        -0.33+face_pos.x     , -0.33+face_pos.y   , -0.33+face_pos.z,
+        -0.33+face_pos.x     , +0.33+face_pos.y   , +0.33+face_pos.z,
+        -0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+
+        # TOP FACES (Y does not change)
+        -0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , +0.33+face_pos.y   , +0.33+face_pos.z,
+
+        -0.33+face_pos.x     , +0.33+face_pos.y   , -0.33+face_pos.z,
+        +0.33+face_pos.x     , +0.33+face_pos.y   , +0.33+face_pos.z,
+        -0.33+face_pos.x     , +0.33+face_pos.y   , +0.33+face_pos.z,
+
+
+    ], dtype=np.float32)
+
+vertices = [
+    *gen_face_vertices(Vec3(0.0,0.0,0.0)),
+    # *gen_face_vertices(Vec3(0.66,0.0,0.0)),
+    # *gen_face_vertices(Vec3(-0.66,0.0,0.0)),
+]
+
+def render_rubik_cube():
+    pass
 
 def glfw_thread():
     window = create_window()
@@ -60,17 +154,19 @@ def glfw_thread():
     gl.glBindVertexArray(vao)
     gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
 
-    vertices = [
-        0.0,  0.866025403784-0.5+0.183012701892, 0.0,
-        0.5, -0.5+0.183012701892, 0.0,
-        -0.5, -0.5+0.183012701892, 0.0
-    ]
+    # vertices = [
+    #     0.0,  0.866025403784-0.5+0.183012701892, 0.0,
+    #     0.5, -0.5+0.183012701892, 0.0,
+    #     -0.5, -0.5+0.183012701892, 0.0
+    # ]
+
+
     # Set the vertex buffer data
     gl.glBufferData(gl.GL_ARRAY_BUFFER, len(vertices)*4, (gl.GLfloat * len(vertices))(*vertices), gl.GL_STATIC_DRAW)
 
     gl.glEnableVertexAttribArray(0)
     gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-    
+
     gl.glEnableVertexAttribArray(1)
     gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
     mvp_loc = gl.glGetUniformLocation(program, 'mvp')
@@ -108,8 +204,8 @@ def glfw_thread():
             gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
 
             # Draw the triangle
-            gl.glColor3f(1.0, 0.0, 0.0)
-            gl.glDrawArrays(gl.GL_TRIANGLES, 0, 3)
+            gl.glColor3f(1.0, 1.0, 0.0)
+            gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
 
 
         gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
@@ -151,6 +247,8 @@ def register_keyboard_controls():
     keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: STATE.mvp_manager.zoom(step)))
     keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: STATE.mvp_manager.zoom(-step)))
 
+
+
 def main():
     register_keyboard_controls()
 
@@ -166,8 +264,8 @@ def main():
     t = Thread(target=glfw_thread)
     t.start()
 
-    LOGGER.log_trace("Start GUI", 'main')
-    gui.run()
+    # LOGGER.log_trace("Start GUI", 'main')
+    # gui.run()
 
     LOGGER.log_info("GUI Has been closed, waiting for GLFW to close...", 'main')
     t.join()
