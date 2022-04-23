@@ -30,6 +30,17 @@ class MVPState:
     def _on_rotation_changed(self):
         # Recalculate MVP
         self._rotation_mat = np.eye(4, dtype=np.float32)
+        self._rotation_mat[0, 0] = np.cos(self._rotation_angle)
+        self._rotation_mat[0, 1] = -np.sin(self._rotation_angle)
+        self._rotation_mat[1, 0] = np.sin(self._rotation_angle)
+        self._rotation_mat[1, 1] = np.cos(self._rotation_angle)
+
+        self._update_mvp()
+        pass
+
+    def isometric_view(self):
+        # Recalculate MVP
+        self._rotation_mat = np.eye(4, dtype=np.float32)
         # self._rotation_mat[0, 0] = np.cos(self._rotation_angle)
         # self._rotation_mat[0, 1] = -np.sin(self._rotation_angle)
         # self._rotation_mat[1, 0] = np.sin(self._rotation_angle)
@@ -51,7 +62,6 @@ class MVPState:
         self._rotation_mat = np.matmul(x_rot_mat, y_rot_mat)
 
         self._update_mvp()
-        pass
 
     def _update_mvp(self):
         mvp = np.matmul(self._translation_mat, self._rotation_mat)
