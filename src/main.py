@@ -19,6 +19,7 @@ from gui import AppGui
 import numpy as np
 
 import keyboard
+from objects.projectile import Projectile
 from objects.ship import Ship
 
 from shader import Shader
@@ -34,11 +35,11 @@ def create_window():
 def glfw_thread():
     window = create_window()
 
-    ship1 = Ship((-0.5, -0.5, 0))
-    ship2 = Ship((0.5, 0.5, 0))
+    ship1 = Ship((0, 0, 0))
+    # ship2 = Ship((0.5, 0.5, 0))
 
-    ship1.controller.enable() 
-
+    ship1.controller.enable()
+    
     # mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
 
     # # Use a FBO instead of the default framebuffer
@@ -69,7 +70,7 @@ def glfw_thread():
             gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
             ship1.render()
-            ship2.render()
+            # ship2.render()
 
         # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
         # render()

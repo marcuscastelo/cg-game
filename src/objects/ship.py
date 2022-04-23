@@ -1,11 +1,14 @@
 from dataclasses import dataclass
 import math
 from mimetypes import init
+import time
 from typing import Callable
 import numpy as np
 
 from OpenGL import GL as gl
 from app_state import MVPManager
+from objects.element import Element
+from objects.projectile import Projectile
 
 from shader import Shader
 import keyboard
@@ -36,7 +39,7 @@ class ShipController:
     def process_input(self):
         if not self.enabled:
             return
-            
+
         TRANSLATION_STEP = 0.04
         ROTATION_STEP = 2*math.pi/360 * 5
         forward = self.keybinds["forward"]
@@ -67,7 +70,7 @@ class ShipController:
 
 
 @dataclass(init=False)
-class Ship:
+class Ship(Element):
     x: float = 0
     y: float = 0
     z: float = 0
@@ -75,104 +78,53 @@ class Ship:
     angle: float = 0
     energy: float = 1 # [1, 2]: indicates glow intensity
 
-    def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
-        self._vertices = [ # 2D Triangle
-            # X, Y, Z
-            -BASE_SIZE, -BASE_SIZE*2*0.87*1/3, 0.0,
-            +BASE_SIZE, -BASE_SIZE*2*0.87*1/3, 0.0,
-            0.0,        +BASE_SIZE*2*0.87*2/3, 0.0,
+    def _init_vertices(self):
+        self._vertices = [
+            *(-0.1, 0.0, 0.0),
+            *(0.1, 0.0, 0.0),
+            *(-0.1, 0.2, 0.0),
+            *(0.1, 0.0, 0.0),
+            *(0.1, 0.2, 0.0),
+            *(-0.1, 0.2, 0.0),
+            *(-0.1, 0.2, 0.0),
+            *(0.1, 0.2, 0.0),
+            *(0 , 0.4, 0.0),
         ]
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.controller = ShipController()
-
-        self.x, self.y, self.z = initial_coords
-
-        self.vao = gl.glGenVertexArrays(1)
-        self.vbo = gl.glGenBuffers(1)
-
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
-        # Set the vertex buffer data
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
-
-        self.shader = Shader('shaders/ship/ship.vert', 'shaders/ship/ship.frag')
-        self.shader.use()
-
-        gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-        gl.glEnableVertexAttribArray(1)
-        gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-        gl.glUseProgram(0) # Unbind the shader
-        gl.glBindVertexArray(0) # Unbind the VAO
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
-
-        self.mvp_manager = MVPManager()
-        self.mvp_manager.translation = (self.x, self.y)
-
-    def move(self, intensity: float):
-        self.x += np.cos(self.angle + math.radians(90)) * intensity * self.speed
-        self.y += np.sin(self.angle + math.radians(90)) * intensity * self.speed
-        self.mvp_manager.translation = (self.x, self.y)
-
-    def rotate(self, angle: float):
-        self.angle += angle
-        self.mvp_manager.rotation_angle = self.angle # TODO: support 3D rotation
-
+        self._last_shot_time = 0
+        self._projectiles = []
 
     def _physic_update(self):
+        self.shoot()
+
+        self.controller.process_input()
         if self.controller.input_movement != 0:
             self.move(self.controller.input_movement)
         if self.controller.input_rotation != 0:
             self.rotate(self.controller.input_rotation)
 
     def render(self):
-        self.controller.process_input()
+        projs_to_remove = []
+        for proj in self._projectiles:
+            proj.render()
+            # if proj.is_out_of_bounds():
+            #     projs_to_remove.append(proj)
+
+        for proj in projs_to_remove:
+            self._projectiles.remove(proj)
+
+        return super().render()
+
+    def shoot(self):
+        if time.time() - self._last_shot_time < 0.3:
+            return
+        else:
+            self._last_shot_time = time.time()
+
+        print("Shooting")
         
-        # TODO: process physics 1/50th of a second
-        self._physic_update()
-
-        # Bind the shader and VAO (VBO is bound in the VAO)
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        self.shader.use()
-
-        # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', self.mvp_manager.mvp)
-
-        # Draw the triangles
-        gl.glColor3f(1.0, 0.0, 0.0)
-        gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(self._vertices))
-        
-        pass
-
-    def register_keyboard_controls(self):
-        # TRANSLATION_STEP = 0.04
-        # ROTATION_STEP = 2*math.pi/360 * 5
-        # SCALE_STEP = 0.2
-
-        # def callback_gen(step: float, callback: Callable[[float], None]):
-        #     # if shift is pressed, the step is increased
-        #     def callback_wrapper(*_args):
-        #         print(f"shift is pressed: {keyboard.is_pressed('shift')}")
-        #         if keyboard.is_pressed('shift'):
-        #             callback(step * 2)
-        #         elif keyboard.is_pressed('ctrl'):
-        #             callback(step / 2)
-        #         else:
-        #             callback(step)
-            
-        #     return callback_wrapper
-
-
-        # keyboard.on_press_key('w', callback_gen(TRANSLATION_STEP, lambda step: self.move(step)))
-        # keyboard.on_press_key('s', callback_gen(TRANSLATION_STEP, lambda step: self.move(-step)))
-        # # keyboard.on_press_key('a', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(-step, 0.0)))
-        # # keyboard.on_press_key('d', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(step, 0.0)))
-        # keyboard.on_press_key('q', callback_gen(ROTATION_STEP, lambda step: self.rotate(step)))
-        # keyboard.on_press_key('e', callback_gen(ROTATION_STEP, lambda step: self.rotate(-step)))
-        # keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(step)))
-        # keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(-step)))
-        pass
+        proj = Projectile.create_from(self)
+        self._projectiles.append(proj)
