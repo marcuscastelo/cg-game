@@ -97,7 +97,7 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-    def _physic_update(self):
+    def _physics_update(self):
         self.shoot()
 
         self.controller.process_input()
