@@ -16,6 +16,7 @@ class Element:
     speed = 0.5
     _vertices = []
     _render_primitive = gl.GL_TRIANGLES
+    _destroyed = False
 
     def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
         self._init_vertices()
@@ -56,14 +57,30 @@ class Element:
 
     # Create a bounding box
     @staticmethod
-    def get_bounding_box(self: 'Element'):
-        xs = self._vertices[::3]
-        ys = self._vertices[1::3]
+    def get_bounding_box(elem: 'Element'):
+        xs = elem._vertices[::3]
+        ys = elem._vertices[1::3]
+        zs = elem._vertices[2::3]
+        hs = [0] * len(xs)
 
-        min_x = min(zip(xs, ys), key=lambda v: v[0])[0]
-        min_y = min(zip(xs, ys), key=lambda v: v[1])[1]
-        max_x = max(zip(xs, ys), key=lambda v: v[0])[0]
-        max_y = max(zip(xs, ys), key=lambda v: v[1])[1]
+        vertices = np.array(list(zip(xs, ys, zs, hs)), dtype=np.float32)
+        # Each row is a vertex (x, y, z, h)
+        # h is the harmonic variable (used for nothing)
+        # We need to scale, translate and rotate the vertices
+        # to get the bounding box
+
+        transformed_vertices = vertices
+        # transformed_vertices = np.matmul(elem.mvp_manager.mvp, vertices.T)
+
+        min_x = min(transformed_vertices, key=lambda v: v[0])[0]
+        min_y = min(transformed_vertices, key=lambda v: v[1])[1]
+        max_x = max(transformed_vertices, key=lambda v: v[0])[0]
+        max_y = max(transformed_vertices, key=lambda v: v[1])[1]
+
+        min_x += elem.x
+        min_y += elem.y
+        max_x += elem.x
+        max_y += elem.y
 
         return (min_x, min_y, max_x, max_y)
 
@@ -131,10 +148,12 @@ class Element:
     def _physic_update(self):
         raise NotImplementedError("Abstract method, please implement in subclass")
 
-    def render(self):
+    def update(self):
         # TODO: process physics 1/50th of a second
         self._physic_update()
-
+        self._render()
+        
+    def _render(self):
         # Bind the shader and VAO (VBO is bound in the VAO)
         gl.glBindVertexArray(self.vao)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
@@ -146,6 +165,7 @@ class Element:
         # Draw the triangles
         gl.glColor3f(1.0, 0.0, 0.0)
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
+
     
     def register_keyboard_controls(self):
         # TRANSLATION_STEP = 0.04
@@ -175,3 +195,6 @@ class Element:
         # keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(step)))
         # keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(-step)))
         pass
+
+    def destroy(self):
+        self._destroyed = True

@@ -34,10 +34,13 @@ class CollisionSystem:
         pass
 
     def _physic_update(self):
-        elements = self.world.elements
-        for element in elements:
-            for other in elements:
-                if element is not other:
-                    if element.collides_with(other):
-                        print(f'Collision between {element} and {other}')
-                        self.on_collision(element, other)
+        # elements = self.world.elements
+        # for element in elements:
+        #     for other in elements:
+        #         if element is not other:
+        #             if element.collides_with(other):
+        #                 print(f'Collision between {element} and {other}')
+        #                 self.on_collision(element, other)
+        pass
+
+    

@@ -14,6 +14,8 @@ from objects.projectile import Projectile
 from shader import Shader
 import keyboard
 
+from world import WORLD
+
 BASE_SIZE = 1/16 * (1 - (-1))
 
 @dataclass
@@ -94,7 +96,6 @@ class Ship(Element):
         super().__init__(*args, **kwargs)
         self.controller = ShipController()
         self._last_shot_time = time.time()
-        self._projectiles: list[Element] = []
 
     def _physic_update(self):
         self.shoot()
@@ -104,18 +105,6 @@ class Ship(Element):
             self.move(self.controller.input_movement)
         if self.controller.input_rotation != 0:
             self.rotate(self.controller.input_rotation)
-
-    def render(self):
-        projs_to_remove = []
-        for proj in self._projectiles:
-            proj.render()
-            # if proj.is_out_of_bounds():
-            #     projs_to_remove.append(proj)
-
-        # for proj in projs_to_remove:
-        #     self._projectiles.remove(proj)
-
-        return super().render()
 
     def shoot(self):
         curr_time = time.time()
@@ -129,10 +118,4 @@ class Ship(Element):
         self._last_shot_time = curr_time
 
         proj = Projectile.create_from(self)
-        # other = Ship((self.x, self.y, self.z))
-        # other.controller.disable()
-        # other.controller.input_movement = 0.035
-        # other.angle = self.angle
-        # other._last_shot_time = 10000000000000000000000000
-
-        self._projectiles.append(proj)
+        WORLD.elements.append(proj)

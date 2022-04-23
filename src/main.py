@@ -80,10 +80,7 @@ def glfw_thread():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
-            WORLD.collision_system._physic_update() #TODO: Move to update()
-
-            for element in WORLD.elements:
-                element.render()
+            WORLD.update()
 
         # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
         # render()

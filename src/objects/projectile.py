@@ -28,9 +28,9 @@ class Projectile(Element):
             # *(0.15, 0.15,   0.0),
         ]
 
-    def render(self):
+    def _render(self):
         gl.glLineWidth(PROJECTILE_WIDTH)
-        return super().render()
+        return super()._render()
 
     @classmethod
     def create_from(cls, ship: 'Ship') -> 'Projectile':
@@ -47,4 +47,9 @@ class Projectile(Element):
 
     def _physic_update(self):
         self.move(0.03)
+        print(f'Projectile at {self.x}, {self.y}')
+        if self.x < -1 or self.x > 1 or self.y < -1 or self.y > 1:
+            self.destroy()
         # pass
+
+    
