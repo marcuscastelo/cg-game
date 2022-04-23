@@ -109,7 +109,7 @@ class Ship(Element):
     def shoot(self):
         curr_time = time.time()
 
-        if (curr_time - self._last_shot_time) < 2:
+        if (curr_time - self._last_shot_time) < 1.2:
             return
 
         if not keyboard.is_pressed('space'):

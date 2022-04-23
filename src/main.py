@@ -41,13 +41,15 @@ def glfw_thread():
     main_ship.controller.enable()
 
     WORLD.add_element(main_ship)
-
-    for enemy in [
+    
+    enemies = [
         Enemy((-0.9,    0.5,    0.0)),
         Enemy(( 0.0,    0.5,    0.0)),
         Enemy(( 0.9,    0.5,    0.0)),
         Enemy(( 0.0,    0.9,    0.0)),
-    ]:
+    ]
+
+    for enemy in enemies:
         WORLD.add_element(enemy)
 
     
