@@ -1,29 +1,44 @@
 from dataclasses import dataclass
+import math
 from mimetypes import init
+from typing import Callable
 import numpy as np
 
 from OpenGL import GL as gl
+from app_state import MVPManager
 
 from shader import Shader
+import keyboard
 
 BASE_SIZE = 1/16 * (1 - (-1))
+
+@dataclass
+class ShipController:
+    """
+    This class is used to store the movement of the ship.
+    User input is stored in this class. (in the current frame)
+    """
+    input_movement: float = 0
+    input_rotation: float = 0
 
 @dataclass(init=False)
 class Ship:
     x: float = 0
     y: float = 0
     z: float = 0
-    speed: float = 0
+    speed: float = 1
     angle: float = 0
     energy: float = 1 # [1, 2]: indicates glow intensity
 
     def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
         self._vertices = [ # 2D Triangle
             # X, Y, Z
-            -BASE_SIZE, -BASE_SIZE, 0.0,
-            +BASE_SIZE, -BASE_SIZE, 0.0,
-            0.0, +BASE_SIZE, 0.0,
+            -BASE_SIZE, -BASE_SIZE*2*0.87*1/3, 0.0,
+            +BASE_SIZE, -BASE_SIZE*2*0.87*1/3, 0.0,
+            0.0,        +BASE_SIZE*2*0.87*2/3, 0.0,
         ]
+
+        self.controller = ShipController()
 
         self.x, self.y, self.z = initial_coords
 
@@ -45,41 +60,58 @@ class Ship:
         gl.glEnableVertexAttribArray(1)
         gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
-        # gl.glUseProgram(0) # Unbind the shader
-        # gl.glBindVertexArray(0) # Unbind the VAO
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
-        
+        gl.glUseProgram(0) # Unbind the shader
+        gl.glBindVertexArray(0) # Unbind the VAO
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
+
+        self.mvp_manager = MVPManager()
+        self.mvp_manager.translation = (self.x, self.y)
+
+    def move(self, intensity: float):
+        self.x += np.cos(self.angle + math.radians(90)) * intensity * self.speed
+        self.y += np.sin(self.angle + math.radians(90)) * intensity * self.speed
+        self.mvp_manager.translation = (self.x, self.y)
+
+    def rotate(self, angle: float):
+        self.angle += angle
+        self.mvp_manager.rotation_angle = self.angle # TODO: support 3D rotation
+
+    def _process_input(self):
+        TRANSLATION_STEP = 0.04
+        ROTATION_STEP = 2*math.pi/360 * 5
+
+        if keyboard.is_pressed('shift'):
+            TRANSLATION_STEP *= 2
+            ROTATION_STEP *= 2
+        elif keyboard.is_pressed('ctrl'):
+            TRANSLATION_STEP *= 0.5
+            ROTATION_STEP *= 0.5
+
+        if keyboard.is_pressed('w'):
+            self.controller.input_movement = TRANSLATION_STEP
+        elif keyboard.is_pressed('s'):
+            self.controller.input_movement = -TRANSLATION_STEP
+        else:
+            self.controller.input_movement = 0
+
+        if keyboard.is_pressed('q'):
+            self.controller.input_rotation = ROTATION_STEP
+        elif keyboard.is_pressed('e'):
+            self.controller.input_rotation = -ROTATION_STEP
+        else:
+            self.controller.input_rotation = 0
+
+    def _physic_update(self):
+        if self.controller.input_movement != 0:
+            self.move(self.controller.input_movement)
+        if self.controller.input_rotation != 0:
+            self.rotate(self.controller.input_rotation)
+
     def render(self):
-        # Calculate Transformation Matrix
-        transformation_matrix = np.eye(4, dtype=np.float32)
-
-        # Scale Matrix
-        scale_matrix = np.eye(4, dtype=np.float32)
-        scale_matrix[0][0] = self.energy
-        scale_matrix[1][1] = self.energy
-        scale_matrix[2][2] = self.energy
-        scale_matrix[3][3] = self.energy
-
-        # Rotation Matrix
-        rotation_matrix = np.eye(4, dtype=np.float32)
-        rotation_matrix[0][0] = np.cos(self.angle)
-        rotation_matrix[0][1] = -np.sin(self.angle)
-        rotation_matrix[1][0] = np.sin(self.angle)
-        rotation_matrix[1][1] = np.cos(self.angle)
-
-        # Translation Matrix
-        translation_matrix = np.eye(4, dtype=np.float32)
-        translation_matrix[0][3] = self.x
-        translation_matrix[1][3] = self.y
-        translation_matrix[2][3] = self.z
-
-        # Calculate Transformation Matrix
-        transformation_matrix = np.matmul(translation_matrix, rotation_matrix)
-        transformation_matrix = np.matmul(transformation_matrix, scale_matrix)
-
-        print(f'Transformation Matrix: \n{transformation_matrix}')
-
-        # Render
+        self._process_input()
+        
+        # TODO: process physics 1/50th of a second
+        self._physic_update()
 
         # Bind the shader and VAO (VBO is bound in the VAO)
         gl.glBindVertexArray(self.vao)
@@ -87,10 +119,39 @@ class Ship:
         self.shader.use()
 
         # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', transformation_matrix)
+        self.shader.set_uniform_matrix('transformation', self.mvp_manager.mvp)
 
         # Draw the triangles
         gl.glColor3f(1.0, 0.0, 0.0)
         gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(self._vertices))
         
+        pass
+
+    def register_keyboard_controls(self):
+        # TRANSLATION_STEP = 0.04
+        # ROTATION_STEP = 2*math.pi/360 * 5
+        # SCALE_STEP = 0.2
+
+        # def callback_gen(step: float, callback: Callable[[float], None]):
+        #     # if shift is pressed, the step is increased
+        #     def callback_wrapper(*_args):
+        #         print(f"shift is pressed: {keyboard.is_pressed('shift')}")
+        #         if keyboard.is_pressed('shift'):
+        #             callback(step * 2)
+        #         elif keyboard.is_pressed('ctrl'):
+        #             callback(step / 2)
+        #         else:
+        #             callback(step)
+            
+        #     return callback_wrapper
+
+
+        # keyboard.on_press_key('w', callback_gen(TRANSLATION_STEP, lambda step: self.move(step)))
+        # keyboard.on_press_key('s', callback_gen(TRANSLATION_STEP, lambda step: self.move(-step)))
+        # # keyboard.on_press_key('a', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(-step, 0.0)))
+        # # keyboard.on_press_key('d', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(step, 0.0)))
+        # keyboard.on_press_key('q', callback_gen(ROTATION_STEP, lambda step: self.rotate(step)))
+        # keyboard.on_press_key('e', callback_gen(ROTATION_STEP, lambda step: self.rotate(-step)))
+        # keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(step)))
+        # keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(-step)))
         pass

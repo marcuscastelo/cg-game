@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import numpy as np
 
 @dataclass
-class MVPState:
+class MVPManager:
     mvp: np.ndarray = np.eye(4, dtype=np.float32)
     _scale: float = 1.0
     _rotation_angle: float = 0.0
@@ -109,7 +109,7 @@ class MVPState:
         return self._translation_x, self._translation_y
 
     @translation.setter
-    def translation(self, value):
+    def translation(self, value: tuple[float, float]):
         self._translation_x, self._translation_y = value
         self._on_translation_changed()
 
@@ -141,6 +141,6 @@ class MVPState:
 class AppState:
     texture: int = 0
     closing: bool = False
-    mvp_manager: MVPState = MVPState()
+    mvp_manager: MVPManager = MVPManager()
   
 STATE = AppState()
