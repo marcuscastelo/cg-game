@@ -45,7 +45,7 @@ class Projectile(Element):
         obj.angle = ship.angle
         return obj
 
-    def _physic_update(self):
+    def _physics_update(self):
         self.move(0.03)
         print(f'Projectile at {self.x}, {self.y}')
         if self.x < -1 or self.x > 1 or self.y < -1 or self.y > 1:

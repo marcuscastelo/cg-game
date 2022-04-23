@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 import math
 from mimetypes import init
+import time
 from typing import Callable
 import numpy as np
 
@@ -20,6 +21,7 @@ class Element:
 
     def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
         self._init_vertices()
+        self._last_physics_update = 0
 
         x, y, self.z = initial_coords
 
@@ -145,12 +147,14 @@ class Element:
     def angle(self, value: float):
         self.mvp_manager.rotation_angle = value
 
-    def _physic_update(self):
+    def _physics_update(self):
         raise NotImplementedError("Abstract method, please implement in subclass")
 
     def update(self):
-        # TODO: process physics 1/50th of a second
-        self._physic_update()
+        if time.time() - self._last_physics_update > 1/50:
+            self._physics_update()
+            self._last_physics_update = time.time()
+
         self._render()
         
     def _render(self):
