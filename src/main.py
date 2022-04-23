@@ -19,10 +19,12 @@ from gui import AppGui
 import numpy as np
 
 import keyboard
+from objects.enemy import Enemy
 from objects.projectile import Projectile
 from objects.ship import Ship
 
 from shader import Shader
+from world import WORLD
 
 def create_window():
     glfw.init()
@@ -35,10 +37,19 @@ def create_window():
 def glfw_thread():
     window = create_window()
 
-    ship1 = Ship((0, 0, 0))
-    # ship2 = Ship((0.5, 0.5, 0))
+    main_ship = Ship((0, 0, 0))
+    main_ship.controller.enable()
 
-    ship1.controller.enable()
+    WORLD.add_element(main_ship)
+
+    for enemy in [
+        Enemy((-0.9,    0.5,    0.0)),
+        Enemy(( 0.0,    0.5,    0.0)),
+        Enemy(( 0.9,    0.5,    0.0)),
+        Enemy(( 0.0,    0.9,    0.0)),
+    ]:
+        WORLD.add_element(enemy)
+
     
     # mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
 
@@ -69,8 +80,10 @@ def glfw_thread():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
-            ship1.render()
-            # ship2.render()
+            WORLD.collision_system._physic_update() #TODO: Move to update()
+
+            for element in WORLD.elements:
+                element.render()
 
         # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
         # render()

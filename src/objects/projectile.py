@@ -1,6 +1,9 @@
+from math import cos, sin
+from dataclasses import dataclass
 import math
 from typing import TYPE_CHECKING
 from objects.element import Element
+import numpy as np
 
 from utils.sig import metsig
 
@@ -11,6 +14,7 @@ if TYPE_CHECKING:
 
 PROJECTILE_WIDTH = 0.05
 
+@dataclass
 class Projectile(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
@@ -19,8 +23,9 @@ class Projectile(Element):
 
     def _init_vertices(self):
         self._vertices = [
-            *(0, 0),
-            *(0, 0.05),
+            *(0.0,  0.0,    0.0),
+            *(0.0,  0.15,   0.0),
+            # *(0.15, 0.15,   0.0),
         ]
 
     def render(self):
@@ -29,9 +34,17 @@ class Projectile(Element):
 
     @classmethod
     def create_from(cls, ship: 'Ship') -> 'Projectile':
-        obj = cls((ship.x, ship.y, ship.z))
+        xyz = np.array((ship.x, ship.y, ship.z), dtype=np.float32)
+        
+        weapon_dx = -ship.ship_len * sin(ship.angle)
+        weapon_dy = ship.ship_len * cos(ship.angle)
+
+        xyz += np.array((weapon_dx, weapon_dy, 0), dtype=np.float32)
+
+        obj = cls((xyz[0], xyz[1], xyz[2]))
         obj.angle = ship.angle
         return obj
 
     def _physic_update(self):
-        self.move(0.1)
+        self.move(0.03)
+        # pass

@@ -12,17 +12,15 @@ import keyboard
 
 @dataclass
 class Element:
-    x: float = 0
-    y: float = 0
-    z: float = 0
-    angle: float = 0
+    z: float = 0 # TODO: clean up the code (remove z or add to mvp_manager)
+    speed = 0.5
     _vertices = []
     _render_primitive = gl.GL_TRIANGLES
 
     def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
         self._init_vertices()
 
-        self.x, self.y, self.z = initial_coords
+        x, y, self.z = initial_coords
 
         self.vao = gl.glGenVertexArrays(1)
         self.vbo = gl.glGenBuffers(1)
@@ -47,26 +45,91 @@ class Element:
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
         self.mvp_manager = MVPManager()
-        self.mvp_manager.translation = (self.x, self.y)
+        self.mvp_manager.translation = (x, y)
+
+    def __repr__(self) -> str:
+        return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
+
 
     def _init_vertices(self):
         raise NotImplementedError("Abstract method, please implement in subclass")
 
+    # Create a bounding box
+    @staticmethod
+    def get_bounding_box(self: 'Element'):
+        xs = self._vertices[::3]
+        ys = self._vertices[1::3]
+
+        min_x = min(zip(xs, ys), key=lambda v: v[0])[0]
+        min_y = min(zip(xs, ys), key=lambda v: v[1])[1]
+        max_x = max(zip(xs, ys), key=lambda v: v[0])[0]
+        max_y = max(zip(xs, ys), key=lambda v: v[1])[1]
+
+        return (min_x, min_y, max_x, max_y)
+
+    def collides_with(self, other: 'Element') -> bool:
+        # Based on vertices (compare with other.vertices)
+    
+        # Get the bounding boxes
+        self_bounding_box = Element.get_bounding_box(self)
+        other_bounding_box = Element.get_bounding_box(other)
+
+        # Check if the bounding boxes intersect
+        if self_bounding_box[0] > other_bounding_box[2] or self_bounding_box[2] < other_bounding_box[0]:
+            return False
+        if self_bounding_box[1] > other_bounding_box[3] or self_bounding_box[3] < other_bounding_box[1]:
+            return False
+        
+        # Check if the vertices intersect
+        self_xs = self._vertices[::3]
+        self_ys = self._vertices[1::3]
+
+        other_xs = other._vertices[::3]
+        other_ys = other._vertices[1::3]
+
+        self_vertices = zip(self_xs, self_ys)
+        other_vertices = zip(other_xs, other_ys)
+
+        # for self_vertex in self_vertices:
+        #     for other_vertex in other_vertices:
+        #         if self_vertex[0] == other_vertex[0] and self_vertex[1] == other_vertex[1]:
+        #             return True
+        return True
+
     def move(self, intensity: float):
-        self.x += np.cos(self.angle + math.radians(90)) * intensity * 1
-        self.y += np.sin(self.angle + math.radians(90)) * intensity * 1
+        self.x += np.cos(self.angle + math.radians(90)) * intensity * self.speed
+        self.y += np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.mvp_manager.translation = (self.x, self.y)
 
     def rotate(self, angle: float):
-        self.angle += angle
-        self.mvp_manager.rotation_angle = self.angle # TODO: support 3D rotation
+        self.mvp_manager.rotate(angle) # TODO: support 3D rotation
+
+    @property
+    def x(self):
+        return self.mvp_manager.translation_x
+    
+    @x.setter
+    def x(self, value: float):
+        self.mvp_manager.translation_x = value
+
+    @property
+    def y(self):
+        return self.mvp_manager.translation_y
+
+    @y.setter
+    def y(self, value: float):
+        self.mvp_manager.translation_y = value
+
+    @property
+    def angle(self):
+        return self.mvp_manager.rotation_angle
+
+    @angle.setter
+    def angle(self, value: float):
+        self.mvp_manager.rotation_angle = value
 
     def _physic_update(self):
         raise NotImplementedError("Abstract method, please implement in subclass")
-        if self.controller.input_movement != 0:
-            self.move(self.controller.input_movement)
-        if self.controller.input_rotation != 0:
-            self.rotate(self.controller.input_rotation)
 
     def render(self):
         # TODO: process physics 1/50th of a second
@@ -82,10 +145,8 @@ class Element:
 
         # Draw the triangles
         gl.glColor3f(1.0, 0.0, 0.0)
-        gl.glDrawArrays(gl.GL_LINES, 0, len(self._vertices))
-        
-        pass
-
+        gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
+    
     def register_keyboard_controls(self):
         # TRANSLATION_STEP = 0.04
         # ROTATION_STEP = 2*math.pi/360 * 5

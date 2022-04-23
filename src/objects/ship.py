@@ -6,6 +6,7 @@ from typing import Callable
 import numpy as np
 
 from OpenGL import GL as gl
+from utils.sig import metsig
 from app_state import MVPManager
 from objects.element import Element
 from objects.projectile import Projectile
@@ -71,12 +72,9 @@ class ShipController:
 
 @dataclass(init=False)
 class Ship(Element):
-    x: float = 0
-    y: float = 0
-    z: float = 0
-    speed: float = 1
-    angle: float = 0
+    # speed: float = 1
     energy: float = 1 # [1, 2]: indicates glow intensity
+    ship_len = 0.4
 
     def _init_vertices(self):
         self._vertices = [
@@ -91,11 +89,12 @@ class Ship(Element):
             *(0 , 0.4, 0.0),
         ]
 
+    @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.controller = ShipController()
-        self._last_shot_time = 0
-        self._projectiles = []
+        self._last_shot_time = time.time()
+        self._projectiles: list[Element] = []
 
     def _physic_update(self):
         self.shoot()
@@ -113,18 +112,27 @@ class Ship(Element):
             # if proj.is_out_of_bounds():
             #     projs_to_remove.append(proj)
 
-        for proj in projs_to_remove:
-            self._projectiles.remove(proj)
+        # for proj in projs_to_remove:
+        #     self._projectiles.remove(proj)
 
         return super().render()
 
     def shoot(self):
-        if time.time() - self._last_shot_time < 0.3:
-            return
-        else:
-            self._last_shot_time = time.time()
+        curr_time = time.time()
 
-        print("Shooting")
-        
+        if (curr_time - self._last_shot_time) < 2:
+            return
+
+        if not keyboard.is_pressed('space'):
+            return
+
+        self._last_shot_time = curr_time
+
         proj = Projectile.create_from(self)
+        # other = Ship((self.x, self.y, self.z))
+        # other.controller.disable()
+        # other.controller.input_movement = 0.035
+        # other.angle = self.angle
+        # other._last_shot_time = 10000000000000000000000000
+
         self._projectiles.append(proj)
