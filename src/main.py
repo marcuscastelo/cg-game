@@ -37,7 +37,7 @@ def glfw_thread():
     ship1 = Ship((-0.5, -0.5, 0))
     ship2 = Ship((0.5, 0.5, 0))
 
-    ship1.register_keyboard_controls()
+    ship1.controller.enable() 
 
     # mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
 

@@ -20,6 +20,51 @@ class ShipController:
     """
     input_movement: float = 0
     input_rotation: float = 0
+    enabled = False
+    keybinds = {
+        "forward": "w",
+        "backward": "s",
+        "left": "a",
+        "right": "d",
+    }
+
+    def enable(self):
+        self.enabled = True
+    def disable(self):
+        self.enabled = False
+
+    def process_input(self):
+        if not self.enabled:
+            return
+            
+        TRANSLATION_STEP = 0.04
+        ROTATION_STEP = 2*math.pi/360 * 5
+        forward = self.keybinds["forward"]
+        backward = self.keybinds["backward"]
+        left = self.keybinds["left"]
+        right = self.keybinds["right"]
+
+        if keyboard.is_pressed('shift'):
+            TRANSLATION_STEP *= 2
+            ROTATION_STEP *= 2
+        elif keyboard.is_pressed('ctrl'):
+            TRANSLATION_STEP *= 0.5
+            ROTATION_STEP *= 0.5
+
+        if keyboard.is_pressed(forward):
+            self.input_movement = TRANSLATION_STEP
+        elif keyboard.is_pressed(backward):
+            self.input_movement = -TRANSLATION_STEP
+        else:
+            self.input_movement = 0
+
+        if keyboard.is_pressed(left):
+            self.input_rotation = ROTATION_STEP
+        elif keyboard.is_pressed(right):
+            self.input_rotation = -ROTATION_STEP
+        else:
+            self.input_rotation = 0
+
 
 @dataclass(init=False)
 class Ship:
@@ -76,30 +121,6 @@ class Ship:
         self.angle += angle
         self.mvp_manager.rotation_angle = self.angle # TODO: support 3D rotation
 
-    def _process_input(self):
-        TRANSLATION_STEP = 0.04
-        ROTATION_STEP = 2*math.pi/360 * 5
-
-        if keyboard.is_pressed('shift'):
-            TRANSLATION_STEP *= 2
-            ROTATION_STEP *= 2
-        elif keyboard.is_pressed('ctrl'):
-            TRANSLATION_STEP *= 0.5
-            ROTATION_STEP *= 0.5
-
-        if keyboard.is_pressed('w'):
-            self.controller.input_movement = TRANSLATION_STEP
-        elif keyboard.is_pressed('s'):
-            self.controller.input_movement = -TRANSLATION_STEP
-        else:
-            self.controller.input_movement = 0
-
-        if keyboard.is_pressed('q'):
-            self.controller.input_rotation = ROTATION_STEP
-        elif keyboard.is_pressed('e'):
-            self.controller.input_rotation = -ROTATION_STEP
-        else:
-            self.controller.input_rotation = 0
 
     def _physic_update(self):
         if self.controller.input_movement != 0:
@@ -108,7 +129,7 @@ class Ship:
             self.rotate(self.controller.input_rotation)
 
     def render(self):
-        self._process_input()
+        self.controller.process_input()
         
         # TODO: process physics 1/50th of a second
         self._physic_update()
