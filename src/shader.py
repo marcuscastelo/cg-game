@@ -1,4 +1,5 @@
 from OpenGL import GL as gl
+import numpy as np
 
 class Shader:
     def __init__(self, vert_path: str, frag_path: str):
@@ -7,7 +8,7 @@ class Shader:
         self.program = None
         self._compile()
         self._link()
-
+    
     def _compile(self):
         with open(self.vert_path, 'r') as f:
             vert_source = f.read()
@@ -37,8 +38,6 @@ class Shader:
             print(f'Uniform {name} not found')
 
 
-    def set_uniform_matrix(self, name: str, value):
-        if name in self.uniforms:
-            gl.glUniformMatrix4fv(self.uniforms[name], 1, gl.GL_FALSE, value)
-        else:
-            print(f'Uniform {name} not found')
+    def set_uniform_matrix(self, name: str, value: np.ndarray):
+        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        gl.glUniformMatrix4fv(uniform_loc, 1, gl.GL_FALSE, value)

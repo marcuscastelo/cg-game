@@ -19,6 +19,7 @@ from gui import AppGui
 import numpy as np
 
 import keyboard
+from objects.ship import Ship
 
 from shader import Shader
 
@@ -33,73 +34,45 @@ def create_window():
 def glfw_thread():
     window = create_window()
 
-    test_shader = Shader("shaders/vertex_shader.vert", "shaders/fragment_shader.frag")
-    
+    ship1 = Ship((-0.5, -0.5, 0))
+    ship2 = Ship((0.5, 0.5, 0))
 
-    vao = gl.glGenVertexArrays(1)
-    vbo = gl.glGenBuffers(1)
+    # mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
 
-    gl.glBindVertexArray(vao)
-    gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
+    # # Use a FBO instead of the default framebuffer
+    # fbo = gl.glGenFramebuffers(1)
+    # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
 
-    vertices = [
-        0.0,  0.866025403784-0.5+0.183012701892, 0.0,
-        0.5, -0.5+0.183012701892, 0.0,
-        -0.5, -0.5+0.183012701892, 0.0
-    ]
+    # # Create a texture to render to
+    # texture = gl.glGenTextures(1)
+    # gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
+    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
 
-    # Set the vertex buffer data
-    gl.glBufferData(gl.GL_ARRAY_BUFFER, len(vertices)*4, (gl.GLfloat * len(vertices))(*vertices), gl.GL_STATIC_DRAW)
+    # # Attach the texture to the FBO
+    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, texture, 0)
 
-    gl.glEnableVertexAttribArray(0)
-    gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-    gl.glEnableVertexAttribArray(1)
-    gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-    test_shader.use()
-    
-    mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
-
-    # Use a FBO instead of the default framebuffer
-    fbo = gl.glGenFramebuffers(1)
-    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
-
-    # Create a texture to render to
-    texture = gl.glGenTextures(1)
-    gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
-    gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
-    gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
-
-    # Attach the texture to the FBO
-    gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, texture, 0)
-
-    STATE.texture = texture
+    # STATE.texture = texture
 
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
         def render():
-            gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp_manager.mvp)
+            # gl.glUniformMatrix4fv(mvp_loc, 1, gl.GL_FALSE, STATE.mvp_manager.mvp)
 
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(1.0, 1.0, 1.0, 1.0)
 
-            gl.glBindVertexArray(vao)
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, vbo)
+            ship1.render()
+            ship2.render()
 
-            # Draw the triangle
-            gl.glColor3f(1.0, 1.0, 0.0)
-            gl.glDrawArrays(gl.GL_TRIANGLES, 0, len(vertices))
+        # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+        # render()
 
-
-        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
-        render()
-
-        gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
+        # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         render()
 
         glfw.swap_buffers(glfw.get_current_context())
