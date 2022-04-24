@@ -1,21 +1,30 @@
-from dataclasses import dataclass, field
 import math
-from mimetypes import init
 import time
-from typing import Callable
+from turtle import width
+from typing import TYPE_CHECKING, Callable
+from math import cos, sin
+from glm import clamp
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Vec2, Vec3
+from utils.geometry import Rect, Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from app_state import MVPManager
 
 from shader import Shader
 
 from transformation_matrix import Transform
 
+if TYPE_CHECKING:
+    from world import World
+
 class Element:
-    def __init__(self, initial_transform: Transform = None):
+    def __init__(self, world: 'World', initial_transform: Transform = None):
+        self.world = world
+        world.add_element(self)
+
+        self.transform = initial_transform if initial_transform is not None else Transform()
+        assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
+        
         self._last_physics_update = 0 # Used for physics updates
         self.__destroyed = False
         self.speed = 0.5
@@ -25,8 +34,6 @@ class Element:
         self._vertices = []
         self._init_vertices()
 
-        self.transform = initial_transform if initial_transform is not None else Transform()
-        assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
 
         self.vao = gl.glGenVertexArrays(1)
         self.vbo = gl.glGenBuffers(1)
@@ -63,32 +70,48 @@ class Element:
 
     # Create a bounding box
     @staticmethod
-    def get_bounding_box(elem: 'Element'):
-        xs = elem._vertices[::3]
-        ys = elem._vertices[1::3]
-        zs = elem._vertices[2::3]
-        hs = [0] * len(xs)
+    def get_bounding_box(elem: 'Element') -> Rect2:
+        min_x = min(elem._vertices[::3])
+        min_y = min(elem._vertices[1::3])
+        max_x = max(elem._vertices[::3])
+        max_y = max(elem._vertices[1::3])
 
-        vertices = np.array(list(zip(xs, ys, zs, hs)), dtype=np.float32)
-        # Each row is a vertex (x, y, z, h)
-        # h is the harmonic variable (used for nothing)
-        # We need to scale, translate and rotate the vertices
-        # to get the bounding box
+        horiz_size = max_x - min_x
+        vert_size = max_y - min_y
 
-        transformed_vertices = vertices
-        # transformed_vertices = np.matmul(elem.mvp_manager.mvp, vertices.T)
+        start = Vec2(min_x, min_y)
+        end = Vec2(max_x, max_y)
 
-        min_x = min(transformed_vertices, key=lambda v: v[0])[0]
-        min_y = min(transformed_vertices, key=lambda v: v[1])[1]
-        max_x = max(transformed_vertices, key=lambda v: v[0])[0]
-        max_y = max(transformed_vertices, key=lambda v: v[1])[1]
+        return Rect2(start, end) * elem.transform.scale.xy + elem.transform.translation.xy
 
-        min_x += elem.x
-        min_y += elem.y
-        max_x += elem.x
-        max_y += elem.y
+        
+        
 
-        return (min_x, min_y, max_x, max_y)
+        # gl_vertices = np.array(elem._vertices) # [ x, y, z, x, y, z, ... ]
+        # # LOGGER.log_debug(f'gl_vertices: {gl_vertices}')
+
+
+        # tupled_vertices = np.array(gl_vertices).reshape((-1, 3)) # [ [x, y, z], [x, y, z], ... ]
+        # # LOGGER.log_debug(f'tupled_vertices: {tupled_vertices}')
+        
+        # # Add the homogeneous coordinate (4th) dimension
+        # tupled_vertices = np.insert(tupled_vertices, 3, 0, axis=1)
+        # # LOGGER.log_debug(f'tupled_vertices: {tupled_vertices}')
+
+        # transformed_vertices = tupled_vertices @ elem.transform.model_matrix.T # [ [x, y, z], [x, y, z], ... ]
+        # # LOGGER.log_debug(f'transformed_vertices: {transformed_vertices}')
+
+        # transformed_vertices = transformed_vertices.reshape((-1, 2)) # [ [x, y], [x, y], ... ]
+        # LOGGER.log_debug(f'transformed_vertices: {transformed_vertices}')
+
+        # min_x = transformed_vertices[:, 0].min()
+        # min_y = transformed_vertices[:, 1].min()
+        # max_x = transformed_vertices[:, 0].max()
+        # max_y = transformed_vertices[:, 1].max()
+
+        # LOGGER.log_debug(f'Bounding box: {(min_x, min_y, max_x, max_y)}')
+
+        # return Rect.from_bbox((min_x, min_y, max_x, max_y))
 
     def collides_with(self, other: 'Element') -> bool:
         # Based on vertices (compare with other.vertices)
@@ -119,10 +142,21 @@ class Element:
         #             return True
         return True
 
-    def move(self, intensity: float):
+    def move(self, intensity: float = 1.0):
+        old_pos = self.transform.translation.xyz
+
         dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
+
+        min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
+        if min_x < -1.05 or max_x > 1.05:
+            LOGGER.log_debug(f"{self} moved out of horizontal bounds, reverting")
+            # self.transform.translation.x = clamp(old_pos.x, -1.05, 1.05)
+        if min_y < -1.05 or max_y > 1.05:
+            LOGGER.log_debug(f"{self} moved out of vertical bounds, reverting")
+            # self.transform.translation.y = clamp(old_pos.y, -1.05, 1.05)
+
 
     def rotate(self, angle: float):
         # Rotate over Z axis (2D)
@@ -147,7 +181,6 @@ class Element:
     @property # No setter, because it's a read-only property (2D only)
     def z(self):
         return self.transform.translation.z
-
 
     @property
     def angle(self):

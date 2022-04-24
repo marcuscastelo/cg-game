@@ -14,11 +14,10 @@ from objects.projectile import Projectile
 from shader import Shader
 import keyboard
 
-from world import WORLD
-
 BASE_SIZE = 1/16 * (1 - (-1))
 
-SHOOTING_COOLDOWN = 0.5
+# SHOOTING_COOLDOWN = 0.5
+SHOOTING_COOLDOWN = 0.1
 
 @dataclass
 class ShipController:
@@ -82,15 +81,15 @@ class Ship(Element):
 
     def _init_vertices(self):
         self._vertices = [
-            *(-0.1, 0.0, 0.0),
-            *(0.1, 0.0, 0.0),
-            *(-0.1, 0.2, 0.0),
-            *(0.1, 0.0, 0.0),
-            *(0.1, 0.2, 0.0),
-            *(-0.1, 0.2, 0.0),
-            *(-0.1, 0.2, 0.0),
-            *(0.1, 0.2, 0.0),
-            *(0 , 0.4, 0.0),
+            *(-0.1, -0.1, 0.0),
+            *(0.1, -0.1, 0.0),
+            *(-0.1, 0.1, 0.0),
+            *(0.1, -0.1, 0.0),
+            *(0.1, 0.1, 0.0),
+            *(-0.1, 0.1, 0.0),
+            *(-0.1, 0.1, 0.0),
+            *(0.1, 0.1, 0.0),
+            *(0 , 0.3, 0.0),
         ]
 
     @metsig(Element.__init__)
@@ -120,4 +119,3 @@ class Ship(Element):
         self._last_shot_time = curr_time
 
         proj = Projectile.create_from(self)
-        WORLD.elements.append(proj)

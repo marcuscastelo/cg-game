@@ -6,7 +6,7 @@ from utils.sig import metsig
 from utils.logger import LOGGER
 
 import numpy as np
-from app_state import STATE
+from app_state import APP_VARS
 
 class MainWindow(gui.Window):
     @metsig(gui.Window.__init__)
@@ -48,7 +48,7 @@ class MainWindow(gui.Window):
     def _update_mvp(self):
         mvp = np.matmul(self.scale_mat, self.rotation_mat) 
         mvp = np.matmul(mvp, self.translation_mat)
-        STATE.mvp_manager = mvp
+        APP_VARS.mvp_manager = mvp
 
     def describe(self):
         with self:
@@ -65,11 +65,11 @@ class AppGui(gui.Gui):
 
     def _before_exit(self):
         LOGGER.log_info("Gui is closing", 'AppGui')
-        STATE.closing = True
+        APP_VARS.closing = True
         super()._before_exit()
 
     def _tick(self):
-        if STATE.closing:
+        if APP_VARS.closing:
             self._running = False
 
         return super()._tick() 

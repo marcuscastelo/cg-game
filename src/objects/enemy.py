@@ -5,6 +5,12 @@ from objects.element import Element
 from objects.projectile import Projectile
 
 class Enemy(Element):
+    @metsig(Element.__init__)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.dying = False
+        pass
+
     def _init_vertices(self):
         self._vertices = [
             *(-0.1, 0.6-0.5, 0.0),
@@ -17,10 +23,9 @@ class Enemy(Element):
         ]
     
     def _physics_update(self):
-        from world import WORLD
         min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
         # print(f'Enemy(id={id(self)}) bbox: {min_x}, {min_y}, {max_x}, {max_y}; x={self.x}, y={self.y}')
-        projectiles = ( element for element in WORLD.elements if isinstance(element, Projectile) )
+        projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 
         for projectile in projectiles:
             # print('Projectile:', projectile)
@@ -34,7 +39,22 @@ class Enemy(Element):
                 continue
 
             LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
-            self.destroy()
+            self.die()
             projectile.destroy()
 
         pass
+
+    def _render(self):
+        if self.dying:
+            self.transform.scale *= 0.9
+            if self.transform.scale.x < 0.1:
+                self.destroy()
+                return
+
+        return super()._render()
+
+    def die(self):
+        self.dying = True
+
+    def destroy(self):
+        return super().destroy()
