@@ -16,8 +16,7 @@ import keyboard
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
-# SHOOTING_COOLDOWN = 0.5
-SHOOTING_COOLDOWN = 0.1
+SHOOTING_COOLDOWN = 0.2
 
 @dataclass
 class ShipController:
@@ -98,7 +97,7 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-    def _physics_update(self):
+    def _physics_update(self, delta_time: float):
         self.shoot()
 
         self.controller.process_input()

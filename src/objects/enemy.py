@@ -22,7 +22,7 @@ class Enemy(Element):
             *(-0.1, 0.6-0.5, 0.0),
         ]
     
-    def _physics_update(self):
+    def _physics_update(self, deltat_time: float):
         min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
         # print(f'Enemy(id={id(self)}) bbox: {min_x}, {min_y}, {max_x}, {max_y}; x={self.x}, y={self.y}')
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )

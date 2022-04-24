@@ -25,7 +25,7 @@ class Element:
         self.transform = initial_transform if initial_transform is not None else Transform()
         assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
         
-        self._last_physics_update = 0 # Used for physics updates
+        self._last_physics_update = time.time() # Used for physics updates
         self.__destroyed = False
         self.speed = 0.5
 
@@ -190,7 +190,7 @@ class Element:
     def angle(self, value: float):
         self.transform.rotation.z = value
 
-    def _physics_update(self):
+    def _physics_update(self, delta_time: float):
         raise NotImplementedError("Abstract method, please implement in subclass")
 
     def update(self):
@@ -198,8 +198,8 @@ class Element:
             LOGGER.log_warning(f'Trying to update destroyed element {self}')
             return
 
-        if time.time() - self._last_physics_update > 1/50:
-            self._physics_update()
+        if (delta_time := time.time() - self._last_physics_update) > 1/50:
+            self._physics_update(delta_time)
             self._last_physics_update = time.time()
 
         self._render()
