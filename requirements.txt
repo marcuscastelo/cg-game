@@ -2,4 +2,8 @@ dearpygui==1.5.0
 glfw==2.5.3
 keyboard==0.13.5
 numpy==1.22.3
+PyGLM==2.5.7
+pyglm-typing==0.2.1
 PyOpenGL==3.1.6
+termcolor==1.1.0
+typing-extensions==4.2.0
