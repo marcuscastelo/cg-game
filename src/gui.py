@@ -72,8 +72,4 @@ class AppGui(gui.Gui):
         if STATE.closing:
             self._running = False
 
-        # opengl_texture_id = STATE.texture
-        # if opengl_texture_id != 0:
-        #     dpg.draw_image(opengl_texture_id, 'mytex', [0,0], [100,100])
-
         return super()._tick() 

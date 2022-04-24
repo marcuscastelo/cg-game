@@ -12,7 +12,7 @@ from OpenGL import GL as gl
 if TYPE_CHECKING:
     from objects.ship import Ship
 
-PROJECTILE_WIDTH = 0.05
+PROJECTILE_WIDTH = 0.5
 
 @dataclass
 class Projectile(Element):

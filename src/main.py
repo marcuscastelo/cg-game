@@ -1,16 +1,14 @@
 from cgi import test
 from dataclasses import dataclass
-import math
 from threading import Thread
-from typing import Callable
 
 import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
+from utils.geometry import Vec2, Vec3, VecN
 
 from utils.logger import LOGGER
-from utils.geometry import Vec2Int
 
 from constants import WINDOW_SIZE
 from app_state import STATE
@@ -18,12 +16,9 @@ from gui import AppGui
 
 import numpy as np
 
-import keyboard
 from objects.enemy import Enemy
-from objects.projectile import Projectile
 from objects.ship import Ship
 
-from shader import Shader
 from world import WORLD
 
 def create_window():
@@ -52,27 +47,6 @@ def glfw_thread():
     for enemy in enemies:
         WORLD.add_element(enemy)
 
-    
-    # mvp_loc = gl.glGetUniformLocation(test_shader.program, "mvp")
-
-    # # Use a FBO instead of the default framebuffer
-    # fbo = gl.glGenFramebuffers(1)
-    # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
-
-    # # Create a texture to render to
-    # texture = gl.glGenTextures(1)
-    # gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
-    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, *WINDOW_SIZE, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, None)
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_EDGE)
-    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_EDGE)
-
-    # # Attach the texture to the FBO
-    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, texture, 0)
-
-    # STATE.texture = texture
-
     while not glfw.window_should_close(window) and not STATE.closing:
         glfw.poll_events()
 
@@ -84,10 +58,6 @@ def glfw_thread():
 
             WORLD.update()
 
-        # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
-        # render()
-
-        # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
         render()
 
         glfw.swap_buffers(glfw.get_current_context())
@@ -96,9 +66,18 @@ def glfw_thread():
     STATE.closing = True
 
 
+def _set_signal_handler():
+    # Handle CTRL+C (SIGINT) signal
+    def signal_handler(signal, frame):
+        STATE.closing = True
+
+    import signal
+    signal.signal(signal.SIGINT, signal_handler)
 
 
 def main():
+    _set_signal_handler()
+    
     LOGGER.log_info("Starting app", 'main')
 
     LOGGER.log_trace("Init Glfw", 'main')
@@ -124,3 +103,20 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # assert VecN(1, 2, 3) == VecN(1, 2, 3)
+    # assert VecN(1, 2, 3) != VecN(1, 2, 4)
+    # assert VecN(1, 2, 3) != VecN(1, 2, 3, 4)
+    # assert VecN(1, 2, 3) != VecN(1, 2)
+    # assert VecN(1, 2, 3) == VecN([1, 2, 3])
+    # assert VecN(1, 2, 3) == VecN((1, 2, 3))
+    # assert VecN(1, 2, 3) == VecN(np.array([1, 2, 3]))
+
+    # assert Vec2(1, 2) == Vec2(1, 2)
+    # assert Vec2(1, 2) != Vec2(1, 3)
+    # assert Vec2(1, 2) == VecN(1, 2)
+    
+    # assert Vec2(1, 2) == VecN([1, 2])
+
+    # assert Vec3((1,2,3)) == VecN(1, 2, 3)
+    # assert Vec3(1,2,3) != Vec2(1, 2)
+    # assert Vec3(1,2,3).xy == Vec2(1, 2)
