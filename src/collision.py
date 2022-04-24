@@ -2,8 +2,6 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Callable, Type
 from objects.element import Element
 
-from objects.enemy import Enemy
-
 if TYPE_CHECKING:
     from world import World
 

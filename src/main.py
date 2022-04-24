@@ -18,6 +18,7 @@ import numpy as np
 
 from objects.enemy import Enemy
 from objects.ship import Ship
+from transformation_matrix import Transform
 
 from world import WORLD
 
@@ -46,16 +47,16 @@ def glfw_thread():
     gl.glEnable(gl.GL_BLEND)
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-    main_ship = Ship((0, 0, 0))
+    main_ship = Ship(Transform(Vec3((0, 0, 0))))
     main_ship.controller.enable()
 
     WORLD.add_element(main_ship)
     
     enemies = [
-        Enemy((-0.9,    0.5,    0.0)),
-        Enemy(( 0.0,    0.5,    0.0)),
-        Enemy(( 0.9,    0.5,    0.0)),
-        Enemy(( 0.0,    0.9,    0.0)),
+        Enemy(Transform(Vec3(-0.9,    0.5,    0.0))),
+        Enemy(Transform(Vec3( 0.0,    0.5,    0.0))),
+        Enemy(Transform(Vec3( 0.9,    0.5,    0.0))),
+        Enemy(Transform(Vec3( 0.0,    0.9,    0.0))),
     ]
 
     for enemy in enemies:
@@ -134,3 +135,19 @@ if __name__ == "__main__":
     # assert Vec3((1,2,3)) == VecN(1, 2, 3)
     # assert Vec3(1,2,3) != Vec2(1, 2)
     # assert Vec3(1,2,3).xy == Vec2(1, 2)
+
+    # assert Vec3(1,2,3) != None
+    # assert None != Vec3(1,2,3)
+
+    # v3111 = Vec3(1,1,1)
+    # v3111.xy += Vec2(1,1)
+    # assert v3111 == Vec3(2,2,1)
+
+    # t = Transform()
+    # print(t.model_matrix)
+    
+    # # t.translation.xy += Vec2(1,1)
+    # # print(t.model_matrix)
+
+    # t.translation.x = 100
+    # print(t.model_matrix)

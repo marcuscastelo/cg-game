@@ -22,7 +22,7 @@ class World:
             element.update()
         self._updating_inner = False
         
-        self.elements = [ element for element in self.elements if not element._destroyed ]
+        self.elements = [ element for element in self.elements if not element.destroyed ]
 
 
 WORLD = World()

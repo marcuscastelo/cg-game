@@ -1,4 +1,5 @@
 from numpy import random
+from utils.logger import LOGGER
 from utils.sig import metsig
 from objects.element import Element
 from objects.projectile import Projectile
@@ -23,12 +24,16 @@ class Enemy(Element):
 
         for projectile in projectiles:
             # print('Projectile:', projectile)
+
+            if projectile.is_particle:
+                continue
+            
             if projectile.x < min_x or projectile.x > max_x:
                 continue
             if projectile.y < min_y or projectile.y > max_y:
                 continue
 
-            print("Enemy hit by projectile")
+            LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
             self.destroy()
             projectile.destroy()
 

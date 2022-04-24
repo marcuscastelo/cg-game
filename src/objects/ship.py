@@ -18,6 +18,8 @@ from world import WORLD
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
+SHOOTING_COOLDOWN = 0.5
+
 @dataclass
 class ShipController:
     """
@@ -109,7 +111,7 @@ class Ship(Element):
     def shoot(self):
         curr_time = time.time()
 
-        if (curr_time - self._last_shot_time) < 1.2:
+        if (curr_time - self._last_shot_time) < SHOOTING_COOLDOWN:
             return
 
         if not keyboard.is_pressed('space'):

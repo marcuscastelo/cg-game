@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import math
 from mimetypes import init
 import time
@@ -6,24 +6,27 @@ from typing import Callable
 import numpy as np
 
 from OpenGL import GL as gl
+from utils.geometry import Vec2, Vec3
+from utils.logger import LOGGER
 from app_state import MVPManager
 
 from shader import Shader
-import keyboard
 
-@dataclass
+from transformation_matrix import Transform
+
 class Element:
-    z: float = 0 # TODO: clean up the code (remove z or add to mvp_manager)
-    speed = 0.5
-    _vertices = []
-    _render_primitive = gl.GL_TRIANGLES
-    _destroyed = False
+    def __init__(self, initial_transform: Transform = None):
+        self._last_physics_update = 0 # Used for physics updates
+        self.__destroyed = False
+        self.speed = 0.5
 
-    def __init__(self, initial_coords: tuple[float, float, float] = (0,0,0)):
+        self._render_primitive = gl.GL_TRIANGLES
+
+        self._vertices = []
         self._init_vertices()
-        self._last_physics_update = 0
 
-        x, y, self.z = initial_coords
+        self.transform = initial_transform if initial_transform is not None else Transform()
+        assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
 
         self.vao = gl.glGenVertexArrays(1)
         self.vbo = gl.glGenBuffers(1)
@@ -47,15 +50,16 @@ class Element:
         gl.glBindVertexArray(0) # Unbind the VAO
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
-        self.mvp_manager = MVPManager()
-        self.mvp_manager.translation = (x, y)
+        # self.mvp_manager = MVPManager()
+        # self.mvp_manager.translation = self.transform._translation # TODO: mvp_manager should use Transform class
+
+    def _init_vertices(self):
+        raise NotImplementedError("Abstract method, please implement in subclass")
 
     def __repr__(self) -> str:
         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
 
 
-    def _init_vertices(self):
-        raise NotImplementedError("Abstract method, please implement in subclass")
 
     # Create a bounding box
     @staticmethod
@@ -116,41 +120,51 @@ class Element:
         return True
 
     def move(self, intensity: float):
-        self.x += np.cos(self.angle + math.radians(90)) * intensity * self.speed
-        self.y += np.sin(self.angle + math.radians(90)) * intensity * self.speed
-        self.mvp_manager.translation = (self.x, self.y)
+        dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
+        dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
+        self.transform.translation.xy += Vec2(dx, dy)
 
     def rotate(self, angle: float):
-        self.mvp_manager.rotate(angle) # TODO: support 3D rotation
+        # Rotate over Z axis (2D)
+        self.transform.rotation.z += angle
 
     @property
     def x(self):
-        return self.mvp_manager.translation_x
+        return self.transform.translation.x
     
     @x.setter
     def x(self, value: float):
-        self.mvp_manager.translation_x = value
+        self.transform.translation.x = value
 
     @property
     def y(self):
-        return self.mvp_manager.translation_y
+        return self.transform.translation.y
 
     @y.setter
     def y(self, value: float):
-        self.mvp_manager.translation_y = value
+        self.transform.translation.y = value
+
+    @property # No setter, because it's a read-only property (2D only)
+    def z(self):
+        return self.transform.translation.z
+
 
     @property
     def angle(self):
-        return self.mvp_manager.rotation_angle
+        return self.transform.rotation.z
 
     @angle.setter
     def angle(self, value: float):
-        self.mvp_manager.rotation_angle = value
+        self.transform.rotation.z = value
 
     def _physics_update(self):
         raise NotImplementedError("Abstract method, please implement in subclass")
 
     def update(self):
+        if self.destroyed:
+            LOGGER.log_warning(f'Trying to update destroyed element {self}')
+            return
+
         if time.time() - self._last_physics_update > 1/50:
             self._physics_update()
             self._last_physics_update = time.time()
@@ -164,41 +178,20 @@ class Element:
         self.shader.use()
 
         # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', self.mvp_manager.mvp)
+        self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
 
         # Draw the triangles
-        gl.glColor3f(1.0, 0.0, 0.0)
+        # gl.glColor3f(1.0, 0.0, 0.0)
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
 
-    
-    def register_keyboard_controls(self):
-        # TRANSLATION_STEP = 0.04
-        # ROTATION_STEP = 2*math.pi/360 * 5
-        # SCALE_STEP = 0.2
-
-        # def callback_gen(step: float, callback: Callable[[float], None]):
-        #     # if shift is pressed, the step is increased
-        #     def callback_wrapper(*_args):
-        #         print(f"shift is pressed: {keyboard.is_pressed('shift')}")
-        #         if keyboard.is_pressed('shift'):
-        #             callback(step * 2)
-        #         elif keyboard.is_pressed('ctrl'):
-        #             callback(step / 2)
-        #         else:
-        #             callback(step)
-            
-        #     return callback_wrapper
-
-
-        # keyboard.on_press_key('w', callback_gen(TRANSLATION_STEP, lambda step: self.move(step)))
-        # keyboard.on_press_key('s', callback_gen(TRANSLATION_STEP, lambda step: self.move(-step)))
-        # # keyboard.on_press_key('a', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(-step, 0.0)))
-        # # keyboard.on_press_key('d', callback_gen(TRANSLATION_STEP, lambda step: self.mvp_manager.translate(step, 0.0)))
-        # keyboard.on_press_key('q', callback_gen(ROTATION_STEP, lambda step: self.rotate(step)))
-        # keyboard.on_press_key('e', callback_gen(ROTATION_STEP, lambda step: self.rotate(-step)))
-        # keyboard.on_press_key('z', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(step)))
-        # keyboard.on_press_key('x', callback_gen(SCALE_STEP, lambda step: self.mvp_manager.zoom(-step)))
-        pass
+    @property
+    def destroyed(self):
+        return self.__destroyed
 
     def destroy(self):
-        self._destroyed = True
+        if self.destroyed:
+            raise RuntimeError(f'Trying to destroy already destroyed element {self}')
+            return
+    
+        LOGGER.log_debug(f"{self} marked for destruction")
+        self.__destroyed = True
