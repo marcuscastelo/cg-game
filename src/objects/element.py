@@ -190,7 +190,8 @@ class Element:
 
     def destroy(self):
         if self.destroyed:
-            raise RuntimeError(f'Trying to destroy already destroyed element {self}')
+            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
+            LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
             return
     
         LOGGER.log_debug(f"{self} marked for destruction")
