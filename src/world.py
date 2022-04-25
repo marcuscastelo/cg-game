@@ -5,6 +5,7 @@ from objects.element import Element
 
 import keyboard
 from objects.enemy import Enemy
+from objects.lines import Lines
 
 from objects.ship import Ship
 from transformation_matrix import Transform
@@ -37,10 +38,21 @@ class World:
             Enemy(world, Transform(Vec3( 0.0,    0.9,    0.0))),
         ]
 
-        LOGGER.log_trace(f'Adding {len(enemies)} enemies to scene', 'world:setup_scene')
-        for enemy in enemies:
-            LOGGER.log_trace(f'Adding enemy(id={id(enemy)}) to scene', 'world:setup_scene')
-            self.add_element(enemy)
+        # LOGGER.log_trace(f'Adding {len(enemies)} enemies to scene', 'world:setup_scene')
+        # for enemy in enemies:
+        #     LOGGER.log_trace(f'Adding enemy(id={id(enemy)}) to scene', 'world:setup_scene')
+        #     self.add_element(enemy)
+
+
+        # test_lines = Lines(world, points=[
+        #     Vec3(-0.5, -0.5, 0),
+        #     Vec3(0.5, -0.5, 0),
+        #     Vec3(0.5, 0.5, 0),
+        #     Vec3(-0.5, 0.5, 0),
+        #     Vec3(-0.5, -0.5, 0),
+        # ])
+
+        # self.add_element(test_lines)
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         

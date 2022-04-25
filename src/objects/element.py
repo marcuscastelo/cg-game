@@ -1,10 +1,11 @@
 import math
 import time
+from turtle import Vec2D
 from typing import TYPE_CHECKING
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 
 from shader import Shader
@@ -73,13 +74,18 @@ class Element:
         max_x = max(elem._vertices[::3])
         max_y = max(elem._vertices[1::3])
 
-        horiz_size = max_x - min_x
-        vert_size = max_y - min_y
+        vertices = np.array([
+            [min_x, min_y, 0, 0],
+            [max_x, max_y, 0, 0]
+        ])
 
-        start = Vec2(min_x, min_y)
-        end = Vec2(max_x, max_y)
+        # Transform the vertices
+        vertices = vertices @ elem.transform.model_matrix.T
 
-        return Rect2(start, end) * elem.transform.scale.xy + elem.transform.translation.xy
+        start = Vec2(vertices[0, 0], vertices[0, 1])
+        end = Vec2(vertices[1, 0], vertices[1, 1])
+
+        return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
 
         
         
@@ -139,20 +145,19 @@ class Element:
         #             return True
         return True
 
-    def move(self, intensity: float = 1.0):
-        old_pos = self.transform.translation.xyz
+    def _on_outside_screen(self, screen_rect: Rect2):
+        self.destroy()
 
+    def move(self, intensity: float = 1.0):
         dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
 
-        min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
-        if min_x < -1.05 or max_x > 1.05:
-            LOGGER.log_debug(f"{self} moved out of horizontal bounds, reverting")
-            # self.transform.translation.x = clamp(old_pos.x, -1.05, 1.05)
-        if min_y < -1.05 or max_y > 1.05:
-            LOGGER.log_debug(f"{self} moved out of vertical bounds, reverting")
-            # self.transform.translation.y = clamp(old_pos.y, -1.05, 1.05)
+        self_rect = Element.get_bounding_box(self)
+        screen_rect = Rect2(-1, -1, 1, 1).expanded(1)
+
+        if not screen_rect.intersects(self_rect):
+            self._on_outside_screen(screen_rect)
 
 
     def rotate(self, angle: float):

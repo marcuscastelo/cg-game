@@ -22,8 +22,12 @@ def create_window():
     glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
     glfw.window_hint(glfw.RESIZABLE, gl.GL_FALSE)
 
+
     LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
+
+    LOGGER.log_trace("Enabling VSync", 'create_window')
+    glfw.swap_interval(1)
 
     glfw.make_context_current(window)
     glfw.show_window(window)
