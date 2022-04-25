@@ -1,13 +1,10 @@
 import math
 import time
-from turtle import width
-from typing import TYPE_CHECKING, Callable
-from math import cos, sin
-from glm import clamp
+from typing import TYPE_CHECKING
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect, Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec2
 from utils.logger import LOGGER
 
 from shader import Shader
@@ -214,7 +211,6 @@ class Element:
         self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
 
         # Draw the triangles
-        # gl.glColor3f(1.0, 0.0, 0.0)
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
 
     @property

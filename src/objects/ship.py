@@ -7,6 +7,7 @@ from glm import clamp
 import numpy as np
 
 from OpenGL import GL as gl
+from utils.geometry import Vec3
 from utils.sig import metsig
 from app_state import MVPManager
 from objects.element import Element
@@ -30,12 +31,15 @@ class ShipController:
     """
     input_movement: float = 0
     input_rotation: float = 0
+    input_squeeze: float = 1
+
     enabled = False
     keybinds = {
         "forward": "w",
         "backward": "s",
         "left": "a",
         "right": "d",
+        "squeeze": "x",
     }
 
     def enable(self):
@@ -52,6 +56,7 @@ class ShipController:
         backward = self.keybinds["backward"]
         left = self.keybinds["left"]
         right = self.keybinds["right"]
+        squeeze = self.keybinds["squeeze"]
 
         if keyboard.is_pressed('shift'):
             trans_multiplier *= 2
@@ -74,6 +79,10 @@ class ShipController:
         else:
             self.input_rotation = 0
 
+        if keyboard.is_pressed(squeeze):
+            self.input_squeeze = 1.0
+        else:
+            self.input_squeeze = 0.0
 
 @dataclass(init=False)
 class Ship(Element):
@@ -125,6 +134,26 @@ class Ship(Element):
         else:
             self._rotation_intensity = 0
             pass
+
+        SHRINK_RATE = 5
+        REGROWTH_RATE = SHRINK_RATE
+
+        if self.controller.input_squeeze != 0:
+            MIN_SCALE = 0.8
+
+            t = self.transform
+            t.scale *= (1 - self.controller.input_squeeze*(1-MIN_SCALE) * SHRINK_RATE * delta_time)
+
+
+            if t.scale.x < MIN_SCALE:
+                t.scale = Vec3(MIN_SCALE, MIN_SCALE, MIN_SCALE)
+        else:
+            t = self.transform
+            t.scale *= (1 + REGROWTH_RATE * delta_time)
+            if t.scale.x > 1:
+                t.scale = Vec3(1, 1, 1)
+
+
 
     def shoot(self):
         curr_time = time.time()
