@@ -12,28 +12,36 @@ from app_state import APP_VARS, OpenGLScene
 from gui import AppGui
 
 def create_window():
+    LOGGER.log_trace("Initializing GLFW", 'create_window')
     glfw.init()
 
+    LOGGER.log_trace("Setting window hints", 'create_window')
     glfw.window_hint(glfw.CONTEXT_VERSION_MAJOR, 3)
     glfw.window_hint(glfw.CONTEXT_VERSION_MINOR, 3)
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     glfw.window_hint(glfw.OPENGL_FORWARD_COMPAT, gl.GL_TRUE)
     glfw.window_hint(glfw.RESIZABLE, gl.GL_FALSE)
 
+    LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
 
     glfw.make_context_current(window)
     glfw.show_window(window)
+
+    LOGGER.log_info("Window created", 'create_window')
     return window
 
 def glfw_thread():
+    LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
 
     # Enable depth test
+    LOGGER.log_trace("Enabling depth test", 'glfw_thread')
     gl.glEnable(gl.GL_DEPTH_TEST)
     gl.glDepthFunc(gl.GL_LESS)
     
     # Enable blending
+    LOGGER.log_trace("Enabling blending", 'glfw_thread')
     gl.glEnable(gl.GL_BLEND)
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
@@ -73,6 +81,8 @@ def glfw_thread():
 
     gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
 
+
+    LOGGER.log_info("Preparing world", 'glfw_thread')
     world = APP_VARS.world
 
     world.setup_scene() # Places the ship in the world and creates the enemies
@@ -106,7 +116,7 @@ def _set_signal_handler():
 
 
 def main():
-    _set_signal_handler()
+    _set_signal_handler() # Handle CTRL+C (SIGINT) signal to close the app (2 threads)
     
     LOGGER.log_info("Starting app", 'main')
 
@@ -114,11 +124,11 @@ def main():
     glfw.init()
     
     LOGGER.log_trace("Init GUI", 'main')
-    gui = AppGui()
+    gui = AppGui() # GUI thread (main thread)
 
     LOGGER.log_trace("Start GLFW thread", 'main')
     t = Thread(target=glfw_thread)
-    t.start()
+    t.start() # GLFW thread (2nd thread)
 
     # LOGGER.log_trace("Start GUI", 'main')
     # gui.run()
