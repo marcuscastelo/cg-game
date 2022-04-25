@@ -8,7 +8,7 @@ from threading import Thread
 from utils.logger import LOGGER
 
 from constants import WINDOW_SIZE
-from app_state import APP_VARS
+from app_state import APP_VARS, OpenGLScene
 from gui import AppGui
 
 def create_window():
@@ -36,6 +36,42 @@ def glfw_thread():
     # Enable blending
     gl.glEnable(gl.GL_BLEND)
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+
+    # fbo = gl.glGenFramebuffers(1)
+    # gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, fbo)
+
+
+    # # Color attachment
+    # texture = gl.glGenTextures(gl.GL_TEXTURE_2D, 1)
+    # gl.glBindTexture(gl.GL_TEXTURE_2D, texture)
+
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+    # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+    # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGBA8, *WINDOW_SIZE, 0, gl.GL_RGBA8, gl.GL_UNSIGNED_BYTE, None)
+
+    # gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
+
+    # APP_VARS.scene = OpenGLScene(fbo, texture)
+    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_COLOR_ATTACHMENT0, gl.GL_TEXTURE_2D, APP_VARS.scene.texture, 0)
+
+    # # Depth attachment
+    # depth_texture = gl.glGenTextures(1)
+    # gl.glBindTexture(gl.GL_TEXTURE_2D, depth_texture)
+    # gl.glTextureStorage2D(depth_texture, 0, gl.GL_DEPTH24_STENCIL8, *WINDOW_SIZE)
+    # gl.glFramebufferTexture2D(gl.GL_FRAMEBUFFER, gl.GL_DEPTH_STENCIL_ATTACHMENT, gl.GL_TEXTURE_2D, depth_texture, 0)
+
+
+    # # TODO: try to reorder (first color, then depth and then generate framebuffer, etc. see https://docs.gl/gl4/glGenFramebuffers)
+
+    # Check if framebuffer is complete
+    status = gl.glCheckFramebufferStatus(gl.GL_FRAMEBUFFER)
+    if status != gl.GL_FRAMEBUFFER_COMPLETE:
+        LOGGER.log_error("Framebuffer is not complete", 'glfw_thread')
+        glfw.terminate()
+        return
+
+    gl.glBindFramebuffer(gl.GL_FRAMEBUFFER, 0)
 
     world = APP_VARS.world
 

@@ -3,6 +3,7 @@ import math
 from mimetypes import init
 import time
 from typing import Callable
+from glm import clamp
 import numpy as np
 
 from OpenGL import GL as gl
@@ -17,6 +18,9 @@ import keyboard
 BASE_SIZE = 1/16 * (1 - (-1))
 
 SHOOTING_COOLDOWN = 0.2
+
+TRANSLATION_STEP = 0.04
+ROTATION_STEP = 2*math.pi/360 * 5
 
 @dataclass
 class ShipController:
@@ -40,34 +44,33 @@ class ShipController:
         self.enabled = False
 
     def process_input(self):
+        trans_multiplier = 1
+        rot_multiplier = 1
         if not self.enabled:
             return
-
-        TRANSLATION_STEP = 0.04
-        ROTATION_STEP = 2*math.pi/360 * 5
         forward = self.keybinds["forward"]
         backward = self.keybinds["backward"]
         left = self.keybinds["left"]
         right = self.keybinds["right"]
 
         if keyboard.is_pressed('shift'):
-            TRANSLATION_STEP *= 2
-            ROTATION_STEP *= 2
+            trans_multiplier *= 2
+            rot_multiplier *= 2
         elif keyboard.is_pressed('ctrl'):
-            TRANSLATION_STEP *= 0.5
-            ROTATION_STEP *= 0.5
+            trans_multiplier *= 0.5
+            rot_multiplier *= 0.5
 
         if keyboard.is_pressed(forward):
-            self.input_movement = TRANSLATION_STEP
+            self.input_movement = trans_multiplier * TRANSLATION_STEP
         elif keyboard.is_pressed(backward):
-            self.input_movement = -TRANSLATION_STEP
+            self.input_movement = -trans_multiplier * TRANSLATION_STEP
         else:
             self.input_movement = 0
 
         if keyboard.is_pressed(left):
-            self.input_rotation = ROTATION_STEP
+            self.input_rotation = rot_multiplier * ROTATION_STEP
         elif keyboard.is_pressed(right):
-            self.input_rotation = -ROTATION_STEP
+            self.input_rotation = -rot_multiplier * ROTATION_STEP
         else:
             self.input_rotation = 0
 
@@ -77,6 +80,7 @@ class Ship(Element):
     # speed: float = 1
     energy: float = 1 # [1, 2]: indicates glow intensity
     ship_len = 0.4
+    _rotation_intensity = 0
 
     def _init_vertices(self):
         self._vertices = [
@@ -104,7 +108,23 @@ class Ship(Element):
         if self.controller.input_movement != 0:
             self.move(self.controller.input_movement)
         if self.controller.input_rotation != 0:
-            self.rotate(self.controller.input_rotation)
+            ROT_ACCEL = 3.5
+            print(f'rotation: {self.controller.input_rotation}, intensity: {self._rotation_intensity}')
+
+            if self._rotation_intensity * self.controller.input_rotation < 0:
+                self._rotation_intensity = 0 # Turning direction changed
+
+            self._rotation_intensity += self.controller.input_rotation * delta_time * ROT_ACCEL
+
+            inp_abs = abs(self.controller.input_rotation)
+            min_rot = -inp_abs
+            max_rot = inp_abs
+            self._rotation_intensity = clamp(self._rotation_intensity, min_rot, max_rot)
+
+            self.rotate(self._rotation_intensity)
+        else:
+            self._rotation_intensity = 0
+            pass
 
     def shoot(self):
         curr_time = time.time()
