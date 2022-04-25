@@ -10,6 +10,7 @@ from utils.logger import LOGGER
 from constants import WINDOW_SIZE
 from app_state import APP_VARS, OpenGLScene
 from gui import AppGui
+from input.input_system import INPUT_SYSTEM as IS, set_glfw_callbacks
 
 def create_window():
     LOGGER.log_trace("Initializing GLFW", 'create_window')
@@ -38,6 +39,8 @@ def create_window():
 def glfw_thread():
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
+
+    set_glfw_callbacks(window)
 
     # Enable depth test
     LOGGER.log_trace("Enabling depth test", 'glfw_thread')

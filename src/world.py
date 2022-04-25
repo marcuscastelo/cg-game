@@ -3,12 +3,13 @@ from utils.logger import LOGGER
 from collision import CollisionSystem
 from objects.element import Element
 
-import keyboard
 from objects.enemy import Enemy
 from objects.lines import Lines
 
 from objects.ship import Ship
 from transformation_matrix import Transform
+
+from input.input_system import INPUT_SYSTEM as IS
 
 class World:
     def __init__(self):
@@ -73,7 +74,7 @@ class World:
         
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
-        if keyboard.is_pressed('r'):
+        if IS.is_pressed('r'):
             self.setup_scene()
 
 WORLD = World()

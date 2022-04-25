@@ -15,8 +15,7 @@ from objects.element import Element
 from objects.lines import Lines
 from objects.projectile import Projectile
 
-from shader import Shader
-import keyboard
+from input.input_system import INPUT_SYSTEM as IS
 
 from transformation_matrix import Transform
 SCREEN_RECT = Rect2(-1, -1, 1, 1)
@@ -63,28 +62,28 @@ class ShipController:
         right = self.keybinds["right"]
         squeeze = self.keybinds["squeeze"]
 
-        if keyboard.is_pressed('shift'):
+        if IS.is_pressed('shift'):
             trans_multiplier *= 2
             rot_multiplier *= 2
-        elif keyboard.is_pressed('ctrl'):
+        elif IS.is_pressed('ctrl'):
             trans_multiplier *= 0.5
             rot_multiplier *= 0.5
 
-        if keyboard.is_pressed(forward):
+        if IS.is_pressed(forward):
             self.input_movement = trans_multiplier * TRANSLATION_STEP
-        elif keyboard.is_pressed(backward):
+        elif IS.is_pressed(backward):
             self.input_movement = -trans_multiplier * TRANSLATION_STEP
         else:
             self.input_movement = 0
 
-        if keyboard.is_pressed(left):
+        if IS.is_pressed(left):
             self.input_rotation = rot_multiplier * ROTATION_STEP
-        elif keyboard.is_pressed(right):
+        elif IS.is_pressed(right):
             self.input_rotation = -rot_multiplier * ROTATION_STEP
         else:
             self.input_rotation = 0
 
-        if keyboard.is_pressed(squeeze):
+        if IS.is_pressed(squeeze):
             self.input_squeeze = 1.0
         else:
             self.input_squeeze = 0.0
@@ -199,7 +198,7 @@ class Ship(Element):
         if (curr_time - self._last_shot_time) < SHOOTING_COOLDOWN:
             return
 
-        if not keyboard.is_pressed('space'):
+        if not IS.is_pressed('space'):
             return
 
         self._last_shot_time = curr_time

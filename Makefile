@@ -19,4 +19,4 @@ save-deps:
 	./save_deps.sh
 
 run: requirements.txt
-	sudo python src/main.py
+	python src/main.py
