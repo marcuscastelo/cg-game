@@ -1,3 +1,5 @@
+from glm import clamp
+from utils.geometry import Vec2
 from utils.logger import LOGGER
 from utils.sig import metsig
 from objects.element import Element
@@ -5,10 +7,15 @@ from objects.projectile import Projectile
 
 from OpenGL import GL as gl
 
+MAX_SPEED = 0.4
+ACCEL = 0.8
+
 class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.speed = 1 # [-MAX_SPEED, MAX_SPEED]
+        self._accel_dir = 1 # {-1, 1}
         self.dying = False
         pass
 
@@ -40,6 +47,15 @@ class Enemy(Element):
             LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
             self.die()
             projectile.destroy()
+
+
+        # Move
+
+        self.speed = clamp(self.speed + self._accel_dir * ACCEL * delta_time, -MAX_SPEED, MAX_SPEED)
+        if abs(self.speed) >= MAX_SPEED:
+            self._accel_dir *= -1
+
+        self.transform.translation.xy += Vec2(self.speed, 0) * delta_time
 
         pass
 

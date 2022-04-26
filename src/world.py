@@ -39,10 +39,11 @@ class World:
         LOGGER.log_trace(f'Ship added: {main_ship} ', 'world:setup_scene')
         
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
-        Enemy(world, Transform(Vec3(-0.9,    0.5,    0.0))),
-        Enemy(world, Transform(Vec3( 0.0,    0.5,    0.0))),
-        Enemy(world, Transform(Vec3( 0.9,    0.5,    0.0))),
-        Enemy(world, Transform(Vec3( 0.0,    0.9,    0.0))),
+        Enemy(world, Transform(Vec3(-0.7,    0.5,    0.0)))
+        Enemy(world, Transform(Vec3( 0,    0.5,    0.0)))
+        Enemy(world, Transform(Vec3( 0.7,    0.5,    0.0)))
+        e4 = Enemy(world, Transform(Vec3( 0,    0.9,    0.0)))
+        e4.speed = -1
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
