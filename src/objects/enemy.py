@@ -1,4 +1,3 @@
-from numpy import random
 from utils.logger import LOGGER
 from utils.sig import metsig
 from objects.element import Element
@@ -22,7 +21,7 @@ class Enemy(Element):
             *(-0.1, 0.6-0.5, 0.0),
         ]
     
-    def _physics_update(self, deltat_time: float):
+    def _physics_update(self, delta_time: float):
         min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 

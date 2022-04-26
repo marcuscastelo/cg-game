@@ -1,11 +1,10 @@
 import math
 import time
-from turtle import Vec2D
 from typing import TYPE_CHECKING
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec2
 from utils.logger import LOGGER
 
 from shader import Shader
@@ -63,9 +62,6 @@ class Element:
         gl.glBindVertexArray(0) # Unbind the VAO
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
-        # self.mvp_manager = MVPManager()
-        # self.mvp_manager.translation = self.transform._translation # TODO: mvp_manager should use Transform class
-
     def _init_vertices(self):
         '''
         Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
@@ -85,8 +81,6 @@ class Element:
         '''
         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
 
-
-    # TODO: make get_bounding_box an object method
 
     # Create a bounding box
     @staticmethod
@@ -110,35 +104,6 @@ class Element:
         return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
 
     
-    def collides_with(self, other: 'Element') -> bool:
-        # Based on vertices (compare with other.vertices)
-    
-        # Get the bounding boxes
-        self_bounding_box = Element.get_bounding_box(self)
-        other_bounding_box = Element.get_bounding_box(other)
-
-        # Check if the bounding boxes intersect
-        if self_bounding_box[0] > other_bounding_box[2] or self_bounding_box[2] < other_bounding_box[0]:
-            return False
-        if self_bounding_box[1] > other_bounding_box[3] or self_bounding_box[3] < other_bounding_box[1]:
-            return False
-        
-        # Check if the vertices intersect
-        self_xs = self._vertices[::3]
-        self_ys = self._vertices[1::3]
-
-        other_xs = other._vertices[::3]
-        other_ys = other._vertices[1::3]
-
-        self_vertices = zip(self_xs, self_ys)
-        other_vertices = zip(other_xs, other_ys)
-
-        # for self_vertex in self_vertices:
-        #     for other_vertex in other_vertices:
-        #         if self_vertex[0] == other_vertex[0] and self_vertex[1] == other_vertex[1]:
-        #             return True
-        return True
-
     def _on_outside_screen(self, screen_rect: Rect2):
         self.destroy()
 
@@ -151,7 +116,7 @@ class Element:
         self.transform.translation.xy += Vec2(dx, dy)
 
         self_rect = Element.get_bounding_box(self)
-        screen_rect = Rect2(-1, -1, 1, 1).expanded(1)
+        screen_rect = Rect2(-1, -1, 1, 1).expanded(1) #TODO: change this to the screen size constant
 
         if not screen_rect.intersects(self_rect):
             self._on_outside_screen(screen_rect)

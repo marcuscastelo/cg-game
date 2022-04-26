@@ -1,10 +1,8 @@
 from utils.geometry import Vec3
 from utils.logger import LOGGER
-from collision import CollisionSystem
 from objects.element import Element
 
 from objects.enemy import Enemy
-from objects.lines import Lines
 
 from objects.ship import Ship
 from transformation_matrix import Transform
@@ -20,7 +18,6 @@ class World:
     
     def __init__(self):
         self.elements: list[Element] = []
-        self.collision_system = CollisionSystem(self)
         self._updating_inner = False
 
     def setup_scene(self):
@@ -42,12 +39,10 @@ class World:
         LOGGER.log_trace(f'Ship added: {main_ship} ', 'world:setup_scene')
         
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
-        enemies = [
-            Enemy(world, Transform(Vec3(-0.9,    0.5,    0.0))),
-            Enemy(world, Transform(Vec3( 0.0,    0.5,    0.0))),
-            Enemy(world, Transform(Vec3( 0.9,    0.5,    0.0))),
-            Enemy(world, Transform(Vec3( 0.0,    0.9,    0.0))),
-        ]
+        Enemy(world, Transform(Vec3(-0.9,    0.5,    0.0))),
+        Enemy(world, Transform(Vec3( 0.0,    0.5,    0.0))),
+        Enemy(world, Transform(Vec3( 0.9,    0.5,    0.0))),
+        Enemy(world, Transform(Vec3( 0.0,    0.9,    0.0))),
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
@@ -55,9 +50,6 @@ class World:
         self.elements.append(element)
  
     def remove_element(self, element: Element):
-        if self._updating_inner:
-            raise RuntimeError('Cannot remove element while updating world')
-
         self.elements.remove(element)
 
     def update(self):
@@ -66,13 +58,9 @@ class World:
         It updates the world and all the elements in it.
         '''
 
-        self._updating_inner = True # Security measure to avoid removing elements while updating (it would break the iterator)
-
         # Update elements
         for element in self.elements:
             element.update() 
-        
-        self._updating_inner = False
         
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
