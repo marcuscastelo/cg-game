@@ -1,24 +1,16 @@
 from dataclasses import dataclass
 import math
-from mimetypes import init
 import time
-from typing import Callable
-from glm import clamp, sin
-import numpy as np
+from glm import clamp
 
-from OpenGL import GL as gl
-from utils.geometry import Rect, Rect2, Vec2, Vec3
-from utils.logger import LOGGER
+from utils.geometry import Rect2, Vec3
 from utils.sig import metsig
-from app_state import MVPManager
 from objects.element import Element
-from objects.lines import Lines
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
 
-from transformation_matrix import Transform
-SCREEN_RECT = Rect2(-1, -1, 1, 1)
+SCREEN_RECT = Rect2(-1, -1, 1, 1) #TODO: change this to the screen size constant
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
@@ -116,18 +108,6 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-        # bbox = Element.get_bounding_box(self) / self.transform.scale.xy
-        # points = [ bbox.bottom_left, bbox.bottom_right, bbox.top_right, bbox.top_left, bbox.bottom_left ]
-        # points = [ Vec3(point.x, point.y, 0) for point in points ]
-
-        # bbox_transform = Transform(
-        #     translation=self.transform.translation.xyz,
-        #     scale=self.transform.scale.xyz,
-        #     rotation=self.transform.rotation.xyz,
-        # )
-
-        # self._debug_bbox = Lines(self.world, points, initial_transform=bbox_transform)
-
     def _physics_update(self, delta_time: float):
         self.shoot()
 
@@ -172,27 +152,7 @@ class Ship(Element):
                 t.scale = Vec3(1, 1, 1)
 
     def _is_out_of_bounds(self) -> bool:
-        bbox = Element.get_bounding_box(self)
-
-        if bbox.top_left not in SCREEN_RECT: return True
-        # if bbox.top_right not in SCREEN_RECT: return True
-        # if bbox.bottom_left not in SCREEN_RECT: return True
-        # if bbox.bottom_right not in SCREEN_RECT: return True
         return False
-
-    def move(self, intensity: float = 1):
-        super().move(intensity)
-
-        # if self._is_out_of_bounds():
-        #     super().move(-intensity)
-
-    def rotate(self, angle: float):
-        old_rotation = self.transform.rotation
-
-        super().rotate(angle)
-
-        # if self._is_out_of_bounds():
-        #     super().rotate(-angle)
 
     def shoot(self):
         curr_time = time.time()
@@ -205,11 +165,4 @@ class Ship(Element):
 
         self._last_shot_time = curr_time
 
-        proj = Projectile.create_from(self)
-
-
-    def _render(self):
-        # self._debug_bbox.transform.translation = self.transform.translation.xyz
-        # self._debug_bbox.transform.rotation = self.transform.rotation.xyz
-        # self._debug_bbox.transform.scale = self.transform.scale.xyz
-        return super()._render()
+        Projectile.create_from(self)

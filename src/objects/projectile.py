@@ -1,15 +1,11 @@
-from copy import copy, deepcopy
 from math import cos, sin
 from dataclasses import dataclass
 import math
 from typing import TYPE_CHECKING
 
-from utils.geometry import Rect, Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec3
 from utils.logger import LOGGER
 from objects.element import Element
-import numpy as np
-
-from utils.sig import metsig
 
 from OpenGL import GL as gl
 
