@@ -8,12 +8,15 @@ Membros:
     Vitor Souza Amim
 '''
 
+from colorsys import hsv_to_rgb, rgb_to_hsv
+import random
 from threading import Thread
 
 import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
+from utils.geometry import Vec3
 
 from utils.logger import LOGGER
 
@@ -63,15 +66,26 @@ def glfw_thread():
     world = APP_VARS.world
     world.setup_scene()
 
+    hsv = [0, 0, 1]
+    hsv_change_rate = 0.01
+
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events()
 
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            gl.glClearColor(1.0, 1.0, 1.0, 1.0)
+            rgb = hsv_to_rgb(*hsv)
+            gl.glClearColor(*rgb, 1.0)
 
             # Update the scene
             world.update()
+            if world.game_ended():
+                world.elements.clear()
+                hsv[1] = 0.5
+                hsv[0] += hsv_change_rate
+            else:
+                hsv[0] = hsv[1] = 0
+                pass
 
         render()
 

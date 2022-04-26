@@ -53,6 +53,9 @@ class World:
     def remove_element(self, element: Element):
         self.elements.remove(element)
 
+    def game_ended(self) -> bool:
+        return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0
+
     def update(self):
         '''
         This function is called every frame.
@@ -69,5 +72,8 @@ class World:
         # Special shortcut to reset scene
         if IS.is_pressed('r'):
             self.setup_scene()
+
+        
+
 
 WORLD = World()
