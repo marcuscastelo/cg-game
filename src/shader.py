@@ -1,5 +1,6 @@
 from OpenGL import GL as gl
 import numpy as np
+from utils.logger import LOGGER
 
 class Shader:
     def __init__(self, vert_path: str, frag_path: str):
@@ -22,8 +23,8 @@ class Shader:
         frag_source = self._load_source(self.frag_path)
 
         # Create shaders
-        self.vert_shader = gl.glCreateShader(gl.GL_VERTEX_SHADER)
-        self.frag_shader = gl.glCreateShader(gl.GL_FRAGMENT_SHADER)
+        self.vert_shader = int(gl.glCreateShader(gl.GL_VERTEX_SHADER))
+        self.frag_shader = int(gl.glCreateShader(gl.GL_FRAGMENT_SHADER))
 
         # Set source        
         gl.glShaderSource(self.vert_shader, vert_source)
@@ -40,12 +41,22 @@ class Shader:
             self.program = self.vert_shader = self.frag_shader = None
 
         # Check for errors
+        if self.vert_shader is None or self.frag_shader is None:
+            _cleanup_compile_error()
+            LOGGER.log_error(f'Error compiling {self.vert_path} and {self.frag_path}: one of the shaders was None')
+            raise RuntimeError(f'Error compiling {self.vert_path} and {self.frag_path}')
+        else:
+            LOGGER.log_debug(f'Compiled {self.vert_path} and {self.frag_path}')
+            LOGGER.log_debug(f'{self.vert_shader=}, {self.frag_shader=}')
+
         if gl.glGetShaderiv(self.vert_shader, gl.GL_COMPILE_STATUS) != gl.GL_TRUE:
+            log = gl.glGetShaderInfoLog(self.vert_shader)
             _cleanup_compile_error()
-            raise RuntimeError(f'Error compiling {self.vert_path}: {gl.glGetShaderInfoLog(self.vert_shader)}')
+            raise RuntimeError(f'Error compiling {self.vert_path}: {log}')
         if gl.glGetShaderiv(self.frag_shader, gl.GL_COMPILE_STATUS) != gl.GL_TRUE:
+            log = gl.glGetShaderInfoLog(self.frag_shader)
             _cleanup_compile_error()
-            raise RuntimeError(f'Error compiling {self.frag_path}: {gl.glGetShaderInfoLog(self.frag_shader)}')
+            raise RuntimeError(f'Error compiling {self.frag_path}: {log}')
         
     def _link(self):
         # Link
