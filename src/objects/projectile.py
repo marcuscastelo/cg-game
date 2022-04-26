@@ -37,7 +37,6 @@ class Projectile(Element):
     def __init__(self, world: 'World', initial_transform: Transform = Transform(), specs: ProjectileSpecs = ProjectileSpecs(), **kwargs):
         self.live_time = 0
         self.specs = specs
-        self._render_primitive = gl.GL_LINES
         super().__init__(world, initial_transform, **kwargs)
         self.is_particle = True
         self.speed = self.specs.initial_speed

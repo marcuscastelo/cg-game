@@ -12,12 +12,22 @@ from transformation_matrix import Transform
 from input.input_system import INPUT_SYSTEM as IS
 
 class World:
+    '''
+    Class responsible for describing the world.
+    It holds all the elements in a list and updates them.
+    When they are marked for removal, they are removed from the list in the next update.
+    '''
+    
     def __init__(self):
         self.elements: list[Element] = []
         self.collision_system = CollisionSystem(self)
         self._updating_inner = False
 
     def setup_scene(self):
+        '''
+        This function is called when the user presses the 'r' key and when the application starts.
+        It populates the world with the elements that are needed to play the game.
+        '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
         world = self
 
@@ -39,22 +49,6 @@ class World:
             Enemy(world, Transform(Vec3( 0.0,    0.9,    0.0))),
         ]
 
-        # LOGGER.log_trace(f'Adding {len(enemies)} enemies to scene', 'world:setup_scene')
-        # for enemy in enemies:
-        #     LOGGER.log_trace(f'Adding enemy(id={id(enemy)}) to scene', 'world:setup_scene')
-        #     self.add_element(enemy)
-
-
-        # test_lines = Lines(world, points=[
-        #     Vec3(-0.5, -0.5, 0),
-        #     Vec3(0.5, -0.5, 0),
-        #     Vec3(0.5, 0.5, 0),
-        #     Vec3(-0.5, 0.5, 0),
-        #     Vec3(-0.5, -0.5, 0),
-        # ])
-
-        # self.add_element(test_lines)
-
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
     def add_element(self, element: Element):
@@ -62,18 +56,28 @@ class World:
  
     def remove_element(self, element: Element):
         if self._updating_inner:
-            print('Cannot remove element while updating')
-            return
+            raise RuntimeError('Cannot remove element while updating world')
+
         self.elements.remove(element)
 
     def update(self):
-        self._updating_inner = True
+        '''
+        This function is called every frame.
+        It updates the world and all the elements in it.
+        '''
+
+        self._updating_inner = True # Security measure to avoid removing elements while updating (it would break the iterator)
+
+        # Update elements
         for element in self.elements:
-            element.update()
+            element.update() 
+        
         self._updating_inner = False
         
+        # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
+        # Special shortcut to reset scene
         if IS.is_pressed('r'):
             self.setup_scene()
 

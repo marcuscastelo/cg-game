@@ -100,9 +100,11 @@ class Ship(Element):
             *(-0.1, -0.1, 0.0),
             *(0.1, -0.1, 0.0),
             *(-0.1, 0.1, 0.0),
+            
             *(0.1, -0.1, 0.0),
             *(0.1, 0.1, 0.0),
             *(-0.1, 0.1, 0.0),
+            
             *(-0.1, 0.1, 0.0),
             *(0.1, 0.1, 0.0),
             *(0 , 0.3, 0.0),
@@ -114,17 +116,17 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-        bbox = Element.get_bounding_box(self) / self.transform.scale.xy
-        points = [ bbox.bottom_left, bbox.bottom_right, bbox.top_right, bbox.top_left, bbox.bottom_left ]
-        points = [ Vec3(point.x, point.y, 0) for point in points ]
+        # bbox = Element.get_bounding_box(self) / self.transform.scale.xy
+        # points = [ bbox.bottom_left, bbox.bottom_right, bbox.top_right, bbox.top_left, bbox.bottom_left ]
+        # points = [ Vec3(point.x, point.y, 0) for point in points ]
 
-        bbox_transform = Transform(
-            translation=self.transform.translation.xyz,
-            scale=self.transform.scale.xyz,
-            rotation=self.transform.rotation.xyz,
-        )
+        # bbox_transform = Transform(
+        #     translation=self.transform.translation.xyz,
+        #     scale=self.transform.scale.xyz,
+        #     rotation=self.transform.rotation.xyz,
+        # )
 
-        self._debug_bbox = Lines(self.world, points, initial_transform=bbox_transform)
+        # self._debug_bbox = Lines(self.world, points, initial_transform=bbox_transform)
 
     def _physics_update(self, delta_time: float):
         self.shoot()
@@ -207,7 +209,7 @@ class Ship(Element):
 
 
     def _render(self):
-        self._debug_bbox.transform.translation = self.transform.translation.xyz
-        self._debug_bbox.transform.rotation = self.transform.rotation.xyz
-        self._debug_bbox.transform.scale = self.transform.scale.xyz
+        # self._debug_bbox.transform.translation = self.transform.translation.xyz
+        # self._debug_bbox.transform.rotation = self.transform.rotation.xyz
+        # self._debug_bbox.transform.scale = self.transform.scale.xyz
         return super()._render()

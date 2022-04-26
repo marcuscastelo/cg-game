@@ -16,7 +16,15 @@ if TYPE_CHECKING:
     from world import World
 
 class Element:
+    '''
+    An abstract class for all the elements in the game
+    '''
+    
     def __init__(self, world: 'World', initial_transform: Transform = None):
+        '''
+        Initialize the element inside the world, with an optional initial transform
+        '''
+
         self.world = world
         world.add_element(self)
 
@@ -59,12 +67,26 @@ class Element:
         # self.mvp_manager.translation = self.transform._translation # TODO: mvp_manager should use Transform class
 
     def _init_vertices(self):
+        '''
+        Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
+        Example:
+            self._vertices = [
+                -0.5, -0.5, 0.0,
+                0.5, -0.5, 0.0,
+                0.5, 0.5, 0.0,
+                -0.5, 0.5, 0.0
+            ]
+        '''
         raise NotImplementedError("Abstract method, please implement in subclass")
 
     def __repr__(self) -> str:
+        '''
+        Return a string representation of the element
+        '''
         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
 
 
+    # TODO: make get_bounding_box an object method
 
     # Create a bounding box
     @staticmethod
@@ -87,35 +109,7 @@ class Element:
 
         return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
 
-        
-        
-
-        # gl_vertices = np.array(elem._vertices) # [ x, y, z, x, y, z, ... ]
-        # # LOGGER.log_debug(f'gl_vertices: {gl_vertices}')
-
-
-        # tupled_vertices = np.array(gl_vertices).reshape((-1, 3)) # [ [x, y, z], [x, y, z], ... ]
-        # # LOGGER.log_debug(f'tupled_vertices: {tupled_vertices}')
-        
-        # # Add the homogeneous coordinate (4th) dimension
-        # tupled_vertices = np.insert(tupled_vertices, 3, 0, axis=1)
-        # # LOGGER.log_debug(f'tupled_vertices: {tupled_vertices}')
-
-        # transformed_vertices = tupled_vertices @ elem.transform.model_matrix.T # [ [x, y, z], [x, y, z], ... ]
-        # # LOGGER.log_debug(f'transformed_vertices: {transformed_vertices}')
-
-        # transformed_vertices = transformed_vertices.reshape((-1, 2)) # [ [x, y], [x, y], ... ]
-        # LOGGER.log_debug(f'transformed_vertices: {transformed_vertices}')
-
-        # min_x = transformed_vertices[:, 0].min()
-        # min_y = transformed_vertices[:, 1].min()
-        # max_x = transformed_vertices[:, 0].max()
-        # max_y = transformed_vertices[:, 1].max()
-
-        # LOGGER.log_debug(f'Bounding box: {(min_x, min_y, max_x, max_y)}')
-
-        # return Rect.from_bbox((min_x, min_y, max_x, max_y))
-
+    
     def collides_with(self, other: 'Element') -> bool:
         # Based on vertices (compare with other.vertices)
     
@@ -149,6 +143,9 @@ class Element:
         self.destroy()
 
     def move(self, intensity: float = 1.0):
+        '''
+        Move the element forward according to the current rotation
+        '''
         dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
@@ -161,41 +158,75 @@ class Element:
 
 
     def rotate(self, angle: float):
+        '''
+        Rotates the element on the Z axis (2D rotation)
+        angle: angle in radians
+        '''
         # Rotate over Z axis (2D)
         self.transform.rotation.z += angle
 
     @property
     def x(self):
+        '''
+        Get the x coordinate of the element
+        '''
         return self.transform.translation.x
     
     @x.setter
     def x(self, value: float):
+        '''
+        Set the x coordinate of the element
+        '''
         self.transform.translation.x = value
 
     @property
     def y(self):
+        '''
+        Get the y coordinate of the element
+        '''
         return self.transform.translation.y
 
     @y.setter
     def y(self, value: float):
+        '''
+        Set the y coordinate of the element
+        '''
         self.transform.translation.y = value
 
     @property # No setter, because it's a read-only property (2D only)
     def z(self):
+        '''
+        Get the z coordinate of the element (no setter available, since we're in 2D)
+        '''
         return self.transform.translation.z
 
     @property
     def angle(self):
+        '''
+        Get the angle of the element on the Z axis
+        '''
         return self.transform.rotation.z
 
     @angle.setter
     def angle(self, value: float):
+        '''
+        Set the angle of the element on the Z axis
+        '''
         self.transform.rotation.z = value
 
     def _physics_update(self, delta_time: float):
+        '''
+        Pure virtual method, must be implemented in subclass. Should update the element's physics
+        It is called every physics update (approx. 50 times per second)
+        '''
         raise NotImplementedError("Abstract method, please implement in subclass")
 
     def update(self):
+        '''
+        Update the element, called every frame.
+        If overridden, make sure to call the super method.
+        Not intended to be overridden.
+        '''
         if self.destroyed:
             LOGGER.log_warning(f'Trying to update destroyed element {self}')
             return
@@ -207,22 +238,31 @@ class Element:
         self._render()
         
     def _render(self):
+        '''
+        Basic rendering method. Can be overridden in subclass.
+        '''
         # Bind the shader and VAO (VBO is bound in the VAO)
         gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
         self.shader.use()
 
         # Set the transformation matrix
         self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
 
-        # Draw the triangles
+        # Draw the vertices according to the primitive
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
 
     @property
     def destroyed(self):
+        '''
+        Returns whether the element is destroyed or not
+        '''
         return self.__destroyed
 
     def destroy(self):
+        '''
+        Destroys the element
+        '''
         if self.destroyed:
             # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
             LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
