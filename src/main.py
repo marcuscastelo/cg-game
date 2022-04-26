@@ -1,5 +1,11 @@
 '''
+Entrega 1 - Computação Gráfica (SCC 0250)
 Membros:       
+    Dalton Hiroshi Sato
+    Marcus Vinicius Castelo Branco Martins
+    Pedro Guerra Lourenço
+    Vinícius Eduardo de Araújo
+    Vitor Souza Amim
 '''
 
 from threading import Thread

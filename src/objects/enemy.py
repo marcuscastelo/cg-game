@@ -3,6 +3,8 @@ from utils.sig import metsig
 from objects.element import Element
 from objects.projectile import Projectile
 
+from OpenGL import GL as gl
+
 class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
@@ -11,14 +13,15 @@ class Enemy(Element):
         pass
 
     def _init_vertices(self):
+        # self._render_primitive = gl.GL_LINE_STRIP
         self._vertices = [
-            *(-0.1, 0.6-0.5, 0.0),
-            *(-0.1, 0.4-0.5, 0.0),
-            *(0.1, 0.4-0.5, 0.0),
+            *(-0.1, -0.1, 0.0),
+            *(0.1, -0.1, 0.0),
+            *(0.1, 0.1, 0.0),
 
-            *(0.1, 0.4-0.5, 0.0),
-            *(0.1, 0.6-0.5, 0.0),
-            *(-0.1, 0.6-0.5, 0.0),
+            *(-0.1, -0.1, 0.0),
+            *(-0.1, 0.1, 0.0),
+            *(0.1, 0.1, 0.0),
         ]
     
     def _physics_update(self, delta_time: float):

@@ -11,6 +11,10 @@ from shader import Shader
 
 from transformation_matrix import Transform
 
+SHADER = None
+
+from input.input_system import INPUT_SYSTEM as IS
+
 if TYPE_CHECKING:
     from world import World
 
@@ -37,28 +41,45 @@ class Element:
         self._render_primitive = gl.GL_TRIANGLES
 
         self._vertices = []
+        self._normal_vertices = []
+        self._ouline_vertices = []
         self._init_vertices()
 
+        if len(self._vertices) == 0:
+            LOGGER.log_error(f'{self.__class__.__name__} id={id(self)} has no vertices')
+        
+        if len(self._normal_vertices) == 0:
+            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no normal vertices, assuming all vertices are normal')
+            self._normal_vertices = self._vertices
 
+        if len(self._ouline_vertices) == 0:
+            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
+            self._ouline_vertices = self._vertices
+
+        # Vertex array object that will hold all other buffers
         self.vao = gl.glGenVertexArrays(1)
-        self.vbo = gl.glGenBuffers(1)
+        
+        # Position buffer
+        self.vbo = gl.glGenBuffers(1) 
 
+        # Bind the Vertex Array Object and then the Vertex Buffer Object 
         gl.glBindVertexArray(self.vao)
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
         # Set the vertex buffer data
         gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
 
-        self.shader = Shader('shaders/ship/ship.vert', 'shaders/ship/ship.frag')
-        self.shader.use()
+        # Load shader and use it and save it for rendering
+        global SHADER
+        if SHADER is None:
+            SHADER = Shader('shaders/simple_red.vert', 'shaders/simple_red.frag')
+        self.shader = SHADER
 
+        # Enable vertex attribute position
         gl.glEnableVertexAttribArray(0)
         gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
 
-        gl.glEnableVertexAttribArray(1)
-        gl.glVertexAttribPointer(1, 1, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-        gl.glUseProgram(0) # Unbind the shader
+        # Unbind the VAO and VBO to avoid accidental changes
         gl.glBindVertexArray(0) # Unbind the VAO
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
@@ -199,6 +220,13 @@ class Element:
         if (delta_time := time.time() - self._last_physics_update) > 1/50:
             self._physics_update(delta_time)
             self._last_physics_update = time.time()
+
+        if IS.is_pressed('t') and not self._was_t_pressed:
+            self._vertices = self._normal_vertices if self._vertices is self._ouline_vertices else self._ouline_vertices
+            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+            gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
+            self._render_primitive = gl.GL_LINE_STRIP if self._render_primitive is gl.GL_TRIANGLES else gl.GL_TRIANGLES
+        self._was_t_pressed = IS.is_pressed('t')
 
         self._render()
         

@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import math
 import time
 from glm import clamp
+from OpenGL import GL as gl
 
 from utils.geometry import Rect2, Vec3
 from utils.sig import metsig
@@ -86,9 +87,26 @@ class Ship(Element):
     energy: float = 1 # [1, 2]: indicates glow intensity
     ship_len = 0.4
     _rotation_intensity = 0
+    _was_t_pressed = False
 
     def _init_vertices(self):
-        self._vertices = [
+        # self._render_primitive = gl.GL_LINE_STRIP
+        self._ouline_vertices = [
+            *(-0.1, -0.1, 0.0),
+            *(0.1, -0.1, 0.0),
+            *(0.1, 0.1, 0.0),
+            
+            *(-0.1, -0.1, 0.0),
+            *(-0.1, 0.1, 0.0),
+            
+            *(0.1, 0.1, 0.0),
+            *(0 , 0.3, 0.0),
+            *(-0.1, 0.1, 0.0),
+
+            *(-0.1, -0.1, 0.0),
+        ]
+
+        self._normal_vertices = [
             *(-0.1, -0.1, 0.0),
             *(0.1, -0.1, 0.0),
             *(-0.1, 0.1, 0.0),
@@ -101,6 +119,8 @@ class Ship(Element):
             *(0.1, 0.1, 0.0),
             *(0 , 0.3, 0.0),
         ]
+
+        self._vertices = self._normal_vertices
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
