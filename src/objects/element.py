@@ -6,6 +6,7 @@ import numpy as np
 from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2
 from utils.logger import LOGGER
+from constants import SCREEN_RECT
 
 from shader import Shader
 
@@ -137,7 +138,7 @@ class Element:
         self.transform.translation.xy += Vec2(dx, dy)
 
         self_rect = Element.get_bounding_box(self)
-        screen_rect = Rect2(-1, -1, 1, 1).expanded(1) #TODO: change this to the screen size constant
+        screen_rect = SCREEN_RECT
 
         if not screen_rect.intersects(self_rect):
             self._on_outside_screen(screen_rect)

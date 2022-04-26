@@ -11,8 +11,6 @@ from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
 
-SCREEN_RECT = Rect2(-1, -1, 1, 1) #TODO: change this to the screen size constant
-
 BASE_SIZE = 1/16 * (1 - (-1))
 
 SHOOTING_COOLDOWN = 0.2

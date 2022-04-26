@@ -81,7 +81,8 @@ class Projectile(Element):
         outside_screen = not screen.contains(self.transform.translation.xy)
 
         if outside_screen or self.too_small():
-            self.destroy()
+            if not self.destroyed:
+                self.destroy()
 
     def destroy(self):
         if not self.destroyed and not self.too_small() and not self.is_particle:
