@@ -261,5 +261,5 @@ class Element:
             LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
             return
     
-        LOGGER.log_debug(f"{self} marked for destruction")
+        # LOGGER.log_debug(f"{self} marked for destruction")
         self.__destroyed = True

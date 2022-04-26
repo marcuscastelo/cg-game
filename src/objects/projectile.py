@@ -45,6 +45,9 @@ class Projectile(Element):
             *(0.0,  -1.0,    0.0),
             *(0.0,  1.0,   0.0),
         ]
+
+        self._normal_vertices = self._ouline_vertices = self._vertices
+
         self.transform.scale.y = self.specs.length
 
     def _render(self):
@@ -66,7 +69,7 @@ class Projectile(Element):
     def _physics_update(self, delta_time: float):
         self.live_time += delta_time
         if self.destroyed:
-            LOGGER.log_warning(f"Trying to update destroyed projectile {self}")
+            LOGGER.log_error(f"Trying to update destroyed projectile {self}")
             return
 
         self.move()
@@ -85,7 +88,6 @@ class Projectile(Element):
             impact_xyz = self.transform.translation.xyz
             TIME_TO_TRAVEL_SCREEN = 1 # seconds
             MAX_PARTICLES = 50
-            print(f"Impact with live time {self.live_time}")
             particle_lifetime_completion = min(1, self.live_time / TIME_TO_TRAVEL_SCREEN)
 
             number_of_minibullets = int(math.ceil(MAX_PARTICLES * particle_lifetime_completion)) + 3

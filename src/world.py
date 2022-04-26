@@ -64,14 +64,11 @@ class World:
 
         # Update elements
         for element in self.elements:
-            element.update() 
+            if not element.destroyed: # In case the element was destroyed while updating
+                element.update() 
         
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
-
-        # Special shortcut to reset scene
-        if IS.is_pressed('r'):
-            self.setup_scene()
 
         
 

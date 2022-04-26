@@ -30,6 +30,8 @@ class Enemy(Element):
             *(-0.1, 0.1, 0.0),
             *(0.1, 0.1, 0.0),
         ]
+
+        self._normal_vertices = self._ouline_vertices = self._vertices
     
     def _physics_update(self, delta_time: float):
         min_x, min_y, max_x, max_y = Element.get_bounding_box(self)

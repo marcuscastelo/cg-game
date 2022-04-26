@@ -8,21 +8,19 @@ Membros:
     Vitor Souza Amim
 '''
 
-from colorsys import hsv_to_rgb, rgb_to_hsv
-import random
+from colorsys import hsv_to_rgb
 from threading import Thread
 
 import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
-from utils.geometry import Vec3
 
 from utils.logger import LOGGER
 
 from constants import WINDOW_SIZE
 from app_state import APP_VARS
-from input.input_system import set_glfw_callbacks
+from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
 
 def create_window():
     '''
@@ -69,30 +67,38 @@ def glfw_thread():
     hsv = [0, 0, 1]
     hsv_change_rate = 0.01
 
+    # Render loop: keeps running until the window is closed or the GUI signals to close
     while not glfw.window_should_close(window) and not APP_VARS.closing:
-        glfw.poll_events()
+        glfw.poll_events() # Process input events (keyboard, mouse, etc)
 
+        # Actual rendering of the scene
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             rgb = hsv_to_rgb(*hsv)
             gl.glClearColor(*rgb, 1.0)
 
-            # Update the scene
-            world.update()
+
+            # If game has eneded, show the end game screen (empty scene with varying colors)
             if world.game_ended():
-                world.elements.clear()
                 hsv[1] = 0.5
                 hsv[0] += hsv_change_rate
-            else:
+            else: # Otherwise, show the normal scene with a white background
                 hsv[0] = hsv[1] = 0
+
+                # Update the scene (update physics and render all objects)
+                world.update()
                 pass
 
-        render()
+            # Special shortcut to reset scene
+            if IS.is_pressed('r'):
+                world.setup_scene()
 
-        glfw.swap_buffers(glfw.get_current_context())
+        render() # Render to the default framebuffer (screen)
+
+        glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
     
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
-    APP_VARS.closing = True
+    APP_VARS.closing = True # Make the GUI close too
 
 
 def _set_signal_handler():
