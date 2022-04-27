@@ -12,6 +12,8 @@ from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
+from gl_abstractions.vertex_array import VertexArray
+from gl_abstractions.vertex_buffer import VertexBuffer
 
 from shader import Shader
 
@@ -24,7 +26,6 @@ from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from world import World
-
 
 @dataclass
 class Vertex:
@@ -81,31 +82,15 @@ class Element:
         # if len(self._ouline_vertices) == 0:
         #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
         #     self._ouline_vertices = self._vertices
+        self._vertices = self._vertex_specs.to_np_array()
 
         # Vertex array object that will hold all other buffers
-        self.vao = gl.glGenVertexArrays(1)
+        self.vertex_array = VertexArray()
+        self.vertex_buffer = VertexBuffer(self._vertices)
         
-        # Position buffer
-        self.vbo = gl.glGenBuffers(1) 
-
         # Bind the Vertex Array Object and then the Vertex Buffer Object 
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
-        # Set the vertex buffer data
-        self._vertices = self._vertex_specs.to_np_array()
-        print(f'vertices: {self._vertices}')
-        FloatArray = gl.GLfloat * len(self._vertices)
-        my_float_array = FloatArray(*self._vertices)
-        my_float_array_len = len(self._vertices) * 4
-        assert my_float_array_len == len(self._vertices) *  4, f"{my_float_array_len} != {len(self._vertices) * 4}" #TODO: remove assert
-        gl.glBufferData(
-            gl.GL_ARRAY_BUFFER,
-            my_float_array_len,
-            my_float_array,
-            gl.GL_DYNAMIC_DRAW
-        )
-
+        self.vertex_array.bind()
+        self.vertex_buffer.bind()
         # Load shader and use it and save it for rendering
         global TEXTURED_SHADER
         if TEXTURED_SHADER is None:
@@ -145,7 +130,7 @@ class Element:
         
 
         # Unbind the VAO and VBO to avoid accidental changes
-        gl.glBindVertexArray(0) # Unbind the VAO
+        self.vertex_array.unbind()
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
     def _create_vertex_buffer(self) -> VertexSpecification:
@@ -305,8 +290,8 @@ class Element:
         Basic rendering method. Can be overridden in subclass.
         '''
         # Bind the shader and VAO (VBO is bound in the VAO)
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+        self.vertex_array.bind()
+        self.vertex_buffer.bind()
         self.shader.use()
 
         gl.glBindTextureUnit(0, self.texture)
