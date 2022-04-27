@@ -1,4 +1,3 @@
-import ctypes
 from dataclasses import dataclass, field
 import math
 import os
@@ -15,11 +14,10 @@ import imageio
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
-from shader import Shader
+from shader import Shader, ShaderDB
 
 from transformation_matrix import Transform
 
-TEXTURED_SHADER = None
 IMAGE: imageio.core.util.Array = imageio.imread('/home/marucs/Development_SSD/USP/2022/1_Sem/CG/cg-trab/textures/texure.jpg')[::-1,:,:] # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -28,90 +26,79 @@ if TYPE_CHECKING:
     from world import World
 
 @dataclass
-class Vertex:
-    a_Position: Vec3
-    a_TexCoord: Vec2
+class ShapeSpec:
+    vertices: np.ndarray
+    indices: np.ndarray = None
+    render_mode: int = field(default=gl.GL_TRIANGLES)
+    shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()['simple_red']) # TODO: more readable way to do this?
 
 @dataclass
-class VertexSpecification:
-    vertices: list[Vertex]
+class ShapeRenderer:
+    shape_spec: ShapeSpec
+    transform: Transform
 
-    def to_np_array(self) -> np.ndarray:
-        '''
-        Returns a numpy array of the vertices
-        '''
-        vertices_continuos = np.array([[*v.a_Position, *v.a_TexCoord] for v in self.vertices], dtype=np.float32)
-        vertices_flattened = vertices_continuos.flatten()
-        return vertices_flattened
+    def __post_init__(self):
+        self.shader = self.shape_spec.shader
+
+        self.vao = VertexArray()
+        self.vao.bind()
+        self.vbo = VertexBuffer(self.shape_spec.vertices, usage=gl.GL_DYNAMIC_DRAW)
+        self.vbo.bind()
+        # self.ibo = VertexBuffer(self.shape_spec.indices)
+
+        self.vao.apply_layout(self.shape_spec.shader.layout)
+
+    def render(self):
+        # Bind the shader and VAO (VBO is bound in the VAO)
+        self.vao.bind()
+
+        self.shader.use()
+
+        # gl.glBindTextureUnit(0, self.texture)
+
+        # Set the transformation matrix
+        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
+
+        # Draw the vertices according to the primitive
+        gl.glDrawArrays(self.shape_spec.render_mode, 0, len(self.shape_spec.vertices))
+
+@dataclass
+class ElementSpecification:
+    initial_transform: Transform = field(default_factory=Transform)
+    shape_specs: list[ShapeSpec] = field(default_factory=list)
+
+    def __post_init__(self):
+        # Ensure types are correct
+        for shape in self.shape_specs:
+            assert isinstance(shape, ShapeSpec), f'ShapeSpecs must be of type ShapeSpec, not {type(shape)}'
+        assert isinstance(self.initial_transform, Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
 
 class Element:
     '''
     An abstract class for all the elements in the game
     '''
 
-    def __init__(self, world: 'World', initial_transform: Transform = None):
+    def __init__(self, world: 'World', specs: ElementSpecification):
         '''
         Initialize the element inside the world, with an optional initial transform
         '''
+        from world import World
+        assert isinstance(world, World), f'{world} is not a World'
+        assert isinstance(specs, ElementSpecification), f'{specs} is not an Elementspecs'
 
+        self.transform = specs.initial_transform
+        self.primitives = specs.shape_specs
+    
         self.world = world
-        world.add_element(self)
+        world.spawn(self)
 
-        self.transform = initial_transform if initial_transform is not None else Transform()
-        assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
-        
         self._last_physics_update = time.time() # Used for physics updates
         self.__destroyed = False
         self.speed = 0.5
 
-        self._render_primitive = gl.GL_TRIANGLES
-
-        self._vertex_specs = self._create_vertex_buffer()
-        assert isinstance(self._vertex_specs, VertexSpecification), f"Vertex buffer must be of type VertexBuffer, not {type(self._vertex_specs)}"
-
-        self._normal_vertex_specs = self._vertex_specs
-        self._ouline_vertex_specs = self._vertex_specs
-        # TODO: reenable 'T' keybind
-        # if len(self._vertices) == 0:
-        #     LOGGER.log_error(f'{self.__class__.__name__} id={id(self)} has no vertices')
-        
-        # if len(self._normal_vertices) == 0:
-        #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no normal vertices, assuming all vertices are normal')
-        #     self._normal_vertices = self._vertices
-
-        # if len(self._ouline_vertices) == 0:
-        #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
-        #     self._ouline_vertices = self._vertices
-        self._vertices = self._vertex_specs.to_np_array()
-
-        # Vertex array object that will hold all other buffers
-        self.vertex_array = VertexArray()
-        self.vertex_buffer = VertexBuffer(self._vertices)
-        
-        # Bind the Vertex Array Object and then the Vertex Buffer Object 
-        self.vertex_array.bind()
-        self.vertex_buffer.bind()
-        # Load shader and use it and save it for rendering
-        global TEXTURED_SHADER
-        if TEXTURED_SHADER is None:
-            # FLAT_COLOR_SHADER = Shader('shaders/simple_red.vert', 'shaders/simple_red.frag')
-            TEXTURED_SHADER = Shader('shaders/textured.vert', 'shaders/textured.frag')
-            # pass
-        self.shader = TEXTURED_SHADER
-
-        # Enable vertex attribute position
-        stride = 5 * FLOAT_SIZE # 3 for position, 2 for texcoord
-        pos_offset = ctypes.cast(0 * FLOAT_SIZE, ctypes.c_void_p) # Position offset: 0 (first 3 floats)
-        tex_offset = ctypes.cast(3 * FLOAT_SIZE, ctypes.c_void_p) # Texcoord offset: 3 (next 2 floats, after 3 floats for position)
-
-        gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, stride, pos_offset) # 3 position values per vertex
-
-        gl.glEnableVertexAttribArray(1)
-        gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, stride, tex_offset) # 2 texture coordinates per vertex
-
-        gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, stride, tex_offset) # 2 texture coordinates per vertex
-
+        self.shape_renderers = [
+            ShapeRenderer(shape_spec, self.transform) for shape_spec in specs.shape_specs
+        ]
 
         print(f'Type of IMAGE: {type(IMAGE)}')
 
@@ -128,12 +115,7 @@ class Element:
 
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
         
-
-        # Unbind the VAO and VBO to avoid accidental changes
-        self.vertex_array.unbind()
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
-
-    def _create_vertex_buffer(self) -> VertexSpecification:
+    def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self):
         '''
         Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
         Example:
@@ -190,8 +172,6 @@ class Element:
         dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
-
-
         
 
     def rotate(self, angle: float):
@@ -275,35 +255,15 @@ class Element:
             self._physics_update(delta_time)
             self._last_physics_update = time.time()
 
-        if IS.is_pressed('t') and not self._was_t_pressed:
-            LOGGER.log_warning('T pressed, but not implemented for now') #TODO: reimplement with new classes
-            # self._vertex_specs = self._normal_vertex_specs if self._vertex_specs is self._ouline_vertex_specs else self._ouline_vertex_specs
-            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-            # gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertex_specs)*4, (gl.GLfloat * len(self._vertex_specs))(*self._vertex_specs), gl.GL_DYNAMIC_DRAW)
-            # self._render_primitive = gl.GL_LINE_STRIP if self._render_primitive is gl.GL_TRIANGLES else gl.GL_TRIANGLES
-        self._was_t_pressed = IS.is_pressed('t')
-
         self._render()
         
     def _render(self):
         '''
         Basic rendering method. Can be overridden in subclass.
         '''
-        # Bind the shader and VAO (VBO is bound in the VAO)
-        self.vertex_array.bind()
-        self.vertex_buffer.bind()
-        self.shader.use()
 
-        gl.glBindTextureUnit(0, self.texture)
-
-        # Set the transformation matrix
-        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
-        # self.shader.upload_uniform_int('u_Texture', 0)
-        # loc= gl.glGetUniformLocation(self.shader.program, 'u_Texture')
-        # gl.glUniform1d(loc, gl.GL_TEXTURE0)
-
-        # Draw the vertices according to the primitive
-        gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
+        for shape_renderer in self.shape_renderers:
+            shape_renderer.render()
 
     @property
     def destroyed(self):

@@ -40,18 +40,14 @@ def create_window():
     LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
 
-    LOGGER.log_trace("Enabling VSync", 'create_window')
-    glfw.swap_interval(1)
-
     glfw.make_context_current(window)
     glfw.show_window(window)
 
+    LOGGER.log_trace("Enabling VSync", 'create_window')
+    glfw.swap_interval(1)
+
     LOGGER.log_info("Window created", 'create_window')
     return window
-
-def setup_texure_config():
-    # gl. #TODO: setup magnification and minification, etc
-    pass
 
 def glfw_thread():
     '''
@@ -62,7 +58,6 @@ def glfw_thread():
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
 
-    setup_texure_config()
     set_glfw_callbacks(window)
 
     # Create the scene (world)

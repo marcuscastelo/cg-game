@@ -8,7 +8,7 @@ class VertexBuffer:
         self.vbo = gl.glGenBuffers(1)
         self.data = data
 
-        assert data.dtype == np.float32, 'Only float32 data is supported'
+        assert data.dtype == np.float32, f'Only float32 data is supported, got {data.dtype}'
 
         FloatVec = gl.GLfloat * len(data)
         data_ptr = FloatVec(*data)

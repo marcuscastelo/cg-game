@@ -1,6 +1,6 @@
-from utils.geometry import Vec3
+from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
-from objects.element import Element
+from objects.element import Element, ElementSpecification
 
 from objects.enemy import Enemy
 
@@ -32,26 +32,35 @@ class World:
         self.elements.clear()
 
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
-        main_ship = Ship(world, Transform(Vec3((0, 0, 0))))
+        main_ship = Ship(world)
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
         main_ship.controller.enable()
-        self.add_element(main_ship)
-        LOGGER.log_trace(f'Ship added: {main_ship} ', 'world:setup_scene')
+        # self.spawn(main_ship)
+        # LOGGER.log_trace(f'Ship added: {main_ship} ', 'world:setup_scene')
         
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
-        Enemy(world, Transform(Vec3(-0.7,    0.5,    0.0)))
-        Enemy(world, Transform(Vec3( 0,    0.5,    0.0)))
-        Enemy(world, Transform(Vec3( 0.7,    0.5,    0.0)))
-        e4 = Enemy(world, Transform(Vec3( 0,    0.9,    0.0)))
-        e4.speed = -1
+
+        e1 = Enemy(world)
+        e1.transform.translation.xy = Vec2(0, 0)
+
+        # e2 = Enemy(world)
+        # e2.transform.translation.xy = Vec2(0, 0)
+
+        # e3 = Enemy(world)
+        # e3.transform.translation.xy = Vec2(0, 0)
+        
+        # e4 = Enemy(world)
+        # e4.transform.translation.xy = Vec2(0, 0)
+        # e4.speed = -1
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
-    def add_element(self, element: Element):
-        self.elements.append(element)
+    def spawn(self, element: Element):
+        if not element in self.elements:
+            self.elements.append(element)
  
-    def remove_element(self, element: Element):
-        self.elements.remove(element)
+    def destroy(self, element: Element):
+        element.destroy()
 
     def game_ended(self) -> bool:
         return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0

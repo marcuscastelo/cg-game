@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 
 from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from objects.element import Element, Vertex, VertexSpecification
+from objects.element import Element, ElementSpecification, ShapeSpec
 
 from OpenGL import GL as gl
 
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
     from world import World
 
 @dataclass
-class ProjectileSpecs:
+class ProjectileSpecs(ElementSpecification):
     """
     This class is used to store the movement of the ship.
     User input is stored in this class. (in the current frame)
@@ -32,22 +32,30 @@ class ProjectileSpecs:
 
 @dataclass
 class Projectile(Element):
-    def __init__(self, world: 'World', initial_transform: Transform = Transform(), specs: ProjectileSpecs = ProjectileSpecs(), **kwargs):
+    def __init__(self, world: 'World', specs: ProjectileSpecs, *args, **kwargs):
         self.live_time = 0
-        self.specs = specs
-        super().__init__(world, initial_transform, **kwargs)
-        self._render_primitive = gl.GL_LINES
-        self.is_particle = True
-        self.speed = self.specs.initial_speed
+        self.projectile_specs = specs
+        
+        kwargs['specs'] = ElementSpecification(
+            initial_transform=Transform(
+                translation=Vec3(0, 0, 0),
+                rotation=Vec3(0, 0, 0),
+                scale=Vec3(0, specs.length, 1)
+            ),
+            shape_specs = [
+                ShapeSpec(vertices=np.array([
+                    *(0.0,  -1.0,   0.0),
+                    *(0.0,  +1.0,   0.0),
+                ], dtype=np.float32),
+                render_mode=gl.GL_LINES,
+                )
+            ]
+        )
 
-    def _create_vertex_buffer(self) -> VertexSpecification:
-        # TODO: find better place for non-funcitonal code (side-effects)
-        self.transform.scale.y = self.specs.length
+        super().__init__(world, **kwargs)
 
-        return VertexSpecification([
-            Vertex(Vec3(0, -1, 0), Vec2(0, 0)),
-            Vertex(Vec3(0, 1, 0), Vec2(0, 0)),
-        ])
+        self.is_particle = True # TODO: remove this and create a proper particle class
+        self.speed = self.projectile_specs.initial_speed
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
@@ -56,7 +64,7 @@ class Projectile(Element):
         ])
 
     def _render(self):
-        gl.glLineWidth(self.specs.width)
+        gl.glLineWidth(self.projectile_specs.width)
         return super()._render()
 
     @classmethod
@@ -64,7 +72,13 @@ class Projectile(Element):
         relavite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * ship.ship_len
         projectile_pos = ship.transform.translation.xyz + relavite_weapon_distance 
         
-        obj = cls(ship.world, Transform(translation=projectile_pos, rotation=Vec3(0, 0, ship.angle)))
+        obj = cls(
+            world = ship.world,
+            specs = ProjectileSpecs(
+                initial_transform=Transform(translation=projectile_pos, rotation=Vec3(0, 0, ship.angle)),
+            )
+        )
+
         obj.is_particle = False
         return obj
 
@@ -78,9 +92,9 @@ class Projectile(Element):
             return
 
         self.move_forward()
-        self.speed = max(self.speed + self.speed * self.specs.acceleration, 0)
+        self.speed = max(self.speed + self.speed * self.projectile_specs.acceleration, 0)
 
-        self.transform.scale.y *= (1 - self.specs.decay_rate)
+        self.transform.scale.y *= (1 - self.projectile_specs.decay_rate)
 
         screen = Rect2(-1, -1, 1, 1)
         outside_screen = not screen.contains(self.transform.translation.xy)
@@ -102,17 +116,20 @@ class Projectile(Element):
             start_angle = self.transform.rotation.z
             angle_step = 2 * math.pi / number_of_minibullets
             minibullet_specs = ProjectileSpecs(
-                initial_speed=self.specs.initial_speed * 0.5,
-                decay_rate=self.specs.decay_rate * 4
+                initial_speed=self.projectile_specs.initial_speed * 0.5,
+                decay_rate=self.projectile_specs.decay_rate * 4
             )
             mini_bullets = [
                 Projectile(
                     self.world, 
-                    Transform(
-                        translation=impact_xyz + Vec3(0, 0, 0.1), 
-                        rotation=Vec3(0, 0, start_angle + math.pi/2 + angle_step/2 * i)
-                    ),
-                    specs=minibullet_specs
+                    specs=ProjectileSpecs(
+                        initial_speed=minibullet_specs.initial_speed,
+                        decay_rate=minibullet_specs.decay_rate,
+                        initial_transform=Transform(
+                            translation=impact_xyz + Vec3(0, 0, 0.1), 
+                            rotation=Vec3(0, 0, start_angle + math.pi/2 + angle_step/2 * i)
+                        )
+                    )
                 ) for i in range(number_of_minibullets)
             ]
 

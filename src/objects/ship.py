@@ -5,13 +5,16 @@ from glm import clamp
 from OpenGL import GL as gl
 
 from utils.geometry import Rect2, Vec2, Vec3, VecN
+from utils.logger import LOGGER
 from utils.sig import metsig
-from objects.element import Element, Vertex, VertexSpecification
+from objects.element import Element, ElementSpecification, ShapeSpec
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
 
 import numpy as np
+
+from transformation_matrix import Transform
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
@@ -89,24 +92,61 @@ class Ship(Element):
     _rotation_intensity = 0
     _was_t_pressed = False
 
-    def _create_vertex_buffer(self) -> VertexSpecification:
-        return VertexSpecification([
-            Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
-            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
+    # def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self) -> VertexSpecification:
+    #     return VertexSpecification([
+    #         Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
+    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
+    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
             
-            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
-            Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
+    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
+    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
+    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
 
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-            Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-            Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
-        ])
+    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
+    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
+    #         Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
+    #     ])
         
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+        
+        # TODO: find a better way to do this (kwargs)
+        kwargs['specs'] = ElementSpecification(
+            initial_transform=Transform(
+                translation=Vec3(0, 0, 0),
+                rotation=Vec3(0, 0, 0),
+                scale=Vec3(1, 1, 1),
+            ),
+            shape_specs=[
+                ShapeSpec(
+                    vertices=np.array([
+                        *(-0.1, -0.1, 0.0), #*(0.0, 0.0),
+                        *( 0.1, -0.1, 0.0), #*(1.0, 0.0),
+                        *(-0.1,  0.1, 0.0), #*(0.0, 0.5),
+                        *( 0.1, -0.1, 0.0), #*(1.0, 0.0),
+                        *( 0.1,  0.1, 0.0), #*(1.0, 0.5),
+                        *(-0.1,  0.1, 0.0), #*(0.0, 0.5),
+                        *(-0.1,  0.1, 0.0), #*(0.0, 0.5),
+                        *( 0.1,  0.1, 0.0), #*(1.0, 0.5),
+                        *( 0.0,  0.3, 0.0), #*(0.5, 1.0),
+                    ], dtype=np.float32),
+                ),
+
+                ShapeSpec(
+                    vertices=np.array([
+                        -0.5, -0.5, 0.0,
+                        -0.3, -0.5, 0.0,
+                        -0.3, -0.3, 0.0,
+
+                        -0.5, -0.5, 0.0,
+                        -0.3, -0.3, 0.0,
+                        -0.5, -0.3, 0.0,
+                    ], dtype=np.float32),
+                    render_mode=gl.GL_LINES
+                )
+            ]
+        )
         super().__init__(*args, **kwargs)
         self.controller = ShipController()
         self._last_shot_time = time.time()
@@ -126,7 +166,9 @@ class Ship(Element):
     def _physics_movement(self, delta_time: float):
         self.controller.process_input()
         if self.controller.input_movement != 0:
+            LOGGER.log_debug('Trying to move', 'Ship')
             self.move_forward(self.controller.input_movement)
+            LOGGER.log_debug(f'Translation: {self.transform.translation}', 'Ship')
         if self.controller.input_rotation != 0:
         
             ROT_ACCEL = 3.5

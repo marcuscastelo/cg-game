@@ -2,12 +2,14 @@ from glm import clamp
 from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from utils.sig import metsig
-from objects.element import Element, Vertex, VertexSpecification
+from objects.element import Element, ElementSpecification, ShapeSpec
 from objects.projectile import Projectile
 
 import numpy as np
 
 from OpenGL import GL as gl
+
+from transformation_matrix import Transform
 
 MAX_SPEED = 0.4
 ACCEL = 0.8
@@ -15,22 +17,42 @@ ACCEL = 0.8
 class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+        # TODO: find a better way to do this (kwargs)
+        kwargs['specs'] = ElementSpecification(
+            initial_transform=Transform(
+                translation=Vec3(0, 0, 0),
+                rotation=Vec3(0, 0, 0),
+                scale=Vec3(1, 1, 1),
+            ),
+            shape_specs=[
+                ShapeSpec(vertices=np.array([
+                    *(-0.1, -0.1, +0.0), #*(+0, +0),
+                    *(+0.1, -0.1, +0.0), #*(+1, +0),
+                    *(+0.1, +0.1, +0.0), #*(+1, +1),
+                    *(-0.1, -0.1, +0.0), #*(+0, +0),
+                    *(-0.1, +0.1, +0.0), #*(+0, +1),
+                    *(+0.1, +0.1, +0.0), #*(+1, +1),
+                ], dtype=np.float32)),
+            ]
+        )
+
+
         super().__init__(*args, **kwargs)
         self.speed = 1 # [-MAX_SPEED, MAX_SPEED]
         self._accel_dir = 1 # {-1, 1}
         self.dying = False
         pass
 
-    def _create_vertex_buffer(self) -> VertexSpecification:
-        return VertexSpecification([
-            Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
-            Vertex(Vec3(+0.1, -0.1, +0.0), Vec2(+1, +0)),
-            Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
+    # def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self) -> VertexSpecification:
+    #     return VertexSpecification([
+    #         Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
+    #         Vertex(Vec3(+0.1, -0.1, +0.0), Vec2(+1, +0)),
+    #         Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
 
-            Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
-            Vertex(Vec3(-0.1, +0.1, +0.0), Vec2(+0, +1)),
-            Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
-        ])
+    #         Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
+    #         Vertex(Vec3(-0.1, +0.1, +0.0), Vec2(+0, +1)),
+    #         Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
+    #     ])
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         return np.array([

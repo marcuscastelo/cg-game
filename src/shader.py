@@ -2,10 +2,13 @@ from OpenGL import GL as gl
 import numpy as np
 from utils.logger import LOGGER
 
+from gl_abstractions.layout import Layout
+
 class Shader:
-    def __init__(self, vert_path: str, frag_path: str):
+    def __init__(self, vert_path: str, frag_path: str, layout: Layout):
         self.frag_path = frag_path
         self.vert_path = vert_path
+        self.layout = layout
 
         self.vert_shader = None
         self.frag_shader = None
@@ -66,9 +69,9 @@ class Shader:
 
         # Check for errors
         if gl.glGetProgramiv(self.program, gl.GL_LINK_STATUS) != gl.GL_TRUE:
+            log = gl.glGetProgramInfoLog(self.program)
             self._cleanup()
-            raise RuntimeError(f'Error linking {self.vert_path} and {self.frag_path}: {gl.glGetProgramInfoLog(self.program)}')
-        
+            raise RuntimeError(f'Error linking {self.vert_path} and {self.frag_path}: {log}')
 
     def _cleanup(self):
         if self.program is None:
@@ -102,3 +105,56 @@ class Shader:
         gl.glUniform1i(uniform_loc, value)
     
 
+class ShaderDB:
+    _instance: 'ShaderDB' = None
+    def __init__(self):
+        self.shaders = {}
+        self.shaders['simple_red'] = Shader(
+            'shaders/simple_red.vert', 'shaders/simple_red.frag',
+            layout=Layout([
+                ('a_Position', 3),
+            ])
+        )
+
+        self.shaders['textured'] = Shader(
+            'shaders/textured.vert', 'shaders/textured.frag',
+            layout=Layout([
+                ('a_Position', 3),
+                ('a_TexCoord', 2),
+            ])
+        )
+
+    @classmethod
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    def __new__(cls, *args, **kwargs):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __getitem__(self, key):
+        return self.shaders[key]
+
+    def __setitem__(self, key, value):
+        self.shaders[key] = value
+
+    def __delitem__(self, key):
+        del self.shaders[key]
+    
+    def __contains__(self, key):
+        return key in self.shaders
+
+    def __iter__(self):
+        return iter(self.shaders)
+
+    def __len__(self):
+        return len(self.shaders)
+
+    def __str__(self):
+        return str(self.shaders)
+
+    def __repr__(self):
+        return repr(self.shaders)
