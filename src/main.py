@@ -77,7 +77,7 @@ def glfw_thread():
         # Actual rendering of the scene
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            gl.glClearColor(1,1,1, 1.0)
+            gl.glClearColor(0.51,0.37,0.76, 1.0)
 
             # If game has eneded, show the end game screen (empty scene with varying colors)
             world.update()
