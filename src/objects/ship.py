@@ -89,15 +89,15 @@ class Ship(Element):
 
     def _create_vertex_buffer(self) -> VertexSpecification:
         return VertexSpecification([
-            Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(-1, -1)),
-            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, -1)),
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(-1, +2/4)),
+            Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
+            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
             
-            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, -1)),
+            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
             Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(-1, +2/4)),
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
 
-            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(-1, +2/4)),
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
             Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
             Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
         ])

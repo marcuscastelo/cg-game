@@ -1,6 +1,7 @@
 import ctypes
 from dataclasses import dataclass, field
 import math
+import os
 import time
 from typing import TYPE_CHECKING
 import numpy as np
@@ -10,11 +11,14 @@ from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
+import imageio
+
 from shader import Shader
 
 from transformation_matrix import Transform
 
 TEXTURED_SHADER = None
+IMAGE: imageio.core.util.Array = imageio.imread('/home/marucs/Development_SSD/USP/2022/1_Sem/CG/cg-trab/textures/texure.jpg')[::-1,:,:] # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
 
@@ -123,6 +127,21 @@ class Element:
 
         gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, stride, tex_offset) # 2 texture coordinates per vertex
 
+
+        print(f'Type of IMAGE: {type(IMAGE)}')
+
+        self.texture = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
+        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture}')
+
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+
+        w, h, *_ = IMAGE.shape # TODO: Texture class to store image and size
+
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
         
 
         # Unbind the VAO and VBO to avoid accidental changes
@@ -286,8 +305,13 @@ class Element:
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
         self.shader.use()
 
+        gl.glBindTextureUnit(0, self.texture)
+
         # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
+        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
+        # self.shader.upload_uniform_int('u_Texture', 0)
+        # loc= gl.glGetUniformLocation(self.shader.program, 'u_Texture')
+        # gl.glUniform1d(loc, gl.GL_TEXTURE0)
 
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))

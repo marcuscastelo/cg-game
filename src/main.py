@@ -9,6 +9,7 @@ Membros:
 '''
 
 from colorsys import hsv_to_rgb
+from dataclasses import dataclass
 from threading import Thread
 
 import glfw
@@ -48,6 +49,10 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
     return window
 
+def setup_texure_config():
+    # gl. #TODO: setup magnification and minification, etc
+    pass
+
 def glfw_thread():
     '''
     This function runs in a separate thread. 
@@ -57,15 +62,13 @@ def glfw_thread():
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
 
+    setup_texure_config()
     set_glfw_callbacks(window)
 
     # Create the scene (world)
     LOGGER.log_info("Preparing world", 'glfw_thread')
     world = APP_VARS.world
     world.setup_scene()
-
-    hsv = [0, 0, 1]
-    hsv_change_rate = 0.01
 
     # Render loop: keeps running until the window is closed or the GUI signals to close
     while not glfw.window_should_close(window) and not APP_VARS.closing:
@@ -74,20 +77,10 @@ def glfw_thread():
         # Actual rendering of the scene
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            rgb = hsv_to_rgb(*hsv)
-            gl.glClearColor(*rgb, 1.0)
-
+            gl.glClearColor(1,1,1, 1.0)
 
             # If game has eneded, show the end game screen (empty scene with varying colors)
-            if world.game_ended():
-                hsv[1] = 0.5
-                hsv[0] += hsv_change_rate
-            else: # Otherwise, show the normal scene with a white background
-                hsv[0] = hsv[1] = 0
-
-                # Update the scene (update physics and render all objects)
-                world.update()
-                pass
+            world.update()
 
             # Special shortcut to reset scene
             if IS.is_pressed('r'):

@@ -93,7 +93,12 @@ class Shader:
     def use(self):
         gl.glUseProgram(self.program)
 
-    def set_uniform_matrix(self, name: str, value: np.ndarray):
+    def upload_uniform_matrix4f(self, name: str, value: np.ndarray):
         uniform_loc = gl.glGetUniformLocation(self.program, name)
         gl.glUniformMatrix4fv(uniform_loc, 1, gl.GL_FALSE, value)
+
+    def upload_uniform_int(self, name: str, value: int):
+        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        gl.glUniform1i(uniform_loc, value)
+    
 
