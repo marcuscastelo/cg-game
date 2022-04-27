@@ -11,6 +11,8 @@ from OpenGL import GL as gl
 
 from transformation_matrix import Transform
 
+import numpy as np
+
 if TYPE_CHECKING:
     from objects.ship import Ship
     from world import World
@@ -34,17 +36,23 @@ class Projectile(Element):
         self.live_time = 0
         self.specs = specs
         super().__init__(world, initial_transform, **kwargs)
+        self._render_primitive = gl.GL_LINES
         self.is_particle = True
         self.speed = self.specs.initial_speed
 
     def _create_vertex_buffer(self) -> VertexSpecification:
         # TODO: find better place for non-funcitonal code (side-effects)
         self.transform.scale.y = self.specs.length
-        self._render_primitive = gl.GL_LINES
 
         return VertexSpecification([
             Vertex(Vec3(0, -1, 0), Vec2(0, 0)),
             Vertex(Vec3(0, 1, 0), Vec2(0, 0)),
+        ])
+
+    def _get_bounding_box_vertices(self) -> np.ndarray:
+        return np.array([
+            [-0.01, -1, 0],
+            [+0.01, +1, 0],
         ])
 
     def _render(self):

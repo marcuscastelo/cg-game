@@ -1,9 +1,11 @@
 from glm import clamp
-from utils.geometry import Vec2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from utils.sig import metsig
 from objects.element import Element, Vertex, VertexSpecification
 from objects.projectile import Projectile
+
+import numpy as np
 
 from OpenGL import GL as gl
 
@@ -29,18 +31,24 @@ class Enemy(Element):
             Vertex(Vec3(-0.1, +0.1, +0.0), Vec2(+0, +1)),
             Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
         ])
-    
+
+    def _get_bounding_box_vertices(self) -> np.ndarray:
+        return np.array([
+            [-0.1, -0.1, 0],
+            [+0.1, -0.1, 0],
+            [+0.1, +0.1, 0],
+            [-0.1, -0.1, 0],
+        ])
+
     def _physics_update(self, delta_time: float):
-        min_x, min_y, max_x, max_y = Element.get_bounding_box(self)
+        bbox = self.get_bounding_box()
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 
         for projectile in projectiles:
             if projectile.is_particle:
                 continue
             
-            if projectile.x < min_x or projectile.x > max_x:
-                continue
-            if projectile.y < min_y or projectile.y > max_y:
+            if not bbox.contains(projectile.transform.translation.xy):
                 continue
 
             LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')

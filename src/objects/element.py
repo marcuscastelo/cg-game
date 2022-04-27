@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2, Vec3
+from utils.geometry import Rect, Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
@@ -167,14 +167,41 @@ class Element:
         '''
         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
 
+    def get_bounding_box(self) -> Rect2:
+        '''
+        Returns the bounding box of the element with scale, rotation and translation applied
+        '''
+        vertices = self._get_bounding_box_vertices()
+        # Add forth dimension
+        vertices = np.insert(vertices, 3, 0.0, axis=1)
+
+        # Transform the vertices
+        vertices = self.transform.model_matrix @ vertices.T
+
+        # Find the minimum and maximum x and y values
+        min_x = min(vertices, key=lambda x: x[0])[0]
+        max_x = max(vertices, key=lambda x: x[0])[0]
+        min_y = min(vertices, key=lambda x: x[1])[1]
+        max_y = max(vertices, key=lambda x: x[1])[1]
+
+        return Rect2(min_x, min_y, max_x, max_y) + self.transform.translation.xy
+
+    def _get_bounding_box_vertices(self) -> np.ndarray:
+        '''
+        Return the bounding box of the element
+        np.array([[x1, y1, z1], [x2, y2, z2], ...])
+        '''
+        raise NotImplementedError(f'{self.__class__.__name__} does not implement get_bounding_box')
+
 
     # Create a bounding box
     @staticmethod
-    def get_bounding_box(elem: 'Element') -> Rect2:
-        min_x = min(elem._vertices[::3])
-        min_y = min(elem._vertices[1::3])
-        max_x = max(elem._vertices[::3])
-        max_y = max(elem._vertices[1::3])
+    def DEPRECATED__DELME__get_bounding_box(elem: 'Element') -> Rect2:
+        raise NotImplementedError("Deprecated method, please change")
+        min_x = min(elem._vertices[::5])
+        min_y = min(elem._vertices[1::5])
+        max_x = max(elem._vertices[::5])
+        max_y = max(elem._vertices[1::5])
 
         vertices = np.array([
             [min_x, min_y, 0, 0],
@@ -191,6 +218,7 @@ class Element:
 
     
     def _on_outside_screen(self, screen_rect: Rect2):
+        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 
     def move(self, intensity: float = 1.0):
@@ -201,7 +229,7 @@ class Element:
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
 
-        self_rect = Element.get_bounding_box(self)
+        self_rect = self.get_bounding_box()
         screen_rect = SCREEN_RECT
 
         if not screen_rect.intersects(self_rect):
