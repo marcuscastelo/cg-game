@@ -41,13 +41,13 @@ class World:
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
 
         e1 = Enemy(world)
-        e1.transform.translation.xy = Vec2(-0.9,    0.5)
+        e1.transform.translation.xy = Vec2(-0.8,    0.5)
 
         e2 = Enemy(world)
         e2.transform.translation.xy = Vec2( 0.0,    0.5)
 
         e3 = Enemy(world)
-        e3.transform.translation.xy = Vec2( 0.9,    0.5)
+        e3.transform.translation.xy = Vec2( 0.8,    0.5)
         
         e4 = Enemy(world)
         e4.transform.translation.xy = Vec2( 0.0,    0.9)
