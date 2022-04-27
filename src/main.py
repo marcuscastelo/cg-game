@@ -18,9 +18,9 @@ import OpenGL.GL as gl
 from threading import Thread
 
 from utils.logger import LOGGER
+from app_state import APP_VARS
 
 from constants import WINDOW_SIZE
-from app_state import APP_VARS
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
 
 def create_window():

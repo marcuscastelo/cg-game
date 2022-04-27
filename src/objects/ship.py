@@ -13,6 +13,7 @@ from objects.projectile import Projectile
 from input.input_system import INPUT_SYSTEM as IS
 
 import numpy as np
+from shader import ShaderDB
 
 from transformation_matrix import Transform
 
@@ -133,18 +134,20 @@ class Ship(Element):
                     ], dtype=np.float32),
                 ),
 
-                ShapeSpec(
-                    vertices=np.array([
-                        -0.5, -0.5, 0.0,
-                        -0.3, -0.5, 0.0,
-                        -0.3, -0.3, 0.0,
-
-                        -0.5, -0.5, 0.0,
-                        -0.3, -0.3, 0.0,
-                        -0.5, -0.3, 0.0,
-                    ], dtype=np.float32),
-                    render_mode=gl.GL_LINES
-                )
+                # ShapeSpec(
+                #     vertices=np.array([
+                #         *(0.5+-0.1, -0.1, 0.0), *(0.0, 0.0),
+                #         *(0.5+ 0.1, -0.1, 0.0), *(1.0, 0.0),
+                #         *(0.5+-0.1,  0.1, 0.0), *(0.0, 0.5),
+                #         *(0.5+ 0.1, -0.1, 0.0), *(1.0, 0.0),
+                #         *(0.5+ 0.1,  0.1, 0.0), *(1.0, 0.5),
+                #         *(0.5+-0.1,  0.1, 0.0), *(0.0, 0.5),
+                #         *(0.5+-0.1,  0.1, 0.0), *(0.0, 0.5),
+                #         *(0.5+ 0.1,  0.1, 0.0), *(1.0, 0.5),
+                #         *(0.5+ 0.0,  0.3, 0.0), *(0.5, 1.0),
+                #     ], dtype=np.float32),
+                #     shader=ShaderDB.get_instance()['textured']
+                ),
             ]
         )
         super().__init__(*args, **kwargs)
@@ -220,4 +223,4 @@ class Ship(Element):
 
         self._last_shot_time = curr_time
 
-        Projectile.create_from(self)
+        Projectile.create_from_ship(self)

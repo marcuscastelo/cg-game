@@ -87,7 +87,7 @@ class Element:
         assert isinstance(world, World), f'{world} is not a World'
         assert isinstance(specs, ElementSpecification), f'{specs} is not an Elementspecs'
 
-        self.transform = specs.initial_transform
+        self._transform = specs.initial_transform
         self.primitives = specs.shape_specs
     
         self.world = world
@@ -182,6 +182,14 @@ class Element:
         '''
         # Rotate over Z axis (2D)
         self.transform.rotation.z += angle
+
+
+    @property
+    def transform(self) -> Transform:
+        '''
+        Returns the transform of the element
+        '''
+        return self._transform
 
     @property
     def x(self):

@@ -36,23 +36,18 @@ class Projectile(Element):
         self.live_time = 0
         self.projectile_specs = specs
         
-        kwargs['specs'] = ElementSpecification(
-            initial_transform=Transform(
-                translation=Vec3(0, 0, 0),
-                rotation=Vec3(0, 0, 0),
-                scale=Vec3(0, specs.length, 1)
-            ),
-            shape_specs = [
-                ShapeSpec(vertices=np.array([
-                    *(0.0,  -1.0,   0.0),
-                    *(0.0,  +1.0,   0.0),
-                ], dtype=np.float32),
-                render_mode=gl.GL_LINES,
-                )
-            ]
-        )
+        # TODO: avoid scale overwriting somehow (if user already set scale before)
+        specs.initial_transform.scale.y = specs.length
+        specs.shape_specs = [
+            ShapeSpec(vertices=np.array([
+                *(0.0,  -1.0,   0.0),
+                *(0.0,  +1.0,   0.0),
+            ], dtype=np.float32),
+            render_mode=gl.GL_LINES,
+            )
+        ]
 
-        super().__init__(world, **kwargs)
+        super().__init__(world, specs, *args, **kwargs)
 
         self.is_particle = True # TODO: remove this and create a proper particle class
         self.speed = self.projectile_specs.initial_speed
@@ -68,14 +63,16 @@ class Projectile(Element):
         return super()._render()
 
     @classmethod
-    def create_from(cls, ship: 'Ship') -> 'Projectile':
-        relavite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * ship.ship_len
-        projectile_pos = ship.transform.translation.xyz + relavite_weapon_distance 
+    def create_from_ship(cls, ship: 'Ship') -> 'Projectile':
+        relatite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * ship.ship_len
+        projectile_pos = ship.transform.translation.xyz + relatite_weapon_distance 
         
         obj = cls(
             world = ship.world,
             specs = ProjectileSpecs(
-                initial_transform=Transform(translation=projectile_pos, rotation=Vec3(0, 0, ship.angle)),
+                initial_transform=Transform(
+                    translation=projectile_pos, 
+                    rotation=Vec3(0, 0, ship.angle)),
             )
         )
 
@@ -106,35 +103,35 @@ class Projectile(Element):
         return super()._physics_update(delta_time)
 
     def destroy(self):
-        if not self.destroyed and not self.too_small() and not self.is_particle:
-            impact_xyz = self.transform.translation.xyz
-            TIME_TO_TRAVEL_SCREEN = 1 # seconds
-            MAX_PARTICLES = 50
-            particle_lifetime_completion = min(1, self.live_time / TIME_TO_TRAVEL_SCREEN)
+        # if not self.destroyed and not self.too_small() and not self.is_particle:
+        #     impact_xyz = self.transform.translation.xyz
+        #     TIME_TO_TRAVEL_SCREEN = 1 # seconds
+        #     MAX_PARTICLES = 50
+        #     particle_lifetime_completion = min(1, self.live_time / TIME_TO_TRAVEL_SCREEN)
 
-            number_of_minibullets = int(math.ceil(MAX_PARTICLES * particle_lifetime_completion)) + 3
-            start_angle = self.transform.rotation.z
-            angle_step = 2 * math.pi / number_of_minibullets
-            minibullet_specs = ProjectileSpecs(
-                initial_speed=self.projectile_specs.initial_speed * 0.5,
-                decay_rate=self.projectile_specs.decay_rate * 4
-            )
-            mini_bullets = [
-                Projectile(
-                    self.world, 
-                    specs=ProjectileSpecs(
-                        initial_speed=minibullet_specs.initial_speed,
-                        decay_rate=minibullet_specs.decay_rate,
-                        initial_transform=Transform(
-                            translation=impact_xyz + Vec3(0, 0, 0.1), 
-                            rotation=Vec3(0, 0, start_angle + math.pi/2 + angle_step/2 * i)
-                        )
-                    )
-                ) for i in range(number_of_minibullets)
-            ]
+        #     number_of_minibullets = int(math.ceil(MAX_PARTICLES * particle_lifetime_completion)) + 3
+        #     start_angle = self.transform.rotation.z
+        #     angle_step = 2 * math.pi / number_of_minibullets
 
-            for bullet in mini_bullets:
-                bullet.transform.scale.y = 0.1
+        #     initial_speed=self.projectile_specs.initial_speed * 0.5,
+        #     decay_rate=self.projectile_specs.decay_rate * 4
+            
+        #     mini_bullets = [
+        #         Projectile(
+        #             self.world, 
+        #             specs=ProjectileSpecs(
+        #                 initial_speed=initial_speed,
+        #                 decay_rate=decay_rate,
+        #                 initial_transform=Transform(
+        #                     translation=impact_xyz + Vec3(0, 0, 0.1), 
+        #                     rotation=Vec3(0, 0, start_angle + math.pi/2 + angle_step/2 * i)
+        #                 )
+        #             )
+        #         ) for i in range(number_of_minibullets)
+        #     ]
+
+        #     for bullet in mini_bullets:
+        #         bullet.transform.scale.y = 0.1
 
         return super().destroy()
 
