@@ -90,10 +90,16 @@ def glfw_thread():
             if IS.is_pressed('r'):
                 world.setup_scene()
 
+            if(world.is_player_victory()):
+                #renderiza a foto foda do paint
+                pass
+
         render() # Render to the default framebuffer (screen)
 
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
     
+    
+
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
     APP_VARS.closing = True # Make the GUI close too
 
