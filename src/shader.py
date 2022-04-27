@@ -116,6 +116,13 @@ class ShaderDB:
             ])
         )
 
+        self.shaders['colored'] = Shader(
+            'shaders/colored.vert', 'shaders/colored.frag',
+            layout=Layout([
+                ('a_Position', 3), ('a_Color', 3),
+            ])
+        )
+
         self.shaders['textured'] = Shader(
             'shaders/textured.vert', 'shaders/textured.frag',
             layout=Layout([
@@ -123,6 +130,9 @@ class ShaderDB:
                 ('a_TexCoord', 2),
             ])
         )
+
+    def get_shader(self, name: str):
+        return self.shaders[name]
 
     @classmethod
     def get_instance(cls):
