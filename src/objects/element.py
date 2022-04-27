@@ -18,7 +18,7 @@ from shader import Shader
 from transformation_matrix import Transform
 
 TEXTURED_SHADER = None
-IMAGE: imageio.core.util.Array = imageio.imread('/home/marucs/Development_SSD/USP/2022/1_Sem/CG/cg-trab/textures/texure.jpg')[::-1,:,:] # TODO: relative path
+IMAGE: imageio.core.util.Array = imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:] # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
 
@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 @dataclass
 class Vertex:
     a_Position: Vec3
-    a_TexCoord: Vec2
+    a_TexCoord: Vec2 = Vec2(0,0) #TODO - Testing purposes. Take it out later
 
 @dataclass
 class VertexSpecification:

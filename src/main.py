@@ -70,6 +70,10 @@ def glfw_thread():
     world = APP_VARS.world
     world.setup_scene()
 
+    R: float = 32/255 
+    G: float = 31/255 
+    B: float = 65/255 
+
     # Render loop: keeps running until the window is closed or the GUI signals to close
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
@@ -77,7 +81,7 @@ def glfw_thread():
         # Actual rendering of the scene
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            gl.glClearColor(1,1,1, 1.0)
+            gl.glClearColor(R, G, B, 1.0)
 
             # If game has eneded, show the end game screen (empty scene with varying colors)
             world.update()
