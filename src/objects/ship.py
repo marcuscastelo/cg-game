@@ -4,12 +4,14 @@ import time
 from glm import clamp
 from OpenGL import GL as gl
 
-from utils.geometry import Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.sig import metsig
 from objects.element import Element, Vertex, VertexSpecification
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
+
+import numpy as np
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
@@ -109,8 +111,17 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
+    def _get_bounding_box_vertices(self) -> Rect2:
+        return np.array([
+            [-0.1, -0.1, 0], 
+            [+0.1, -0.1, 0],
+            [+0.1, +0.3, 0],
+            [-0.1, +0.3, 0],
+        ])
+
     def _physics_update(self, delta_time: float):
-        self.shoot()
+        self.shoot()    
+        print(f'BBOX = {self.get_bounding_box()}')
 
         self.controller.process_input()
         if self.controller.input_movement != 0:
