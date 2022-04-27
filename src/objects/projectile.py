@@ -77,7 +77,7 @@ class Projectile(Element):
             LOGGER.log_error(f"Trying to update destroyed projectile {self}")
             return
 
-        self.move()
+        self.move_forward()
         self.speed = max(self.speed + self.speed * self.specs.acceleration, 0)
 
         self.transform.scale.y *= (1 - self.specs.decay_rate)
@@ -88,6 +88,8 @@ class Projectile(Element):
         if outside_screen or self.too_small():
             if not self.destroyed:
                 self.destroy()
+
+        return super()._physics_update(delta_time)
 
     def destroy(self):
         if not self.destroyed and not self.too_small() and not self.is_particle:

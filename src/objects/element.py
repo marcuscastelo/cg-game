@@ -12,6 +12,8 @@ from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
+from gl_abstractions.vertex_array import VertexArray
+from gl_abstractions.vertex_buffer import VertexBuffer
 
 from shader import Shader
 
@@ -24,7 +26,6 @@ from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from world import World
-
 
 @dataclass
 class Vertex:
@@ -81,31 +82,15 @@ class Element:
         # if len(self._ouline_vertices) == 0:
         #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
         #     self._ouline_vertices = self._vertices
+        self._vertices = self._vertex_specs.to_np_array()
 
         # Vertex array object that will hold all other buffers
-        self.vao = gl.glGenVertexArrays(1)
+        self.vertex_array = VertexArray()
+        self.vertex_buffer = VertexBuffer(self._vertices)
         
-        # Position buffer
-        self.vbo = gl.glGenBuffers(1) 
-
         # Bind the Vertex Array Object and then the Vertex Buffer Object 
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
-        # Set the vertex buffer data
-        self._vertices = self._vertex_specs.to_np_array()
-        print(f'vertices: {self._vertices}')
-        FloatArray = gl.GLfloat * len(self._vertices)
-        my_float_array = FloatArray(*self._vertices)
-        my_float_array_len = len(self._vertices) * 4
-        assert my_float_array_len == len(self._vertices) *  4, f"{my_float_array_len} != {len(self._vertices) * 4}" #TODO: remove assert
-        gl.glBufferData(
-            gl.GL_ARRAY_BUFFER,
-            my_float_array_len,
-            my_float_array,
-            gl.GL_DYNAMIC_DRAW
-        )
-
+        self.vertex_array.bind()
+        self.vertex_buffer.bind()
         # Load shader and use it and save it for rendering
         global TEXTURED_SHADER
         if TEXTURED_SHADER is None:
@@ -145,7 +130,7 @@ class Element:
         
 
         # Unbind the VAO and VBO to avoid accidental changes
-        gl.glBindVertexArray(0) # Unbind the VAO
+        self.vertex_array.unbind()
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
     def _create_vertex_buffer(self) -> VertexSpecification:
@@ -194,34 +179,11 @@ class Element:
         raise NotImplementedError(f'{self.__class__.__name__} does not implement get_bounding_box')
 
 
-    # Create a bounding box
-    @staticmethod
-    def DEPRECATED__DELME__get_bounding_box(elem: 'Element') -> Rect2:
-        raise NotImplementedError("Deprecated method, please change")
-        min_x = min(elem._vertices[::5])
-        min_y = min(elem._vertices[1::5])
-        max_x = max(elem._vertices[::5])
-        max_y = max(elem._vertices[1::5])
-
-        vertices = np.array([
-            [min_x, min_y, 0, 0],
-            [max_x, max_y, 0, 0]
-        ])
-
-        # Transform the vertices
-        vertices = vertices @ elem.transform.model_matrix.T
-
-        start = Vec2(vertices[0, 0], vertices[0, 1])
-        end = Vec2(vertices[1, 0], vertices[1, 1])
-
-        return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
-
-    
-    def _on_outside_screen(self, screen_rect: Rect2):
+    def _on_outside_screen(self):
         LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 
-    def move(self, intensity: float = 1.0):
+    def move_forward(self, intensity: float = 1.0):
         '''
         Move the element forward according to the current rotation
         '''
@@ -229,12 +191,8 @@ class Element:
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
 
-        self_rect = self.get_bounding_box()
-        screen_rect = SCREEN_RECT
 
-        if not screen_rect.intersects(self_rect):
-            self._on_outside_screen(screen_rect)
-
+        
 
     def rotate(self, angle: float):
         '''
@@ -295,14 +253,17 @@ class Element:
 
     def _physics_update(self, delta_time: float):
         '''
-        Pure virtual method, must be implemented in subclass. Should update the element's physics
+        If overriden in sublcass, must call super, updates the element's physics
         It is called every physics update (approx. 50 times per second)
         '''
-        raise NotImplementedError("Abstract method, please implement in subclass")
+
+        self_rect = self.get_bounding_box()
+        if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+            self._on_outside_screen()
 
     def update(self):
         '''
-        Update the element, called every frame.
+        Updates the element, called every frame.
         If overridden, make sure to call the super method.
         Not intended to be overridden.
         '''
@@ -329,8 +290,8 @@ class Element:
         Basic rendering method. Can be overridden in subclass.
         '''
         # Bind the shader and VAO (VBO is bound in the VAO)
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+        self.vertex_array.bind()
+        self.vertex_buffer.bind()
         self.shader.use()
 
         gl.glBindTextureUnit(0, self.texture)

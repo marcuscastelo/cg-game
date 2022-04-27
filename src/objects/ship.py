@@ -119,13 +119,14 @@ class Ship(Element):
             [-0.1, +0.3, 0],
         ])
 
-    def _physics_update(self, delta_time: float):
-        self.shoot()    
-        print(f'BBOX = {self.get_bounding_box()}')
+    def _physics_shoot(self, delta_time: float):
+        if IS.is_pressed('space'):
+            self.shoot()    
 
+    def _physics_movement(self, delta_time: float):
         self.controller.process_input()
         if self.controller.input_movement != 0:
-            self.move(self.controller.input_movement)
+            self.move_forward(self.controller.input_movement)
         if self.controller.input_rotation != 0:
         
             ROT_ACCEL = 3.5
@@ -163,16 +164,16 @@ class Ship(Element):
             if t.scale.x > 1:
                 t.scale = Vec3(1, 1, 1)
 
-    def _is_out_of_bounds(self) -> bool:
-        return False
+    def _physics_update(self, delta_time: float):
+        self._physics_shoot(delta_time)
+        self._physics_movement(delta_time)
+
+        return super()._physics_update(delta_time)
 
     def shoot(self):
         curr_time = time.time()
 
         if (curr_time - self._last_shot_time) < SHOOTING_COOLDOWN:
-            return
-
-        if not IS.is_pressed('space'):
             return
 
         self._last_shot_time = curr_time

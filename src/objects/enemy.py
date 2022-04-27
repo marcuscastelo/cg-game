@@ -64,6 +64,8 @@ class Enemy(Element):
 
         self.transform.translation.xy += Vec2(self.speed, 0) * delta_time
 
+        return super()._physics_update(delta_time)
+
         pass
 
     def _render(self):
