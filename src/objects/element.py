@@ -29,7 +29,7 @@ if TYPE_CHECKING:
 @dataclass
 class Vertex:
     a_Position: Vec3
-    a_TexCoord: Vec2
+    a_TexCoord: Vec2 = Vec2(0,0) #TODO - Testing purposes. Take it out later
 
 @dataclass
 class VertexSpecification:

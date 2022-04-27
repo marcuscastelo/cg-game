@@ -1,5 +1,6 @@
 from utils.geometry import Vec3
 from utils.logger import LOGGER
+from objects.asteroids import Asteroids
 from objects.element import Element
 
 from objects.enemy import Enemy
@@ -31,6 +32,9 @@ class World:
         LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         self.elements.clear()
 
+        LOGGER.log_trace('Adding star ', 'world:setup_scene')
+        Asteroids(world, Transform(Vec3(-1, 0.8, 0.0)))
+        
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world, Transform(Vec3((0, 0, 0))))
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
@@ -44,6 +48,7 @@ class World:
         Enemy(world, Transform(Vec3( 0.7,    0.5,    0.0)))
         e4 = Enemy(world, Transform(Vec3( 0,    0.9,    0.0)))
         e4.speed = -1
+
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
