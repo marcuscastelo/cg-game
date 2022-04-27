@@ -74,6 +74,8 @@ class Enemy(Element):
                 continue
 
             LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
+            self.speed = 0
+            self._accel_dir = 0
             self.die()
             projectile.destroy()
 
