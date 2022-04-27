@@ -18,7 +18,8 @@ from shader import Shader, ShaderDB
 
 from transformation_matrix import Transform
 
-IMAGE: imageio.core.util.Array = imageio.imread('/home/marucs/Development_SSD/USP/2022/1_Sem/CG/cg-trab/textures/texure.jpg')[::-1,:,:] # TODO: relative path
+TEXTURED_SHADER = None
+IMAGE: imageio.core.util.Array = imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:] # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
 

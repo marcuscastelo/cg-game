@@ -1,8 +1,12 @@
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+from objects.star import Stars
 from objects.element import Element, ElementSpecification
 
 from objects.enemy import Enemy
+from objects.garbage import Garbage
+from objects.garbage_elipse import Garbage_Elipse
+from objects.satellite import Satellite
 
 from objects.ship import Ship
 from transformation_matrix import Transform
@@ -31,6 +35,9 @@ class World:
         LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         self.elements.clear()
 
+        LOGGER.log_trace('Adding star ', 'world:setup_scene')
+        Stars(world).transform = Transform(Vec3(-1, 0.8, 0.0)) # TODO: change
+        
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world)
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
@@ -52,6 +59,29 @@ class World:
         # e4 = Enemy(world)
         # e4.transform.translation.xy = Vec2(0, 0)
         # e4.speed = -1
+
+        LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
+        Garbage(world).transform = Transform(Vec3(0.45, 0.45, 0.0)) # TODO: change
+        Garbage_Elipse(world).transform = Transform(Vec3(0.45, 0.45, 0.0)) # TODO: change
+        
+        Garbage(world).transform = Transform(Vec3(-0.35, 0.45, 0.0))
+        Garbage_Elipse(world).transform = Transform(Vec3(-0.35, 0.45, 0.0)) # TODO: change
+        
+        Garbage(world).transform = Transform(Vec3(0.0, 0.75, 0.0))
+        Garbage_Elipse(world).transform = Transform(Vec3(0.0, 0.75, 0.0)) # TODO: change
+        
+        Garbage(world).transform = Transform(Vec3(0.45, -0.45, 0.0))
+        Garbage_Elipse(world).transform = Transform(Vec3(0.45, -0.45, 0.0)) # TODO: change
+        
+        Garbage(world).transform = Transform(Vec3(-0.35, -0.45, 0.0))
+        Garbage_Elipse(world).transform = Transform(Vec3(-0.35, -0.45, 0.0)) # TODO: change
+        
+        Garbage(world).transform = Transform(Vec3(0.0, -0.75, 0.0))
+        Garbage_Elipse(world).transform = Transform(Vec3(0.0, -0.75, 0.0)) # TODO: change
+
+
+        LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
+        Satellite(world).transform = Transform(Vec3(0,0,0)) # TODO: change
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
