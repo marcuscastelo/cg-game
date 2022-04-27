@@ -1,9 +1,12 @@
 from utils.geometry import Vec3
 from utils.logger import LOGGER
-from objects.asteroids import Asteroids
+from objects.star import Stars
 from objects.element import Element
 
 from objects.enemy import Enemy
+from objects.garbage import Garbage
+from objects.garbage_elipse import Garbage_Elipse
+from objects.satellite import Satellite
 
 from objects.ship import Ship
 from transformation_matrix import Transform
@@ -33,7 +36,7 @@ class World:
         self.elements.clear()
 
         LOGGER.log_trace('Adding star ', 'world:setup_scene')
-        Asteroids(world, Transform(Vec3(-1, 0.8, 0.0)))
+        Stars(world, Transform(Vec3(-1, 0.8, 0.0)))
         
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world, Transform(Vec3((0, 0, 0))))
@@ -49,6 +52,28 @@ class World:
         e4 = Enemy(world, Transform(Vec3( 0,    0.9,    0.0)))
         e4.speed = -1
 
+        LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
+        Garbage(world, Transform(Vec3(0.45, 0.45, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(0.45, 0.45, 0.0)))
+        
+        Garbage(world, Transform(Vec3(-0.35, 0.45, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(-0.35, 0.45, 0.0)))
+        
+        Garbage(world, Transform(Vec3(0.0, 0.75, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(0.0, 0.75, 0.0)))
+        
+        Garbage(world, Transform(Vec3(0.45, -0.45, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(0.45, -0.45, 0.0)))
+        
+        Garbage(world, Transform(Vec3(-0.35, -0.45, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(-0.35, -0.45, 0.0)))
+        
+        Garbage(world, Transform(Vec3(0.0, -0.75, 0.0)))
+        Garbage_Elipse(world, Transform(Vec3(0.0, -0.75, 0.0)))
+
+
+        LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
+        Satellite(world, Transform(Vec3(0,0,0)))
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
