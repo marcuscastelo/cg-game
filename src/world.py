@@ -110,6 +110,8 @@ class World:
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
         
+    def is_player_victory(self) -> bool:
+        return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0
 
 
 WORLD = World()
