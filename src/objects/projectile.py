@@ -89,6 +89,8 @@ class Projectile(Element):
             if not self.destroyed:
                 self.destroy()
 
+        return super()._physics_update(delta_time)
+
     def destroy(self):
         if not self.destroyed and not self.too_small() and not self.is_particle:
             impact_xyz = self.transform.translation.xyz

@@ -206,12 +206,8 @@ class Element:
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
 
-        self_rect = self.get_bounding_box()
-        screen_rect = SCREEN_RECT
 
-        if not screen_rect.intersects(self_rect):
-            self._on_outside_screen(screen_rect)
-
+        
 
     def rotate(self, angle: float):
         '''
@@ -272,14 +268,17 @@ class Element:
 
     def _physics_update(self, delta_time: float):
         '''
-        Pure virtual method, must be implemented in subclass. Should update the element's physics
+        If overriden in sublcass, must call super, updates the element's physics
         It is called every physics update (approx. 50 times per second)
         '''
-        raise NotImplementedError("Abstract method, please implement in subclass")
+
+        self_rect = self.get_bounding_box()
+        if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+            self._on_outside_screen()
 
     def update(self):
         '''
-        Update the element, called every frame.
+        Updates the element, called every frame.
         If overridden, make sure to call the super method.
         Not intended to be overridden.
         '''
