@@ -77,7 +77,7 @@ class Projectile(Element):
             LOGGER.log_error(f"Trying to update destroyed projectile {self}")
             return
 
-        self.move()
+        self.move_forward()
         self.speed = max(self.speed + self.speed * self.specs.acceleration, 0)
 
         self.transform.scale.y *= (1 - self.specs.decay_rate)

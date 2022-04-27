@@ -125,7 +125,7 @@ class Ship(Element):
 
         self.controller.process_input()
         if self.controller.input_movement != 0:
-            self.move(self.controller.input_movement)
+            self.move_forward(self.controller.input_movement)
         if self.controller.input_rotation != 0:
         
             ROT_ACCEL = 3.5

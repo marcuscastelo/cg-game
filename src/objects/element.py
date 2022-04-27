@@ -194,34 +194,11 @@ class Element:
         raise NotImplementedError(f'{self.__class__.__name__} does not implement get_bounding_box')
 
 
-    # Create a bounding box
-    @staticmethod
-    def DEPRECATED__DELME__get_bounding_box(elem: 'Element') -> Rect2:
-        raise NotImplementedError("Deprecated method, please change")
-        min_x = min(elem._vertices[::5])
-        min_y = min(elem._vertices[1::5])
-        max_x = max(elem._vertices[::5])
-        max_y = max(elem._vertices[1::5])
-
-        vertices = np.array([
-            [min_x, min_y, 0, 0],
-            [max_x, max_y, 0, 0]
-        ])
-
-        # Transform the vertices
-        vertices = vertices @ elem.transform.model_matrix.T
-
-        start = Vec2(vertices[0, 0], vertices[0, 1])
-        end = Vec2(vertices[1, 0], vertices[1, 1])
-
-        return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
-
-    
-    def _on_outside_screen(self, screen_rect: Rect2):
+    def _on_outside_screen(self):
         LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 
-    def move(self, intensity: float = 1.0):
+    def move_forward(self, intensity: float = 1.0):
         '''
         Move the element forward according to the current rotation
         '''
