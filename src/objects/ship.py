@@ -4,9 +4,9 @@ import time
 from glm import clamp
 from OpenGL import GL as gl
 
-from utils.geometry import Rect2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.sig import metsig
-from objects.element import Element
+from objects.element import Element, Vertex, VertexSpecification
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -87,38 +87,21 @@ class Ship(Element):
     _rotation_intensity = 0
     _was_t_pressed = False
 
-    def _init_vertices(self):
-        # self._render_primitive = gl.GL_LINE_STRIP
-        self._ouline_vertices = [
-            *(-0.1, -0.1, 0.0),
-            *(0.1, -0.1, 0.0),
-            *(0.1, 0.1, 0.0),
+    def _create_vertex_buffer(self) -> VertexSpecification:
+        return VertexSpecification([
+            Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
+            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
             
-            *(-0.1, -0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(0.1, 0.1, 0.0),
-            *(0 , 0.3, 0.0),
-            *(-0.1, 0.1, 0.0),
+            Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
+            Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
 
-            *(-0.1, -0.1, 0.0),
-        ]
-
-        self._normal_vertices = [
-            *(-0.1, -0.1, 0.0),
-            *(0.1, -0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(0.1, -0.1, 0.0),
-            *(0.1, 0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(-0.1, 0.1, 0.0),
-            *(0.1, 0.1, 0.0),
-            *(0 , 0.3, 0.0),
-        ]
-
-        self._vertices = self._normal_vertices
+            Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
+            Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
+            Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
+        ])
+        
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):

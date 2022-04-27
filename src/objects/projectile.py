@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import math
 from typing import TYPE_CHECKING
 
-from utils.geometry import Rect2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from objects.element import Element
+from objects.element import Element, Vertex, VertexSpecification
 
 from OpenGL import GL as gl
 
@@ -37,18 +37,15 @@ class Projectile(Element):
         self.is_particle = True
         self.speed = self.specs.initial_speed
 
-    def _init_vertices(self):
+    def _create_vertex_buffer(self) -> VertexSpecification:
+        # TODO: find better place for non-funcitonal code (side-effects)
+        self.transform.scale.y = self.specs.length
         self._render_primitive = gl.GL_LINES
 
-        # Vertices are defined to take the whole screen (vertically), so that transformations are easier
-        self._vertices = [
-            *(0.0,  -1.0,    0.0),
-            *(0.0,  1.0,   0.0),
-        ]
-
-        self._normal_vertices = self._ouline_vertices = self._vertices
-
-        self.transform.scale.y = self.specs.length
+        return VertexSpecification([
+            Vertex(Vec3(0, -1, 0), Vec2(0, 0)),
+            Vertex(Vec3(0, 1, 0), Vec2(0, 0)),
+        ])
 
     def _render(self):
         gl.glLineWidth(self.specs.width)

@@ -1,29 +1,53 @@
+import ctypes
+from dataclasses import dataclass, field
 import math
+import os
 import time
 from typing import TYPE_CHECKING
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from constants import SCREEN_RECT
+from constants import FLOAT_SIZE, SCREEN_RECT
+
+import imageio
 
 from shader import Shader
 
 from transformation_matrix import Transform
 
-SHADER = None
+TEXTURED_SHADER = None
+IMAGE: imageio.core.util.Array = imageio.imread('/home/marucs/Development_SSD/USP/2022/1_Sem/CG/cg-trab/textures/texure.jpg')[::-1,:,:] # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from world import World
 
+
+@dataclass
+class Vertex:
+    a_Position: Vec3
+    a_TexCoord: Vec2
+
+@dataclass
+class VertexSpecification:
+    vertices: list[Vertex]
+
+    def to_np_array(self) -> np.ndarray:
+        '''
+        Returns a numpy array of the vertices
+        '''
+        vertices_continuos = np.array([[*v.a_Position, *v.a_TexCoord] for v in self.vertices], dtype=np.float32)
+        vertices_flattened = vertices_continuos.flatten()
+        return vertices_flattened
+
 class Element:
     '''
     An abstract class for all the elements in the game
     '''
-    
+
     def __init__(self, world: 'World', initial_transform: Transform = None):
         '''
         Initialize the element inside the world, with an optional initial transform
@@ -41,21 +65,22 @@ class Element:
 
         self._render_primitive = gl.GL_TRIANGLES
 
-        self._vertices = []
-        self._normal_vertices = []
-        self._ouline_vertices = []
-        self._init_vertices()
+        self._vertex_specs = self._create_vertex_buffer()
+        assert isinstance(self._vertex_specs, VertexSpecification), f"Vertex buffer must be of type VertexBuffer, not {type(self._vertex_specs)}"
 
-        if len(self._vertices) == 0:
-            LOGGER.log_error(f'{self.__class__.__name__} id={id(self)} has no vertices')
+        self._normal_vertex_specs = self._vertex_specs
+        self._ouline_vertex_specs = self._vertex_specs
+        # TODO: reenable 'T' keybind
+        # if len(self._vertices) == 0:
+        #     LOGGER.log_error(f'{self.__class__.__name__} id={id(self)} has no vertices')
         
-        if len(self._normal_vertices) == 0:
-            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no normal vertices, assuming all vertices are normal')
-            self._normal_vertices = self._vertices
+        # if len(self._normal_vertices) == 0:
+        #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no normal vertices, assuming all vertices are normal')
+        #     self._normal_vertices = self._vertices
 
-        if len(self._ouline_vertices) == 0:
-            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
-            self._ouline_vertices = self._vertices
+        # if len(self._ouline_vertices) == 0:
+        #     LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
+        #     self._ouline_vertices = self._vertices
 
         # Vertex array object that will hold all other buffers
         self.vao = gl.glGenVertexArrays(1)
@@ -68,23 +93,62 @@ class Element:
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
 
         # Set the vertex buffer data
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
+        self._vertices = self._vertex_specs.to_np_array()
+        print(f'vertices: {self._vertices}')
+        FloatArray = gl.GLfloat * len(self._vertices)
+        my_float_array = FloatArray(*self._vertices)
+        my_float_array_len = len(self._vertices) * 4
+        assert my_float_array_len == len(self._vertices) *  4, f"{my_float_array_len} != {len(self._vertices) * 4}" #TODO: remove assert
+        gl.glBufferData(
+            gl.GL_ARRAY_BUFFER,
+            my_float_array_len,
+            my_float_array,
+            gl.GL_DYNAMIC_DRAW
+        )
 
         # Load shader and use it and save it for rendering
-        global SHADER
-        if SHADER is None:
-            SHADER = Shader('shaders/simple_red.vert', 'shaders/simple_red.frag')
-        self.shader = SHADER
+        global TEXTURED_SHADER
+        if TEXTURED_SHADER is None:
+            # FLAT_COLOR_SHADER = Shader('shaders/simple_red.vert', 'shaders/simple_red.frag')
+            TEXTURED_SHADER = Shader('shaders/textured.vert', 'shaders/textured.frag')
+            # pass
+        self.shader = TEXTURED_SHADER
 
         # Enable vertex attribute position
+        stride = 5 * FLOAT_SIZE # 3 for position, 2 for texcoord
+        pos_offset = ctypes.cast(0 * FLOAT_SIZE, ctypes.c_void_p) # Position offset: 0 (first 3 floats)
+        tex_offset = ctypes.cast(3 * FLOAT_SIZE, ctypes.c_void_p) # Texcoord offset: 3 (next 2 floats, after 3 floats for position)
+
         gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
+        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, stride, pos_offset) # 3 position values per vertex
+
+        gl.glEnableVertexAttribArray(1)
+        gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, stride, tex_offset) # 2 texture coordinates per vertex
+
+        gl.glVertexAttribPointer(1, 2, gl.GL_FLOAT, gl.GL_FALSE, stride, tex_offset) # 2 texture coordinates per vertex
+
+
+        print(f'Type of IMAGE: {type(IMAGE)}')
+
+        self.texture = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
+        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture}')
+
+        gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+
+        w, h, *_ = IMAGE.shape # TODO: Texture class to store image and size
+
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
+        
 
         # Unbind the VAO and VBO to avoid accidental changes
         gl.glBindVertexArray(0) # Unbind the VAO
         gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
 
-    def _init_vertices(self):
+    def _create_vertex_buffer(self) -> VertexSpecification:
         '''
         Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
         Example:
@@ -223,10 +287,11 @@ class Element:
             self._last_physics_update = time.time()
 
         if IS.is_pressed('t') and not self._was_t_pressed:
-            self._vertices = self._normal_vertices if self._vertices is self._ouline_vertices else self._ouline_vertices
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-            gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
-            self._render_primitive = gl.GL_LINE_STRIP if self._render_primitive is gl.GL_TRIANGLES else gl.GL_TRIANGLES
+            LOGGER.log_warning('T pressed, but not implemented for now') #TODO: reimplement with new classes
+            # self._vertex_specs = self._normal_vertex_specs if self._vertex_specs is self._ouline_vertex_specs else self._ouline_vertex_specs
+            # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+            # gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertex_specs)*4, (gl.GLfloat * len(self._vertex_specs))(*self._vertex_specs), gl.GL_DYNAMIC_DRAW)
+            # self._render_primitive = gl.GL_LINE_STRIP if self._render_primitive is gl.GL_TRIANGLES else gl.GL_TRIANGLES
         self._was_t_pressed = IS.is_pressed('t')
 
         self._render()
@@ -237,11 +302,16 @@ class Element:
         '''
         # Bind the shader and VAO (VBO is bound in the VAO)
         gl.glBindVertexArray(self.vao)
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
+        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
         self.shader.use()
 
+        gl.glBindTextureUnit(0, self.texture)
+
         # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
+        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
+        # self.shader.upload_uniform_int('u_Texture', 0)
+        # loc= gl.glGetUniformLocation(self.shader.program, 'u_Texture')
+        # gl.glUniform1d(loc, gl.GL_TEXTURE0)
 
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
