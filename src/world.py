@@ -1,11 +1,15 @@
-from utils.geometry import Vec2
+from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+from objects.garbage import Garbage
+from objects.garbage_elipse import Garbage_Elipse
+from objects.satellite import Satellite
 from objects.star import Stars
 from objects.element import Element
 
 from objects.enemy import Enemy
 
 from objects.ship import Ship
+from transformation_matrix import Transform
 
 class World:
     '''
@@ -53,28 +57,28 @@ class World:
         e4.transform.translation.xy = Vec2( 0.0,    0.9)
         e4.speed = -1
 
-        # LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
-        # Garbage(world).transform = Transform(Vec3(0.45, 0.45, 0.0)) # TODO: change
-        # Garbage_Elipse(world).transform = Transform(Vec3(0.45, 0.45, 0.0)) # TODO: change
+        LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
+        Garbage(world).transform.translation.xy = Vec2(0.45, 0.45)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, 0.45)
         
-        # Garbage(world).transform = Transform(Vec3(-0.35, 0.45, 0.0))
-        # Garbage_Elipse(world).transform = Transform(Vec3(-0.35, 0.45, 0.0)) # TODO: change
+        Garbage(world).transform.translation.xy = Vec2(-0.35, 0.45)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, 0.45)
         
-        # Garbage(world).transform = Transform(Vec3(0.0, 0.75, 0.0))
-        # Garbage_Elipse(world).transform = Transform(Vec3(0.0, 0.75, 0.0)) # TODO: change
+        Garbage(world).transform.translation.xy = Vec2(0.0, 0.75)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, 0.75)
         
-        # Garbage(world).transform = Transform(Vec3(0.45, -0.45, 0.0))
-        # Garbage_Elipse(world).transform = Transform(Vec3(0.45, -0.45, 0.0)) # TODO: change
+        Garbage(world).transform.translation.xy = Vec2(0.45, -0.45)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, -0.45)
         
-        # Garbage(world).transform = Transform(Vec3(-0.35, -0.45, 0.0))
-        # Garbage_Elipse(world).transform = Transform(Vec3(-0.35, -0.45, 0.0)) # TODO: change
+        Garbage(world).transform.translation.xy = Vec2(-0.35, -0.45)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, -0.45)
         
-        # Garbage(world).transform = Transform(Vec3(0.0, -0.75, 0.0))
-        # Garbage_Elipse(world).transform = Transform(Vec3(0.0, -0.75, 0.0)) # TODO: change
+        Garbage(world).transform.translation.xy = Vec2(0.0, -0.75)
+        Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, -0.75)
 
 
-        # LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
-        # Satellite(world).transform = Transform(Vec3(0,0,0)) # TODO: change
+        LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
+        Satellite(world).transform.translation.xy = Vec2(0, 0)
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
