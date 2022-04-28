@@ -249,12 +249,14 @@ class Ship(Element):
                 t.scale = Vec3(1, 1, 1)
 
     def _die_if_enemy_shot(self):
+        from objects.enemy import Enemy
         if self._dying:
             return
 
-        for projectile in ( element for element in self.world.elements if isinstance(element, Projectile) ):
-            if projectile.is_enemy and self.get_bounding_box().contains(projectile.transform.translation.xy):
+        for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
+            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box().contains(obj.transform.translation.xy):
                 LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
+                obj.destroy()
                 self.die()
                 return
 
