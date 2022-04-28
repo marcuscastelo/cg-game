@@ -189,7 +189,6 @@ class Element:
         Basic rendering method. Can be overridden in subclass.
         '''
         if self._dying:
-            LOGGER.log_debug(f'{self} is dying')
             self.transform.scale *= 0.9
             if self.transform.scale.x < 0.1:
                 self.destroy()

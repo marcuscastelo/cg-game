@@ -208,9 +208,7 @@ class Ship(Element):
     def _physics_movement(self, delta_time: float):
         self.controller.process_input()
         if self.controller.input_movement != 0:
-            LOGGER.log_debug('Trying to move', 'Ship')
             self.move_forward(self.controller.input_movement)
-            LOGGER.log_debug(f'Translation: {self.transform.translation}', 'Ship')
         if self.controller.input_rotation != 0:
         
             ROT_ACCEL = 3.5

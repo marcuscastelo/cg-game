@@ -7,6 +7,7 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
+from objects.projectile import Projectile
 from transform import Transform
 from gl_abstractions.shader import Shader, ShaderDB
 
@@ -148,4 +149,10 @@ class Satellite(Element):
 
     def _physics_update(self, delta_time: float):
         self.rotate(self.rotation_speed)
+
+        bbox = self.get_bounding_box()
+        for projectile in (element for element in self.world.elements if isinstance(element, Projectile)):
+            if not projectile.is_particle and bbox.contains(projectile.transform.translation.xy):
+                projectile.destroy()
+
         super()._physics_update(delta_time)
