@@ -94,22 +94,6 @@ class Ship(Element):
     _rotation_intensity = 0
     _was_t_pressed = False
 
-    # def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self) -> VertexSpecification:
-    #     return VertexSpecification([
-    #         Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
-    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-            
-    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
-    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-    #         Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
-    #     ])
-        
-
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
@@ -130,33 +114,33 @@ class Ship(Element):
                 ShapeSpec( 
                     vertices=np.array([
                         # Ship's body
-                        *(-0.075, -0.075, 0.0), *(light_silver),
-                        *( 0.075, -0.075, 0.0), *(dark_silver),
-                        *(-0.075,  0.075, 0.0), *(silver),
-
-                        *( 0.075, -0.075, 0.0), *(dark_silver),
-                        *( 0.075,  0.075, 0.0), *(dark_silver),
-                        *(-0.075,  0.075, 0.0), *(silver),
+                        [*(-0.075, -0.075, 0.0), *(light_silver)],
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
+                            
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*( 0.075,  0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
                         
                         # Ship's point
-                        *(-0.075,  0.075, 0.0), *(light_silver),
-                        *( 0.075,  0.075, 0.0), *(darker_silver),
-                        *( 0.0,  0.225, 0.0), *(silver),
-
+                        [*(-0.075,  0.075, 0.0), *(light_silver)],
+                        [*( 0.075,  0.075, 0.0), *(darker_silver)],
+                        [*( 0.0,  0.225, 0.0), *(silver)],
+                        
                         # Ship's propulsors
-                        *(0.035, -0.075, 0.0), *(dark_silver),
-                        *(0.055, -0.075, 0.0), *(dark_silver),
-                        *(0.055, -0.09, 0.0), *(dark_silver),
-                        *(0.035, -0.075, 0.0), *(dark_silver),
-                        *(0.035, -0.09, 0.0), *(dark_silver),
-                        *(0.055, -0.09, 0.0), *(dark_silver),
-
-                        *(-0.035, -0.075, 0.0), *(silver),
-                        *(-0.055, -0.075, 0.0), *(silver),
-                        *(-0.055, -0.09, 0.0), *(silver),
-                        *(-0.035, -0.075, 0.0), *(silver),
-                        *(-0.035, -0.09, 0.0), *(silver),
-                        *(-0.055, -0.09, 0.0), *(silver),
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.035, -0.09, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.035, -0.09, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'), # Shader uses colors defined in the vertices
                 ),
@@ -164,34 +148,33 @@ class Ship(Element):
                 ShapeSpec(
                     vertices=np.array([
                         #Wings
-                        *(0.075, 0.0, 0.0), *(silver),
-                        *(0.075, -0.01, 0.0), *(silver),
-                        *(0.115, -0.015, 0.0), *(dark_silver),
+                        [*(0.075, 0.0, 0.0), *(silver)],
+                        [*(0.075, -0.01, 0.0), *(silver)],
+                        [*(0.115, -0.015, 0.0), *(dark_silver)],
 
-                        *(0.075, 0.0, 0.0), *(dark_silver),
-                        *(0.115, -0.015, 0.0), *(darker_silver),
-                        *(0.13, 0.0, 0.0), *(darker_silver),
+                        [*(0.075, 0.0, 0.0), *(dark_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
 
-                        *(0.13, -0.04, 0.0), *(darker_silver),
-                        *(0.13, 0.0, 0.0), *(darker_silver),
-                        *(0.115, -0.015, 0.0), *(darker_silver),
+                        [*(0.13, -0.04, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
 
-                        *(-0.075, 0.0, 0.0), *(silver),
-                        *(-0.075, -0.01, 0.0), *(silver),
-                        *(-0.115, -0.015, 0.0), *(silver),
+                        [*(-0.075, 0.0, 0.0), *(silver)],
+                        [*(-0.075, -0.01, 0.0), *(silver)],
+                        [*(-0.115, -0.015, 0.0), *(silver)],
 
-                        *(-0.075, 0.0, 0.0), *(light_silver),
-                        *(-0.115, -0.015, 0.0), *(lighter_silver),
-                        *(-0.13, 0.0, 0.0), *(light_silver),
+                        [*(-0.075, 0.0, 0.0), *(light_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(light_silver)],
 
-                        *(-0.13, -0.04, 0.0), *(lighter_silver),
-                        *(-0.13, 0.0, 0.0), *(lighter_silver),
-                        *(-0.115, -0.015, 0.0), *(lighter_silver),
+                        [*(-0.13, -0.04, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(lighter_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
                     ], dtype = np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     
                 ),
-
             ]
         )
         super().__init__(*args, **kwargs)

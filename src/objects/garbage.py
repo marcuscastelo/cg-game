@@ -29,25 +29,24 @@ class Garbage(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        *(-0.025, -0.040, +0.0), *(garbage_color),
-                        *( 0.025, -0.040, +0.0), *(dark_garbage_color),
-                        *(-0.025,  0.040, +0.0), *(garbage_color),
-
-                        *(-0.025,  0.040, +0.0), *(garbage_color),
-                        *( 0.025, -0.040, +0.0), *(dark_garbage_color),
-                        *( 0.025,  0.040, +0.0), *(dark_garbage_color),
+                        [*(-0.025, -0.040, +0.0), *(garbage_color),],
+                        [*( 0.025, -0.040, +0.0), *(dark_garbage_color),],
+                        [*(-0.025,  0.040, +0.0), *(garbage_color),],
+                        [*(-0.025,  0.040, +0.0), *(garbage_color),],
+                        [*( 0.025, -0.040, +0.0), *(dark_garbage_color),],
+                        [*( 0.025,  0.040, +0.0), *(dark_garbage_color),],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                 ),
                 ShapeSpec(
                     vertices=np.array([
-                        *(0.000, 0.0375, +0.0), *(diamond_color),
-                        *(-0.015, 0.000, +0.0), *(diamond_color),
-                        *(0.015, 0.0, +0.0), *(diamond_color),
+                        [*(0.000, 0.0375, +0.0), *(diamond_color)],
+                        [*(-0.015, 0.000, +0.0), *(diamond_color)],
+                        [*(0.015, 0.0, +0.0), *(diamond_color)],
 
-                        *(0.015, 0.000, +0.0), *(diamond_color),
-                        *(-0.015, 0.000, +0.0), *(diamond_color),
-                        *(0.000, -0.0375, +0.0), *(diamond_color),
+                        [*(0.015, 0.000, +0.0), *(diamond_color)],
+                        [*(-0.015, 0.000, +0.0), *(diamond_color)],
+                        [*(0.000, -0.0375, +0.0), *(diamond_color)],
                     ], dtype=np.float32),
                     render_mode=gl.GL_TRIANGLE_STRIP,
                     shader=ShaderDB.get_instance().get_shader('colored'),

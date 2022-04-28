@@ -1,13 +1,75 @@
 import ctypes
 from dataclasses import dataclass
 
+import numpy as np
+from utils.logger import LOGGER
+
+from constants import FLOAT_SIZE
+
+class AttributeLayout:
+    def __init__(self, name: str, count: int):
+        self.name = name
+        self.count = count
+
+    def get_size(self):
+        raise NotImplementedError(f'{self.__class__.__name__} must implement get_size()')
+
+
+class FloatArrayLayout(AttributeLayout):
+    def get_size(self):
+        return self.count * FLOAT_SIZE
+
+class PositionLayout(FloatArrayLayout):
+    def __init__(self):
+        super().__init__('position', 3)
+
+class TexCoordLayout(FloatArrayLayout):
+    def __init__(self):
+        super().__init__('tex_coord', 2)
+
+class ColorLayout(FloatArrayLayout):
+    def __init__(self):
+        super().__init__('color', 3)
+    
 @dataclass
 class Layout:
     '''
     Class responsible for describing the layout of the vertex array (each geometry object is a vertex array).
     Currently only supports floats.
     '''
-    attributes: tuple[str, float] # Example: [('position', 3), ('tex_coord', '2')]
+    attributes: list[AttributeLayout] # Example: [('position', 3), ('tex_coord', '2')]
+
+    def __post_init__(self):
+        '''
+        Type checking.
+        '''
+        for name, count in self.attributes:
+            if not isinstance(name, str):
+                raise TypeError(f'Attribute name must be a string, got {type(name)}')
+            if not isinstance(count, int):
+                raise TypeError(f'Attribute count must be an integer, got {type(count)}')
+
+    def assert_data_ok(self, data: np.ndarray) -> bool:
+        '''
+        Checks if the data is compatible with the layout.
+        '''
+        LOGGER.log_trace(f'Checking data compatibility with layout: {self}')
+        assert data.dtype == np.float32, f'Only float32 data is supported, got {data.dtype}'
+        assert len(data.shape) == 2, f'Data must be 2D (series of attributes), got {len(data.shape)}D'
+        assert data.shape[1] * FLOAT_SIZE == self.calc_stride(), f'Data must have a stride of {self.calc_stride()}, got {data.shape[1]}'
+
+        for vertex in range(data.shape[0]):
+            offset = 0
+            for name, count in self.attributes:
+                vertex_attrib_values = data[vertex, offset:offset+count]
+
+                # print(f'{name}: {vertex_attrib_values}')
+                assert len(vertex_attrib_values.shape) == 1, f'Attribute values must be 1D, got {len(vertex_attrib_values.shape)}D'
+                assert vertex_attrib_values.shape[0] == count, f'Attribute values must have a length of {count}, got {vertex_attrib_values.shape[0]}'
+
+                offset += count
+
+        return True
 
     def calc_stride(self) -> int:
         '''
@@ -30,3 +92,6 @@ class Layout:
             offset += count * ctypes.sizeof(ctypes.c_float)
 
         return ctypes.cast(offset, ctypes.c_void_p)
+
+    def __repr__(self) -> str:
+        return f'Layout(attributes={self.attributes})'

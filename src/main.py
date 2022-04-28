@@ -97,7 +97,7 @@ def glfw_thread():
             elif world.is_player_defeat():
                 lose_screen.update() # TODO: lose screen
             else:
-                world.update() if not world.is_player_victory() else win_screen.update()
+                world.update()
 
             # Special shortcut to reset scene
             if IS.just_pressed('r'):

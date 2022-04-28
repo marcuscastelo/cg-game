@@ -31,17 +31,17 @@ class Star(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        *( 0.00,  1.00, +0.0), *(yellow),
-                        *(-0.58, -0.81, +0.0), *(yellow),
-                        *( 0.36, -0.12, +0.0), *(yellow),
+                        [*( 0.00,  1.00, +0.0), *(yellow)],
+                        [*(-0.58, -0.81, +0.0), *(yellow)],
+                        [*( 0.36, -0.12, +0.0), *(yellow)],
 
-                        *(-0.58, -0.81, +0.0), *(dark_yellow),
-                        *( 0.95,  0.31, +0.0), *(yellow),
-                        *(-0.22,  0.31, +0.0), *(yellow),
+                        [*(-0.58, -0.81, +0.0), *(dark_yellow)],
+                        [*( 0.95,  0.31, +0.0), *(yellow)],
+                        [*(-0.22,  0.31, +0.0), *(yellow)],
 
-                        *( 0.58, -0.81, +0.0), *(dark_yellow),
-                        *( 0.22,  0.31, +0.0), *(dark_yellow),
-                        *(-0.95,  0.31, +0.0), *(dark_yellow),
+                        [*( 0.58, -0.81, +0.0), *(dark_yellow)],
+                        [*( 0.22,  0.31, +0.0), *(dark_yellow)],
+                        [*(-0.95,  0.31, +0.0), *(dark_yellow)],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     render_mode=gl.GL_TRIANGLES
