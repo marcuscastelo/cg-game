@@ -189,7 +189,22 @@ class Ship(Element):
                     ], dtype = np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     
-                )
+                ),
+
+                ShapeSpec( 
+                    vertices=np.array([
+                        # Ship's body
+                        *(-0.075, -0.075, 0.0), *(0.0, 0.0),
+                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
+                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+
+                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
+                        *( 0.075,  0.075, 0.0), *(1.0, 1.0),
+                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+                    ], dtype=np.float32),
+                    shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
+                ),
+
 
             ]
         )
