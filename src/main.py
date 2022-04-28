@@ -106,10 +106,6 @@ def glfw_thread():
             if IS.just_pressed('b'):
                 APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
-            if(world.is_player_victory()):
-                #renderiza a foto foda do paint
-                pass
-
         render() # Render to the default framebuffer (screen)
 
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
