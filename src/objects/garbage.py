@@ -5,8 +5,8 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
-from shader import ShaderDB
-from transformation_matrix import Transform
+from gl_abstractions.shader import ShaderDB
+from transform import Transform
 
 from OpenGL import GL as gl
 
@@ -56,11 +56,11 @@ class Garbage(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [*(-0.025, -0.040, +0.0)],
             [*( 0.025, -0.040, +0.0)],
-            [*(-0.025,  0.040, +0.0)],
+            [*( 0.025,  0.040, +0.0)],
             [*(-0.025,  0.040, +0.0)],
         ])
 

@@ -9,7 +9,7 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 
 from OpenGL import GL as gl
 
-from transformation_matrix import Transform
+from transform import Transform
 
 import numpy as np
 
@@ -54,9 +54,10 @@ class Projectile(Element):
         assert isinstance(self.specs.initial_speed, float), f"{self.specs.initial_speed} is not a float, but {type(self.specs.initial_speed)}"
 
         self.is_particle = True # TODO: remove this and create a proper particle class
+        self.is_enemy = False # TODO: better way to do this?
         self.speed = self.specs.initial_speed
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-0.01, -0.1, 0],
             [+0.01, +0.1, 0],
@@ -67,17 +68,22 @@ class Projectile(Element):
         return super()._render()
 
     @classmethod
-    def create_from_ship(cls, ship: 'Ship') -> 'Projectile':
-        relatite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * ship.ship_len
+    def create_from_ship(cls, ship: 'Ship', specs: ProjectileSpecs = None) -> 'Projectile':
+        shiplike_len = ship.get_bounding_box().size.y
+
+
+        relatite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * shiplike_len
         projectile_pos = ship.transform.translation.xyz + relatite_weapon_distance 
-        
+
+        if specs is None:
+            specs = ProjectileSpecs()
+
+        specs.initial_transform.translation = projectile_pos
+        specs.initial_transform.rotation = Vec3(0, 0, ship.angle)
+
         obj = cls(
             world = ship.world,
-            specs = ProjectileSpecs(
-                initial_transform=Transform(
-                    translation=projectile_pos, 
-                    rotation=Vec3(0, 0, ship.angle)),
-            )
+            specs = specs,
         )
 
         obj.is_particle = False

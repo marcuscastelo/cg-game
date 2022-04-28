@@ -18,12 +18,12 @@ import OpenGL.GL as gl
 from threading import Thread
 
 from utils.logger import LOGGER
-from app_state import APP_VARS
+from app_vars import APP_VARS
 
 from constants import WINDOW_SIZE
 from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
-from scenes.win_screen import WinScreen
+from objects.screens.win_screen import WinScreen
 
 def create_window():
     '''
@@ -87,8 +87,12 @@ def glfw_thread():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)
 
-            # If game has eneded, show the end game screen (empty scene with varying colors)
-            world.update() if not world.is_player_victory() else win_screen.update()
+            if world.is_player_victory():
+                win_screen.update()
+            elif world.is_player_defeat():
+                win_screen.update() # TODO: lose screen
+            else:
+                world.update() if not world.is_player_victory() else win_screen.update()
 
             # Special shortcut to reset scene
             if IS.just_pressed('r'):

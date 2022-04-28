@@ -7,8 +7,8 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
-from transformation_matrix import Transform
-from shader import Shader, ShaderDB
+from transform import Transform
+from gl_abstractions.shader import Shader, ShaderDB
 
 
 @dataclass(init=False)
@@ -110,7 +110,7 @@ class Satellite(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         circle_verts = self.shape_renderers[0].shape_spec.vertices
         stuff_verts = self.shape_renderers[1].shape_spec.vertices
 

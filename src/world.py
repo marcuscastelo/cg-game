@@ -2,7 +2,7 @@ from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
 from objects.garbage import Garbage
 from objects.satellite import Satellite
-from objects.star import Stars
+from objects.star import Star
 from objects.element import Element
 
 from objects.enemy import Enemy
@@ -32,7 +32,7 @@ class World:
         self.elements.clear()
 
         LOGGER.log_trace('Adding star ', 'world:setup_scene')
-        Stars(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
+        Star(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
         
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world)
@@ -87,5 +87,8 @@ class World:
         
     def is_player_victory(self) -> bool:
         return len(list(element for element in self.elements if isinstance(element, (Enemy, Garbage)))) == 0
+
+    def is_player_defeat(self) -> bool:
+        return len(list(element for element in self.elements if isinstance(element, (Ship)))) == 0
 
 WORLD = World()

@@ -7,9 +7,9 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from OpenGL import GL as gl
 import numpy as np
 
-from transformation_matrix import Transform
+from transform import Transform
 
-from shader import ShaderDB
+from gl_abstractions.shader import ShaderDB
 
 class Screen(Element):
     @metsig(Element.__init__)
@@ -51,7 +51,7 @@ class WinScreen(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-1.0, -1.0, 0.0],
             [+1.0, -1.0, 0.0],
