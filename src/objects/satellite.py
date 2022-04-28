@@ -116,18 +116,18 @@ class Satellite(Element):
         super().__init__(*args, **kwargs)
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
-        circle_verts = self.shape_renderers[0].shape_spec.vertices
-        stuff_verts = self.shape_renderers[1].shape_spec.vertices
+        circle_verts = self.shape_renderers[0].shape_spec.vertices[:, :2]
+        stuff_verts = self.shape_renderers[1].shape_spec.vertices[:, :2]
 
-        circle_min_x = np.min(circle_verts[0::6])
-        circle_max_x = np.max(circle_verts[0::6])
-        circle_min_y = np.min(circle_verts[1::6])
-        circle_max_y = np.max(circle_verts[1::6])
+        circle_min_x = np.min(circle_verts[:, 0])
+        circle_max_x = np.max(circle_verts[:, 0])
+        circle_min_y = np.min(circle_verts[:, 1])
+        circle_max_y = np.max(circle_verts[:, 1])
 
-        stuff_min_x = np.min(stuff_verts[0::6])
-        stuff_max_x = np.max(stuff_verts[0::6])
-        stuff_min_y = np.min(stuff_verts[1::6])
-        stuff_max_y = np.max(stuff_verts[1::6])
+        stuff_min_x = np.min(stuff_verts[:, 0])
+        stuff_max_x = np.max(stuff_verts[:, 0])
+        stuff_min_y = np.min(stuff_verts[:, 1])
+        stuff_max_y = np.max(stuff_verts[:, 1])
 
         min_x = min(circle_min_x, stuff_min_x)
         max_x = max(circle_max_x, stuff_max_x)

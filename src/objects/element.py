@@ -215,17 +215,17 @@ class Element:
                         transform=Transform(),
                         shape_spec=ShapeSpec(
                             vertices=np.array([
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
 
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
 
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
                                 
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
                             ], dtype=np.float32),
                             shader=ShaderDB.get_instance().get_shader('colored'),
                             render_mode=gl.GL_LINES,
