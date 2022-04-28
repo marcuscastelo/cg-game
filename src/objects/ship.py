@@ -192,23 +192,6 @@ class Ship(Element):
                     
                 ),
 
-                ShapeSpec( 
-                    vertices=np.array([
-                        # Ship's body
-                        *(-0.075, -0.075, 0.0), *(0.0, 0.0),
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
-
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *( 0.075,  0.075, 0.0), *(1.0, 1.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
-                    ], dtype=np.float32),
-                    shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
-                    name='ship_body_textured',
-                    texture=Texture2D.from_image_path('textures/enemy_texture.jpg'),
-                ),
-
-
             ]
         )
         super().__init__(*args, **kwargs)
