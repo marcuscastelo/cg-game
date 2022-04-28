@@ -9,7 +9,6 @@ from objects.element import Element
 from objects.enemy import Enemy
 
 from objects.ship import Ship
-from transformation_matrix import Transform
 
 class World:
     '''
@@ -78,7 +77,7 @@ class World:
 
 
         LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
-        Satellite(world).transform.translation.xy = Vec2(0, 0)
+        Satellite(world).transform.translation.xy = Vec2(0.7, -0.7)
 
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         

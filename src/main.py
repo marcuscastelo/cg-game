@@ -58,6 +58,9 @@ def glfw_thread():
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
 
+    gl.glEnable(gl.GL_BLEND) # Enable blending
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA) # Set blending function
+
     set_glfw_callbacks(window)
 
     # Create the scene (world)
@@ -82,8 +85,11 @@ def glfw_thread():
             world.update()
 
             # Special shortcut to reset scene
-            if IS.is_pressed('r'):
+            if IS.just_pressed('r'):
                 world.setup_scene()
+
+            if IS.just_pressed('b'):
+                APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
             if(world.is_player_victory()):
                 #renderiza a foto foda do paint
