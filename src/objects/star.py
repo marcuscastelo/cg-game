@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from OpenGL import GL as gl
+from math import atan2, cos, sin
 import numpy as np
-from numpy import log
 
 from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
@@ -15,6 +15,7 @@ from transform import Transform
 class Star(Element):
     star_size: float = 0.02
     rotation_speed: float = 0.1
+    speed_vec = Vec2( 0.01, 0.01)
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
@@ -51,11 +52,22 @@ class Star(Element):
         super().__init__(*args, **kwargs)
 
     def _physics_update(self, delta_time: float):
-        self.transform.translation.xy += Vec2( 0.01, -(log((self.transform.translation.x+2)))/200 )
+        self.transform.translation.xy += self.speed_vec * delta_time * 50
         self.rotate(self.rotation_speed)
 
-    def _on_outside_screen(self, _):
-        self.transform.translation.xy = Vec2(-1, np.random.random()*(2)-1)
+        super()._physics_update(delta_time)
+
+    def _on_outside_screen(self):
+        # min_x, max_x, min_y, max_y = self.get_bounding_box()
+        # min_x, min_y, max_x, max_y = self.get_bounding_box()
+        min_x, min_y, max_x, max_y = (*self.transform.translation.xy, *self.transform.translation.xy)
+        if min_x < -1 or max_x > 1:
+            self.speed_vec.x *= -1
+        if min_y < -1 or max_y > 1:
+            self.speed_vec.y *= -1
+
+        print(f'{self.speed_vec}')
+        
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
