@@ -56,7 +56,7 @@ class Projectile(Element):
         self.is_particle = True # TODO: remove this and create a proper particle class
         self.speed = self.specs.initial_speed
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-0.01, -0.1, 0],
             [+0.01, +0.1, 0],

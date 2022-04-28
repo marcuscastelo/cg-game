@@ -218,12 +218,12 @@ class Ship(Element):
         bbox = self.get_bounding_box()
         min_x, min_y, max_x, max_y = bbox
 
-    def _get_bounding_box_vertices(self) -> Rect2:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-0.075, -0.09 , 0.0],
             [+0.075, -0.09 , 0.0],
-            [+0.075, +0.225, 0.0],
-            [-0.075, +0.225, 0.0],
+            [+0.075, +0.155, 0.0],
+            [-0.075, +0.155, 0.0],
         ])
 
     def _physics_shoot(self, delta_time: float):

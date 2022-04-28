@@ -65,8 +65,7 @@ class Enemy(Element):
         self.dying = False
         pass
 
-
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-0.075, -0.075, 0],
             [+0.075, -0.075, 0],

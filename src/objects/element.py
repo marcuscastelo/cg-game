@@ -18,9 +18,6 @@ from gl_abstractions.shader import Shader, ShaderDB
 
 from transform import Transform
 
-TEXTURED_SHADER = None
-IMAGE: imageio.core.util.Array = np.array(imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:]) # TODO: relative path
-
 from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
@@ -88,6 +85,34 @@ class ElementSpecification:
             assert isinstance(shape, ShapeSpec), f'ShapeSpecs must be of type ShapeSpec, not {type(shape)}'
         assert isinstance(self.initial_transform, Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
 
+@dataclass
+class BoundingBoxCache:
+    _bounding_box: Rect2 = None
+    
+    _last_vertices: np.ndarray = None
+    _last_model_matrix: np.ndarray = None
+
+    def get_bounding_box(self, vertices_4d: np.ndarray, model_matrix: np.ndarray) -> Rect2:
+        if self._last_vertices is not None and self._bounding_box is not None and np.array_equal(self._last_vertices, vertices_4d) and  np.array_equal(self._last_model_matrix, model_matrix) :
+            return self._bounding_box
+
+        self._bounding_box = self._calculate_bounding_box(vertices_4d, model_matrix)
+        self._last_model_matrix = model_matrix
+
+        return self._bounding_box
+    
+    def _calculate_bounding_box(self, vertices_4d: np.ndarray, model_matrix: np.ndarray) -> Rect2:
+        # Transform the vertices
+        tranformed_vertices = (model_matrix @ vertices_4d.T).T
+
+        # Find the minimum and maximum x and y values
+        min_x = min(tranformed_vertices, key=lambda x: x[0])[0]
+        max_x = max(tranformed_vertices, key=lambda x: x[0])[0]
+        min_y = min(tranformed_vertices, key=lambda x: x[1])[1]
+        max_y = max(tranformed_vertices, key=lambda x: x[1])[1]
+
+        return Rect2(min_x, min_y, max_x, max_y)
+
 class Element:
     '''
     An abstract class for all the elements in the game
@@ -111,73 +136,47 @@ class Element:
         self.__destroyed = False
         self.speed = 0.5
 
+        # Take all shapes specified in specs and create a list of ShapeRenderers to render them later
         self.shape_renderers = [
             ShapeRenderer(shape_spec, self.transform) for shape_spec in specs.shape_specs
         ]
 
-        print(f'Type of IMAGE: {type(IMAGE)}')
+        self._bounding_box_vertices_3d = self._generate_bounding_box_vertices()
+        self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
+        self._bounding_box_cache = BoundingBoxCache()
 
-        # self.texture = Texture2D(Texture2DParameters())
-        # self.texture.upload_raw_texture(IMAGE)
-
-        # self.texture_CHANGEME = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
-        # LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture_CHANGEME}')
-
-        # gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture_CHANGEME)
-        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
-        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
-        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
-
-        # w, h, *_ = IMAGE.shape # TODO: Texture class to store image and size
-
-        # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
-        
-    def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self):
+    @property
+    def destroyed(self):
         '''
-        Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
-        Example:
-            self._vertices = [
-                -0.5, -0.5, 0.0,
-                0.5, -0.5, 0.0,
-                0.5, 0.5, 0.0,
-                -0.5, 0.5, 0.0
-            ]
+        Returns whether the element is destroyed or not
         '''
-        raise NotImplementedError("Abstract method, please implement in subclass")
+        return self.__destroyed
 
-    def __repr__(self) -> str:
+    def destroy(self):
         '''
-        Return a string representation of the element
+        Destroys the element
         '''
-        return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
+        if self.destroyed:
+            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
+            LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
+            return
+    
+        # LOGGER.log_debug(f"{self} marked for destruction")
+        self.__destroyed = True
+
 
     def get_bounding_box(self) -> Rect2:
         '''
         Returns the bounding box of the element with scale, rotation and translation applied
         '''
-        vertices = self._get_bounding_box_vertices()
-        # Add forth dimension
-        vertices = np.insert(vertices, 3, 1.0, axis=1)
-        # vertices 
+        return self._bounding_box_cache.get_bounding_box(self._bounding_box_vertices_4d, self.transform.model_matrix)
 
-        # Transform the vertices
-        vertices = (self.transform.model_matrix @ vertices.T).T
-
-        # Find the minimum and maximum x and y values
-        min_x = min(vertices, key=lambda x: x[0])[0]
-        max_x = max(vertices, key=lambda x: x[0])[0]
-        min_y = min(vertices, key=lambda x: x[1])[1]
-        max_y = max(vertices, key=lambda x: x[1])[1]
-
-        return Rect2(min_x, min_y, max_x, max_y)
-
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         '''
         Return the bounding box of the element
         np.array([[x1, y1, z1], [x2, y2, z2], ...])
         '''
-        raise NotImplementedError(f'{self.__class__.__name__} does not implement get_bounding_box')
+        raise NotImplementedError(f'{self.__class__.__name__} does not implement _generate_bounding_box_vertices')
 
 
     def _on_outside_screen(self):
@@ -328,23 +327,13 @@ class Element:
                 bounding_box_renderer.render()
             except NotImplementedError:
                 pass
-            
+                
 
-    @property
-    def destroyed(self):
-        '''
-        Returns whether the element is destroyed or not
-        '''
-        return self.__destroyed
 
-    def destroy(self):
+   
+
+    def __repr__(self) -> str:
         '''
-        Destroys the element
+        Return a string representation of the element
         '''
-        if self.destroyed:
-            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
-            LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
-            return
-    
-        # LOGGER.log_debug(f"{self} marked for destruction")
-        self.__destroyed = True
+        return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
