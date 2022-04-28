@@ -129,33 +129,33 @@ class Ship(Element):
                 ShapeSpec( 
                     vertices=np.array([
                         # Ship's body
-                        *(-0.075, -0.075, 0.0), *(ship_body_color),
-                        *( 0.075, -0.075, 0.0), *(ship_body_color),
-                        *(-0.075,  0.075, 0.0), *(ship_body_color),
+                        [*(-0.075, -0.075, 0.0), *(ship_body_color)],
+                        [*( 0.075, -0.075, 0.0), *(ship_body_color)],
+                        [*(-0.075,  0.075, 0.0), *(ship_body_color)],
 
-                        *( 0.075, -0.075, 0.0), *(ship_body_color),
-                        *( 0.075,  0.075, 0.0), *(ship_body_color),
-                        *(-0.075,  0.075, 0.0), *(ship_body_color),
+                        [*( 0.075, -0.075, 0.0), *(ship_body_color)],
+                        [*( 0.075,  0.075, 0.0), *(ship_body_color)],
+                        [*(-0.075,  0.075, 0.0), *(ship_body_color)],
                         
                         # Ship's point
-                        *(-0.075,  0.075, 0.0), *(ship_front_color),
-                        *( 0.075,  0.075, 0.0), *(ship_front_color),
-                        *( 0.0,  0.225, 0.0), *(ship_front_color),
+                        [*(-0.075,  0.075, 0.0), *(ship_front_color)],
+                        [*( 0.075,  0.075, 0.0), *(ship_front_color)],
+                        [*( 0.0,  0.225, 0.0), *(ship_front_color)],
 
                         # Ship's propulsors
-                        *(0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.09, 0.0), *(ship_propulsor_color),
-                        *(0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.035, -0.09, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.09, 0.0), *(ship_propulsor_color),
+                        [*(0.035, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(0.055, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(0.055, -0.09, 0.0), *(ship_propulsor_color)],
+                        [*(0.035, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(0.035, -0.09, 0.0), *(ship_propulsor_color)],
+                        [*(0.055, -0.09, 0.0), *(ship_propulsor_color)],
 
-                        *(-0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.09, 0.0), *(ship_propulsor_color),
-                        *(-0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.035, -0.09, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.09, 0.0), *(ship_propulsor_color),
+                        [*(-0.035, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(-0.055, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(-0.055, -0.09, 0.0), *(ship_propulsor_color)],
+                        [*(-0.035, -0.075, 0.0), *(ship_propulsor_color)],
+                        [*(-0.035, -0.09, 0.0), *(ship_propulsor_color)],
+                        [*(-0.055, -0.09, 0.0), *(ship_propulsor_color)],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'), # Shader uses colors defined in the vertices
                 ),
@@ -163,29 +163,29 @@ class Ship(Element):
                 ShapeSpec(
                     vertices=np.array([
                         #Wings
-                        *(0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(0.075, -0.01, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(0.075, 0.0, 0.0),    *(ship_wing_color)],
+                        [*(0.075, -0.01, 0.0),  *(ship_wing_color)],
+                        [*(0.115, -0.015, 0.0), *(ship_wing_color)],
 
-                        *(0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
-                        *(0.13, 0.0, 0.0), *(ship_wing_color),
+                        [*(0.075, 0.0, 0.0),    *(ship_wing_color)],
+                        [*(0.115, -0.015, 0.0), *(ship_wing_color)],
+                        [*(0.13, 0.0, 0.0),     *(ship_wing_color)],
 
-                        *(0.13, -0.04, 0.0), *(ship_wing_color),
-                        *(0.13, 0.0, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(0.13, -0.04, 0.0),   *(ship_wing_color)],
+                        [*(0.13, 0.0, 0.0),     *(ship_wing_color)],
+                        [*(0.115, -0.015, 0.0), *(ship_wing_color)],
 
-                        *(-0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.075, -0.01, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(-0.075, 0.0, 0.0),   *(ship_wing_color)],
+                        [*(-0.075, -0.01, 0.0), *(ship_wing_color)],
+                        [*(-0.115, -0.015, 0.0),*(ship_wing_color)],
 
-                        *(-0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
-                        *(-0.13, 0.0, 0.0), *(ship_wing_color),
+                        [*(-0.075, 0.0, 0.0),   *(ship_wing_color)],
+                        [*(-0.115, -0.015, 0.0),*(ship_wing_color)],
+                        [*(-0.13, 0.0, 0.0),    *(ship_wing_color)],
 
-                        *(-0.13, -0.04, 0.0), *(ship_wing_color),
-                        *(-0.13, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(-0.13, -0.04, 0.0),  *(ship_wing_color)],
+                        [*(-0.13, 0.0, 0.0),    *(ship_wing_color)],
+                        [*(-0.115, -0.015, 0.0),*(ship_wing_color)],
                     ], dtype = np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     
@@ -194,13 +194,13 @@ class Ship(Element):
                 ShapeSpec( 
                     vertices=np.array([
                         # Ship's body
-                        *(-0.075, -0.075, 0.0), *(0.0, 0.0),
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+                        [*(-0.075, -0.075, 0.0), *(0.0, 0.0)],
+                        [*( 0.075, -0.075, 0.0), *(1.0, 0.0)],
+                        [*(-0.075,  0.075, 0.0), *(0.0, 1.0)],
 
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *( 0.075,  0.075, 0.0), *(1.0, 1.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+                        [*( 0.075, -0.075, 0.0), *(1.0, 0.0)],
+                        [*( 0.075,  0.075, 0.0), *(1.0, 1.0)],
+                        [*(-0.075,  0.075, 0.0), *(0.0, 1.0)],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
                     name='ship_body_textured',

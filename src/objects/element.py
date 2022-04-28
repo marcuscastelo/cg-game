@@ -38,6 +38,7 @@ class ShapeSpec:
         if needs_texture:
             assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
 
+        self.shader.layout.assert_data_ok(self.vertices)
 
 @dataclass
 class ShapeRenderer:
@@ -51,7 +52,11 @@ class ShapeRenderer:
 
         self.vao = VertexArray()
         self.vao.bind()
-        self.vbo = VertexBuffer(self.shape_spec.vertices, usage=gl.GL_DYNAMIC_DRAW)
+        self.vbo = VertexBuffer(
+            layout = self.shader.layout, 
+            data = self.shape_spec.vertices, 
+            usage=gl.GL_DYNAMIC_DRAW
+        )
         self.vbo.bind()
         # self.ibo = VertexBuffer(self.shape_spec.indices)
 

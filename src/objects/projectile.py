@@ -40,8 +40,8 @@ class Projectile(Element):
         self.specs.initial_transform.scale.y = self.specs.length
         self.specs.shape_specs = [
             ShapeSpec(vertices=np.array([
-                *(0.0,  -1.0,   0.0),
-                *(0.0,  +1.0,   0.0),
+                [*(0.0,  -1.0,   0.0)],
+                [*(0.0,  +1.0,   0.0)],
             ], dtype=np.float32),
             render_mode=gl.GL_LINES,
             )
