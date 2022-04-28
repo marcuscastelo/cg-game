@@ -54,8 +54,8 @@ class Projectile(Element):
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
-            [-0.01, -1, 0],
-            [+0.01, +1, 0],
+            [-0.01, -0.1, 0],
+            [+0.01, +0.1, 0],
         ])
 
     def _render(self):
