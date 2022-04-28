@@ -1,6 +1,7 @@
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
 from objects.garbage import Garbage
+from objects.little_star import LittleStar
 from objects.satellite import Satellite
 from objects.star import Star
 from objects.element import Element
@@ -31,8 +32,7 @@ class World:
         LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         self.elements.clear()
 
-        LOGGER.log_trace('Adding star ', 'world:setup_scene')
-        Star(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
+
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world)
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
@@ -57,8 +57,31 @@ class World:
         LOGGER.log_trace('Garbage added', 'world:setup_scene')
 
         LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
-        Satellite(world).transform.translation.xy = Vec2(0.7, -0.7)
+        Satellite(world).transform.translation.xy = Vec2(0.6, -0.6)
         LOGGER.log_trace('Satellite added', 'world:setup_scene')
+
+        LOGGER.log_trace('Adding star ', 'world:setup_scene')
+        Star(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
+
+        LOGGER.log_trace('Adding little stars ', 'world:setup_scene')
+        LittleStar(world).transform.translation.xy = Vec2(0, 0.8)
+        LittleStar(world).transform.translation.xy = Vec2(0.9, 0.2)
+        LittleStar(world).transform.translation.xy = Vec2(0.2, 0.1)
+        LittleStar(world).transform.translation.xy = Vec2(0.5, 0.5)
+        LittleStar(world).transform.translation.xy = Vec2(0.7, 0.8)
+
+        LittleStar(world).transform.translation.xy = Vec2(-1, 0.8)
+        LittleStar(world).transform.translation.xy = Vec2(-0.6, 0.5)
+        LittleStar(world).transform.translation.xy = Vec2(-0.7, 0.8)
+
+        LittleStar(world).transform.translation.xy = Vec2(0.5, -0.8)
+        LittleStar(world).transform.translation.xy = Vec2(0.3, -0.7)
+        LittleStar(world).transform.translation.xy = Vec2(0.1, -0.4)
+
+        LittleStar(world).transform.translation.xy = Vec2(-0.2, 0)
+        LittleStar(world).transform.translation.xy = Vec2(-0.3, -0.7)
+        LittleStar(world).transform.translation.xy = Vec2(-0.4, -0.2)
+        LittleStar(world).transform.translation.xy = Vec2(-0.8, -0.9)
 
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')

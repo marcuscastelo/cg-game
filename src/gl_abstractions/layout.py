@@ -28,7 +28,7 @@ class Layout:
         '''
         Checks if the data is compatible with the layout.
         '''
-        LOGGER.log_trace(f'Checking data compatibility with layout: {self}')
+        # LOGGER.log_trace(f'Checking data compatibility with layout: {self}')
         assert data.dtype == np.float32, f'Only float32 data is supported, got {data.dtype}'
         assert len(data.shape) == 2, f'Data must be 2D (series of attributes), got {len(data.shape)}D'
         assert data.shape[1] * FLOAT_SIZE == self.calc_stride(), f'Data must have a stride of {self.calc_stride()}, got {data.shape[1]}'
