@@ -103,6 +103,9 @@ class Shader:
     def upload_uniform_int(self, name: str, value: int):
         uniform_loc = gl.glGetUniformLocation(self.program, name)
         gl.glUniform1i(uniform_loc, value)
+
+    def __repr__(self) -> str:
+        return f'<Shader v={self.vert_path} f={self.frag_path}>'
     
 
 class ShaderDB:

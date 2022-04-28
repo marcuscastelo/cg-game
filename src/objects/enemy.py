@@ -52,7 +52,8 @@ class Enemy(Element):
                     *(0.075, 0.0, 0.0), *(dark_red),
                     *(0.0, -0.055, 0.0), *(light_red),
                 ], dtype=np.float32),
-                shader=ShaderDB.get_instance().get_shader('colored')
+                shader=ShaderDB.get_instance().get_shader('colored'),
+                name='Enemy Full',
                 ),
             ]
         )

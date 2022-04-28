@@ -21,7 +21,9 @@ from utils.logger import LOGGER
 from app_state import APP_VARS
 
 from constants import WINDOW_SIZE
+from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
+from scenes.win_screen import WinScreen
 
 def create_window():
     '''
@@ -72,6 +74,10 @@ def glfw_thread():
     G: float = 31/255 
     B: float = 65/255 
 
+    win_screen = WinScreen(world)
+    world.elements.remove(win_screen) # TODO: make this less hacky
+
+
     # Render loop: keeps running until the window is closed or the GUI signals to close
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
@@ -82,7 +88,7 @@ def glfw_thread():
             gl.glClearColor(R, G, B, 1.0)
 
             # If game has eneded, show the end game screen (empty scene with varying colors)
-            world.update()
+            world.update() if not world.is_player_victory() else win_screen.update()
 
             # Special shortcut to reset scene
             if IS.just_pressed('r'):

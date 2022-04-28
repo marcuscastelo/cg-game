@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 import math
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from OpenGL import GL as gl
@@ -32,6 +32,15 @@ class ShapeSpec:
     indices: np.ndarray = None
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()['simple_red']) # TODO: more readable way to do this?
+    texture: Union[Texture2D, None] = None
+    name: str = 'Unnamed Shape'
+
+    def __post_init__(self):
+        # TODO: add shader.needs_texture() (or something)
+        needs_texture = self.shader is ShaderDB.get_instance()['textured']
+        if needs_texture:
+            assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
+
 
 @dataclass
 class ShapeRenderer:
@@ -40,6 +49,8 @@ class ShapeRenderer:
 
     def __post_init__(self):
         self.shader = self.shape_spec.shader
+        self.texture = self.shape_spec.texture
+        self.shape_name = self.shape_spec.name
 
         self.vao = VertexArray()
         self.vao.bind()
@@ -53,6 +64,9 @@ class ShapeRenderer:
         # Bind the shader and VAO (VBO is bound in the VAO)
         self.vao.bind()
 
+        if self.texture is not None:
+            self.texture.bind()
+        
         self.shader.use()
 
         # gl.glBindTextureUnit(0, self.texture)
@@ -103,8 +117,8 @@ class Element:
 
         print(f'Type of IMAGE: {type(IMAGE)}')
 
-        self.texture = Texture2D(Texture2DParameters())
-        self.texture.upload_raw_texture(IMAGE)
+        # self.texture = Texture2D(Texture2DParameters())
+        # self.texture.upload_raw_texture(IMAGE)
 
         # self.texture_CHANGEME = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
         # LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture_CHANGEME}')
@@ -278,8 +292,6 @@ class Element:
         '''
         Basic rendering method. Can be overridden in subclass.
         '''
-        self.texture.bind()
-
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
 

@@ -70,9 +70,6 @@ class World:
     def destroy(self, element: Element):
         element.destroy()
 
-    def game_ended(self) -> bool:
-        return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0
-
     def update(self):
         '''
         This function is called every frame.
@@ -89,7 +86,6 @@ class World:
 
         
     def is_player_victory(self) -> bool:
-        return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0
-
+        return len(list(element for element in self.elements if isinstance(element, (Enemy, Garbage)))) == 0
 
 WORLD = World()

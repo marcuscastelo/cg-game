@@ -7,6 +7,7 @@ from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.logger import LOGGER
 from utils.sig import metsig
+from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
 from objects.garbage import Garbage
 from objects.projectile import Projectile
@@ -203,6 +204,8 @@ class Ship(Element):
                         *(-0.075,  0.075, 0.0), *(0.0, 1.0),
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
+                    name='ship_body_textured',
+                    texture=Texture2D.from_image_path('textures/enemy_texture.jpg'),
                 ),
 
 

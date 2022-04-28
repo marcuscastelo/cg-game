@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+import imageio
 from utils.sig import metsig
 
 from OpenGL import GL as gl
@@ -25,6 +26,19 @@ class Texture2D(Texture):
         super().__init__()
         self.params = tex2d_params if tex2d_params is not None else Texture2DParameters()
         self._upload_parameters()
+
+    @classmethod
+    def from_image_path(cls, image_path: str, tex2d_params: Texture2DParameters = None) -> 'Texture2D':
+        image = np.array(imageio.imread(image_path))[::-1,:,:]
+
+        # TODO: support RGBA
+        if image.shape[2] == 4: # if image is RGBA (png)
+            image = image[:,:-1,:3] # remove alpha channel and remove last column
+        
+
+        obj = cls(tex2d_params=tex2d_params)
+        obj.upload_raw_texture(image)
+        return obj
 
     def _upload_parameters(self):
         self.bind()
