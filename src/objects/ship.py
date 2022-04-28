@@ -4,12 +4,21 @@ import time
 from glm import clamp
 from OpenGL import GL as gl
 
-from utils.geometry import Rect2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3, VecN
+from utils.logger import LOGGER
 from utils.sig import metsig
-from objects.element import Element
+from constants import SCREEN_RECT
+from gl_abstractions.texture import Texture2D
+from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
+from objects.garbage import Garbage
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
+
+import numpy as np
+from gl_abstractions.shader import ShaderDB
+
+from transform import Transform
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
@@ -83,55 +92,123 @@ class ShipController:
 class Ship(Element):
     # speed: float = 1
     energy: float = 1 # [1, 2]: indicates glow intensity
-    ship_len = 0.4
     _rotation_intensity = 0
     _was_t_pressed = False
 
-    def _init_vertices(self):
-        # self._render_primitive = gl.GL_LINE_STRIP
-        self._ouline_vertices = [
-            *(-0.1, -0.1, 0.0),
-            *(0.1, -0.1, 0.0),
-            *(0.1, 0.1, 0.0),
-            
-            *(-0.1, -0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(0.1, 0.1, 0.0),
-            *(0 , 0.3, 0.0),
-            *(-0.1, 0.1, 0.0),
-
-            *(-0.1, -0.1, 0.0),
-        ]
-
-        self._normal_vertices = [
-            *(-0.1, -0.1, 0.0),
-            *(0.1, -0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(0.1, -0.1, 0.0),
-            *(0.1, 0.1, 0.0),
-            *(-0.1, 0.1, 0.0),
-            
-            *(-0.1, 0.1, 0.0),
-            *(0.1, 0.1, 0.0),
-            *(0 , 0.3, 0.0),
-        ]
-
-        self._vertices = self._normal_vertices
-
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+
+        darker_silver: Vec3 = Vec3(110, 110, 110) / 255
+        dark_silver: Vec3 = Vec3(121, 121, 121) / 255
+        silver: Vec3 = Vec3(169,169,169) / 255
+        light_silver: Vec3 = Vec3(192,192,192) / 255
+        lighter_silver: Vec3 = Vec3(211,211,211) / 255
+        
+        # TODO: find a better way to do this (kwargs)
+        kwargs['specs'] = ElementSpecification(
+            initial_transform=Transform(
+                translation=Vec3(0, 0, 0),
+                rotation=Vec3(0, 0, 0),
+                scale=Vec3(1, 1, 1),
+            ),
+            shape_specs=[
+                ShapeSpec( 
+                    vertices=np.array([
+                        # Ship's body
+                        [*(-0.075, -0.075, 0.0), *(light_silver)],
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
+                            
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*( 0.075,  0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
+                        
+                        # Ship's point
+                        [*(-0.075,  0.075, 0.0), *(light_silver)],
+                        [*( 0.075,  0.075, 0.0), *(darker_silver)],
+                        [*( 0.0,  0.225, 0.0), *(silver)],
+                        
+                        # Ship's propulsors
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.035, -0.09, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.035, -0.09, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
+                    ], dtype=np.float32),
+                    shader=ShaderDB.get_instance().get_shader('colored'), # Shader uses colors defined in the vertices
+                ),
+
+                ShapeSpec(
+                    vertices=np.array([
+                        #Wings
+                        [*(0.075, 0.0, 0.0), *(silver)],
+                        [*(0.075, -0.01, 0.0), *(silver)],
+                        [*(0.115, -0.015, 0.0), *(dark_silver)],
+
+                        [*(0.075, 0.0, 0.0), *(dark_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
+
+                        [*(0.13, -0.04, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
+
+                        [*(-0.075, 0.0, 0.0), *(silver)],
+                        [*(-0.075, -0.01, 0.0), *(silver)],
+                        [*(-0.115, -0.015, 0.0), *(silver)],
+
+                        [*(-0.075, 0.0, 0.0), *(light_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(light_silver)],
+
+                        [*(-0.13, -0.04, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(lighter_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
+                    ], dtype = np.float32),
+                    shader=ShaderDB.get_instance().get_shader('colored'),
+                    
+                ),
+            ]
+        )
         super().__init__(*args, **kwargs)
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-    def _physics_update(self, delta_time: float):
-        self.shoot()
+        bbox = self.get_bounding_box()
+        min_x, min_y, max_x, max_y = bbox
 
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
+        return np.array([
+            [-0.075, -0.09 , 0.0],
+            [+0.075, -0.09 , 0.0],
+            [+0.075, +0.155, 0.0],
+            [-0.075, +0.155, 0.0],
+        ])
+
+    def move_forward(self, intensity: float = 1.0):
+        '''
+        Move the element forward according to the current rotation
+        '''
+        dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
+        dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
+        self.transform.translation.xy += Vec2(dx, dy)
+
+    def _physics_shoot(self, delta_time: float):
+        if IS.is_pressed('space'):
+            self.shoot()    
+
+    def _physics_movement(self, delta_time: float):
         self.controller.process_input()
         if self.controller.input_movement != 0:
-            self.move(self.controller.input_movement)
+            self.move_forward(self.controller.input_movement)
         if self.controller.input_rotation != 0:
         
             ROT_ACCEL = 3.5
@@ -169,8 +246,54 @@ class Ship(Element):
             if t.scale.x > 1:
                 t.scale = Vec3(1, 1, 1)
 
-    def _is_out_of_bounds(self) -> bool:
-        return False
+    def _die_if_enemy_shot(self):
+        from objects.enemy import Enemy
+        if self._dying:
+            return
+
+        for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
+            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box().contains(obj.transform.translation.xy):
+                LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
+                obj.destroy()
+                self.die()
+                return
+
+    def _physics_update(self, delta_time: float):
+        if self._dying:
+            self.rotate(math.radians(90) * delta_time)
+        else:
+            self._physics_shoot(delta_time)
+            self._physics_movement(delta_time)
+            self._die_if_enemy_shot()
+
+        for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
+            if self.get_bounding_box().intersects(garbage.get_bounding_box()):
+                garbage.destroy()
+        
+        bbox = self.get_bounding_box()
+
+        # Ship is out of bounds if any of the corners are out of bounds (diferent from the ship)
+        for points in [ bbox.top_left, bbox.top_right, bbox.bottom_left, bbox.bottom_right ]:
+            if not SCREEN_RECT.contains(points):
+                self._on_outside_screen()
+
+
+        return super()._physics_update(delta_time)
+
+    def _on_outside_screen(self):
+        min_x, min_y, max_x, max_y = self.get_bounding_box()
+        if min_x < -1:
+            self.transform.translation.xy += -Vec2(min_x + 1, 0)/16
+        if max_x > 1:
+            self.transform.translation.xy += -Vec2(max_x - 1, 0)/16
+        if min_y < -1:
+            self.transform.translation.xy += -Vec2(0, min_y + 1)/16
+        if max_y > 1:
+            self.transform.translation.xy += -Vec2(0, max_y - 1)/16
+        
+
+
+
 
     def shoot(self):
         curr_time = time.time()
@@ -178,9 +301,6 @@ class Ship(Element):
         if (curr_time - self._last_shot_time) < SHOOTING_COOLDOWN:
             return
 
-        if not IS.is_pressed('space'):
-            return
-
         self._last_shot_time = curr_time
 
-        Projectile.create_from(self)
+        Projectile.create_from_ship(self)

@@ -1,3 +1,5 @@
+from dataclasses import dataclass, field
+from typing import Any
 import glfw
 
 LEFT_OR_RIGHT = ['SHIFT', 'ALT', 'CONTROL', 'SUPER']
@@ -13,12 +15,17 @@ ALIASES = {
     'RSHIFT': 'SHIFT',
 }
 
+@dataclass
+class States:
+    key_states: dict[int, Any] = field(default_factory=dict)
+    mouse_states: dict[str, Any] = field(default_factory=dict)
+
 class InputSystem:
     _instance = None
     def __init__(self):
         self.input_events = []
-        self.key_states = {}
-        self.mouse_states = {}
+        self.current_states = States()
+        self.last_states = States()
 
         self.keycodes = {
             k[4:]: i for k, i in glfw.__dict__.items() if k.startswith('KEY_')
@@ -43,22 +50,34 @@ class InputSystem:
         return cls._instance
 
     def key_callback(self, window, key, scancode, action, mods):
+        self.last_states.key_states[key] = self.current_states.key_states.get(key, False)
+
         if action == glfw.PRESS:
-            self.key_states[key] = True
+            self.current_states.key_states[key] = True
         elif action == glfw.RELEASE:
-            self.key_states[key] = False
+            self.current_states.key_states[key] = False
+        elif action == glfw.REPEAT:
+            self.current_states.key_states[key] = True
 
     def mouse_button_callback(self, window, button, action, mods):
+        self.last_states.mouse_states[button] = self.current_states.mouse_states.get(button, False)
+
         if action == glfw.PRESS:
-            self.mouse_states[button] = True
+            self.current_states.mouse_states[button] = True
         elif action == glfw.RELEASE:
-            self.mouse_states[button] = False
+            self.current_states.mouse_states[button] = False
+        elif action == glfw.REPEAT:
+            self.current_states.mouse_states[button] = True
 
     def cursor_pos_callback(self, window, xpos, ypos):
-        self.mouse_states['xpos'] = xpos
-        self.mouse_states['ypos'] = ypos
+        self.last_states.mouse_states['xpos'] = self.current_states.mouse_states.get('xpos', 0)
+        self.last_states.mouse_states['ypos'] = self.current_states.mouse_states.get('ypos', 0)
 
-    def is_pressed(self, key: str):
+        self.current_states.mouse_states['xpos'] = xpos
+        self.current_states.mouse_states['ypos'] = ypos
+
+
+    def _convert_key_to_keycode(self, key: str) -> list[int]:
         key = key.upper()
 
         if key in ALIASES:
@@ -71,8 +90,20 @@ class InputSystem:
         else:
             keys.append(key)
 
-        keycodes = (self.keycodes[k] for k in keys)
-        return any(self.key_states.get(keycode, False) for keycode in keycodes)
+        keycodes = [self.keycodes[k] for k in keys]
+        return keycodes
+
+    def is_pressed(self, key: str):
+        keycodes = self._convert_key_to_keycode(key)
+        return any(self.current_states.key_states.get(keycode, False) for keycode in keycodes)
+
+    def just_pressed(self, key: str):
+        keycodes = self._convert_key_to_keycode(key)
+        return any(self.current_states.key_states.get(keycode, False) and not self.last_states.key_states.get(keycode, False) for keycode in keycodes)
+
+    def just_released(self, key: str):
+        keycodes = self._convert_key_to_keycode(key)
+        return any(self.last_states.key_states.get(keycode, False) and not self.current_states.key_states.get(keycode, False) for keycode in keycodes)
 
 INPUT_SYSTEM = InputSystem.get_instance()
 

@@ -1,13 +1,14 @@
-from utils.geometry import Vec3
+from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+from objects.garbage import Garbage
+from objects.little_star import LittleStar
+from objects.satellite import Satellite
+from objects.star import Star
 from objects.element import Element
 
 from objects.enemy import Enemy
 
 from objects.ship import Ship
-from transformation_matrix import Transform
-
-from input.input_system import INPUT_SYSTEM as IS
 
 class World:
     '''
@@ -31,30 +32,65 @@ class World:
         LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         self.elements.clear()
 
+
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
-        main_ship = Ship(world, Transform(Vec3((0, 0, 0))))
+        main_ship = Ship(world)
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
         main_ship.controller.enable()
-        self.add_element(main_ship)
         LOGGER.log_trace(f'Ship added: {main_ship} ', 'world:setup_scene')
         
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
-        Enemy(world, Transform(Vec3(-0.7,    0.5,    0.0)))
-        Enemy(world, Transform(Vec3( 0,    0.5,    0.0)))
-        Enemy(world, Transform(Vec3( 0.7,    0.5,    0.0)))
-        e4 = Enemy(world, Transform(Vec3( 0,    0.9,    0.0)))
+
+        Enemy(world).transform.translation.xy = Vec2(-0.8,    0.5)
+        Enemy(world).transform.translation.xy = Vec2( 0.0,    0.5)
+        Enemy(world).transform.translation.xy = Vec2( 0.8,    0.5)
+        (e4:=Enemy(world)).transform.translation.xy = Vec2( 0.0,    0.9)
         e4.speed = -1
 
-        LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
-        
-    def add_element(self, element: Element):
-        self.elements.append(element)
- 
-    def remove_element(self, element: Element):
-        self.elements.remove(element)
+        LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
+        Garbage(world).transform.translation.xy = Vec2(0.45, 0.45)
+        Garbage(world).transform.translation.xy = Vec2(-0.45, 0.45)
+        Garbage(world).transform.translation.xy = Vec2(0.0, 0.75)
+        Garbage(world).transform.translation.xy = Vec2(0.45, -0.45)
+        Garbage(world).transform.translation.xy = Vec2(-0.45, -0.45)
+        Garbage(world).transform.translation.xy = Vec2(0.0, -0.75)
+        LOGGER.log_trace('Garbage added', 'world:setup_scene')
 
-    def game_ended(self) -> bool:
-        return len(list(enemy for enemy in self.elements if isinstance(enemy, Enemy))) == 0
+        LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
+        Satellite(world).transform.translation.xy = Vec2(0.6, -0.6)
+        LOGGER.log_trace('Satellite added', 'world:setup_scene')
+
+        LOGGER.log_trace('Adding star ', 'world:setup_scene')
+        Star(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
+
+        LOGGER.log_trace('Adding little stars ', 'world:setup_scene')
+        LittleStar(world).transform.translation.xy = Vec2(0, 0.8)
+        LittleStar(world).transform.translation.xy = Vec2(0.9, 0.2)
+        LittleStar(world).transform.translation.xy = Vec2(0.2, 0.1)
+        LittleStar(world).transform.translation.xy = Vec2(0.5, 0.5)
+        LittleStar(world).transform.translation.xy = Vec2(0.7, 0.8)
+
+        LittleStar(world).transform.translation.xy = Vec2(-1, 0.8)
+        LittleStar(world).transform.translation.xy = Vec2(-0.6, 0.5)
+        LittleStar(world).transform.translation.xy = Vec2(-0.7, 0.8)
+
+        LittleStar(world).transform.translation.xy = Vec2(0.5, -0.8)
+        LittleStar(world).transform.translation.xy = Vec2(0.3, -0.7)
+        LittleStar(world).transform.translation.xy = Vec2(0.1, -0.4)
+
+        LittleStar(world).transform.translation.xy = Vec2(-0.2, 0)
+        LittleStar(world).transform.translation.xy = Vec2(-0.3, -0.7)
+        LittleStar(world).transform.translation.xy = Vec2(-0.4, -0.2)
+        LittleStar(world).transform.translation.xy = Vec2(-0.8, -0.9)
+
+
+        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+        
+    def spawn(self, element: Element):
+        self.elements.append(element)
+
+    def destroy(self, element: Element):
+        element.destroy()
 
     def update(self):
         '''
@@ -63,14 +99,24 @@ class World:
         '''
 
         # Update elements
-        for element in self.elements:
+        for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating
-                element.update() 
-        
+                element.update()
+
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
         
+    def is_player_victory(self) -> bool:
+        '''
+        If no more enemies or garbage is left, the player has won.
+        '''
+        return len(list(element for element in self.elements if isinstance(element, (Enemy, Garbage)))) == 0
 
+    def is_player_defeat(self) -> bool:
+        '''
+        If the player has been destroyed, he has lost.
+        '''
+        return len(list(element for element in self.elements if isinstance(element, (Ship)))) == 0
 
 WORLD = World()

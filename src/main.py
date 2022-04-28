@@ -9,6 +9,7 @@ Membros:
 '''
 
 from colorsys import hsv_to_rgb
+from dataclasses import dataclass
 from threading import Thread
 
 import glfw
@@ -17,10 +18,14 @@ import OpenGL.GL as gl
 from threading import Thread
 
 from utils.logger import LOGGER
+from app_vars import APP_VARS
 
 from constants import WINDOW_SIZE
-from app_state import APP_VARS
+from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
+from objects.screens.lose_screen import LoseScreen
+from objects.screens.win_screen import WinScreen
+from world import World
 
 def create_window():
     '''
@@ -39,11 +44,11 @@ def create_window():
     LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
 
-    LOGGER.log_trace("Enabling VSync", 'create_window')
-    glfw.swap_interval(1)
-
     glfw.make_context_current(window)
     glfw.show_window(window)
+
+    LOGGER.log_trace("Enabling VSync", 'create_window')
+    glfw.swap_interval(1)
 
     LOGGER.log_info("Window created", 'create_window')
     return window
@@ -57,6 +62,9 @@ def glfw_thread():
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
 
+    gl.glEnable(gl.GL_BLEND) # Enable blending
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA) # Set blending function
+
     set_glfw_callbacks(window)
 
     # Create the scene (world)
@@ -64,8 +72,16 @@ def glfw_thread():
     world = APP_VARS.world
     world.setup_scene()
 
-    hsv = [0, 0, 1]
-    hsv_change_rate = 0.01
+    R: float = 32/255 
+    G: float = 31/255 
+    B: float = 65/255 
+
+    win_screen = WinScreen(world)
+    lose_screen = LoseScreen(world)
+    world.elements.remove(win_screen) # TODO: make this less hacky
+    world.elements.remove(lose_screen) # TODO: make this less hacky
+
+
 
     # Render loop: keeps running until the window is closed or the GUI signals to close
     while not glfw.window_should_close(window) and not APP_VARS.closing:
@@ -74,29 +90,28 @@ def glfw_thread():
         # Actual rendering of the scene
         def render():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
-            rgb = hsv_to_rgb(*hsv)
-            gl.glClearColor(*rgb, 1.0)
+            gl.glClearColor(R, G, B, 1.0)
 
-
-            # If game has eneded, show the end game screen (empty scene with varying colors)
-            if world.game_ended():
-                hsv[1] = 0.5
-                hsv[0] += hsv_change_rate
-            else: # Otherwise, show the normal scene with a white background
-                hsv[0] = hsv[1] = 0
-
-                # Update the scene (update physics and render all objects)
+            if world.is_player_victory():
+                win_screen.update()
+            elif world.is_player_defeat():
+                lose_screen.update() # TODO: lose screen
+            else:
                 world.update()
-                pass
 
             # Special shortcut to reset scene
-            if IS.is_pressed('r'):
+            if IS.just_pressed('r'):
                 world.setup_scene()
+
+            if IS.just_pressed('b'):
+                APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
         render() # Render to the default framebuffer (screen)
 
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
     
+    
+
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
     APP_VARS.closing = True # Make the GUI close too
 

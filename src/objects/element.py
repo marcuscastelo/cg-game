@@ -1,148 +1,283 @@
+from dataclasses import dataclass, field
 import math
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2
+from utils.geometry import Rect, Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from constants import SCREEN_RECT
+from constants import FLOAT_SIZE, SCREEN_RECT
 
-from shader import Shader
+import imageio
+from gl_abstractions.texture import Texture2D, Texture2DParameters
+from gl_abstractions.vertex_array import VertexArray
+from gl_abstractions.vertex_buffer import VertexBuffer
 
-from transformation_matrix import Transform
+from gl_abstractions.shader import Shader, ShaderDB
 
-SHADER = None
+from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from world import World
 
+@dataclass
+class ShapeSpec:
+    vertices: np.ndarray
+    indices: np.ndarray = None
+    render_mode: int = field(default=gl.GL_TRIANGLES)
+    shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()['simple_red']) # TODO: more readable way to do this?
+    texture: Union[Texture2D, None] = None
+    name: str = 'Unnamed Shape'
+
+    def __post_init__(self):
+        # TODO: add shader.needs_texture() (or something)
+        needs_texture = self.shader is ShaderDB.get_instance()['textured']
+        if needs_texture:
+            assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
+
+        self.shader.layout.assert_data_ok(self.vertices)
+
+@dataclass
+class ShapeRenderer:
+    shape_spec: ShapeSpec
+    transform: Transform
+
+    def __post_init__(self):
+        self.shader = self.shape_spec.shader
+        self.texture = self.shape_spec.texture
+        self.shape_name = self.shape_spec.name
+
+        self.vao = VertexArray()
+        self.vao.bind()
+        self.vbo = VertexBuffer(
+            layout = self.shader.layout, 
+            data = self.shape_spec.vertices, 
+            usage=gl.GL_DYNAMIC_DRAW
+        )
+        # self.ibo = VertexBuffer(self.shape_spec.indices)
+        self.vao.upload_vertex_buffer(self.vbo)
+
+    def render(self):
+        # Bind the shader and VAO (VBO is bound in the VAO)
+        self.vao.bind()
+
+        if self.texture is not None:
+            self.texture.bind()
+        
+        self.shader.use()
+
+        # gl.glBindTextureUnit(0, self.texture)
+
+        # Set the transformation matrix
+        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
+
+        # Draw the vertices according to the primitive
+        gl.glDrawArrays(self.shape_spec.render_mode, 0, len(self.shape_spec.vertices))
+
+@dataclass
+class ElementSpecification:
+    initial_transform: Transform = field(default_factory=Transform)
+    shape_specs: list[ShapeSpec] = field(default_factory=list)
+
+    def __post_init__(self):
+        # Ensure types are correct
+        for shape in self.shape_specs:
+            assert isinstance(shape, ShapeSpec), f'ShapeSpecs must be of type ShapeSpec, not {type(shape)}'
+        assert isinstance(self.initial_transform, Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
+
+@dataclass
+class BoundingBoxCache:
+    _bounding_box: Rect2 = None
+    
+    _last_vertices: np.ndarray = None
+    _last_model_matrix: np.ndarray = None
+
+    def get_bounding_box(self, vertices_4d: np.ndarray, model_matrix: np.ndarray) -> Rect2:
+        if self._last_vertices is not None and self._bounding_box is not None and np.array_equal(self._last_vertices, vertices_4d) and  np.array_equal(self._last_model_matrix, model_matrix) :
+            return self._bounding_box
+
+        self._bounding_box = self._calculate_bounding_box(vertices_4d, model_matrix)
+        self._last_model_matrix = model_matrix
+
+        return self._bounding_box
+    
+    def _calculate_bounding_box(self, vertices_4d: np.ndarray, model_matrix: np.ndarray) -> Rect2:
+        # Transform the vertices
+        tranformed_vertices = (model_matrix @ vertices_4d.T).T
+
+        # Find the minimum and maximum x and y values
+        min_x = min(tranformed_vertices, key=lambda x: x[0])[0]
+        max_x = max(tranformed_vertices, key=lambda x: x[0])[0]
+        min_y = min(tranformed_vertices, key=lambda x: x[1])[1]
+        max_y = max(tranformed_vertices, key=lambda x: x[1])[1]
+
+        return Rect2(min_x, min_y, max_x, max_y)
+
 class Element:
     '''
     An abstract class for all the elements in the game
     '''
-    
-    def __init__(self, world: 'World', initial_transform: Transform = None):
+
+    def __init__(self, world: 'World', specs: ElementSpecification):
         '''
         Initialize the element inside the world, with an optional initial transform
         '''
+        from world import World
+        assert isinstance(world, World), f'{world} is not a World'
+        assert isinstance(specs, ElementSpecification), f'{specs} is not an Elementspecs'
 
+        self._transform = specs.initial_transform
+        self.primitives = specs.shape_specs
+    
         self.world = world
-        world.add_element(self)
+        world.spawn(self)
 
-        self.transform = initial_transform if initial_transform is not None else Transform()
-        assert isinstance(self.transform, Transform), f"Transform must be of type Transform, not {type(self.transform)}"
-        
         self._last_physics_update = time.time() # Used for physics updates
         self.__destroyed = False
+        self._dying = False
         self.speed = 0.5
 
-        self._render_primitive = gl.GL_TRIANGLES
+        # Take all shapes specified in specs and create a list of ShapeRenderers to render them later
+        self.shape_renderers = [
+            ShapeRenderer(shape_spec, self.transform) for shape_spec in specs.shape_specs
+        ]
 
-        self._vertices = []
-        self._normal_vertices = []
-        self._ouline_vertices = []
-        self._init_vertices()
+        self._bounding_box_vertices_3d = self._generate_bounding_box_vertices()
+        self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
+        self._bounding_box_cache = BoundingBoxCache()
 
-        if len(self._vertices) == 0:
-            LOGGER.log_error(f'{self.__class__.__name__} id={id(self)} has no vertices')
+    def die(self):
+        self._dying = True
+
+    def _physics_update(self, delta_time: float):
+        '''
+        If overriden in sublcass, must call super, updates the element's physics
+        It is called every physics update (approx. 50 times per second)
+        '''
+
+        try:
+            self_rect = self.get_bounding_box()
+            if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+                self._on_outside_screen()
+        except NotImplementedError:
+            LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
+            pass
+
+    def update(self):
+        '''
+        Updates the element, called every frame.
+        If overridden, make sure to call the super method.
+        Not intended to be overridden.
+        '''
+        if self.destroyed:
+            LOGGER.log_warning(f'Trying to update destroyed element {self}')
+            return
+
+        if (delta_time := time.time() - self._last_physics_update) > 1/50:
+            self._physics_update(delta_time)
+            self._last_physics_update = time.time()
+
+        self._render()
         
-        if len(self._normal_vertices) == 0:
-            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no normal vertices, assuming all vertices are normal')
-            self._normal_vertices = self._vertices
 
-        if len(self._ouline_vertices) == 0:
-            LOGGER.log_warning(f'{self.__class__.__name__} id={id(self)} has no outline vertices, assuming all vertices are outline')
-            self._ouline_vertices = self._vertices
-
-        # Vertex array object that will hold all other buffers
-        self.vao = gl.glGenVertexArrays(1)
         
-        # Position buffer
-        self.vbo = gl.glGenBuffers(1) 
-
-        # Bind the Vertex Array Object and then the Vertex Buffer Object 
-        gl.glBindVertexArray(self.vao)
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-
-        # Set the vertex buffer data
-        gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
-
-        # Load shader and use it and save it for rendering
-        global SHADER
-        if SHADER is None:
-            SHADER = Shader('shaders/simple_red.vert', 'shaders/simple_red.frag')
-        self.shader = SHADER
-
-        # Enable vertex attribute position
-        gl.glEnableVertexAttribArray(0)
-        gl.glVertexAttribPointer(0, 3, gl.GL_FLOAT, gl.GL_FALSE, 0, None)
-
-        # Unbind the VAO and VBO to avoid accidental changes
-        gl.glBindVertexArray(0) # Unbind the VAO
-        gl.glBindBuffer(gl.GL_ARRAY_BUFFER, 0) # Unbind the VBO
-
-    def _init_vertices(self):
+    def _render(self):
         '''
-        Pure virtual method, must be implemented in subclass. Should initialize the vertices of the element
-        Example:
-            self._vertices = [
-                -0.5, -0.5, 0.0,
-                0.5, -0.5, 0.0,
-                0.5, 0.5, 0.0,
-                -0.5, 0.5, 0.0
-            ]
+        Basic rendering method. Can be overridden in subclass.
         '''
-        raise NotImplementedError("Abstract method, please implement in subclass")
+        if self._dying:
+            self.transform.scale *= 0.9
+            if self.transform.scale.x < 0.1:
+                self.destroy()
+                return
 
-    def __repr__(self) -> str:
+
+        for shape_renderer in self.shape_renderers:
+            shape_renderer.render()
+
+        self._render_debug()        
+
+    def _render_debug(self):
         '''
-        Return a string representation of the element
+        Renders the element in debug mode
         '''
-        return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
+        from app_vars import APP_VARS
+        if APP_VARS.debug.show_bbox:
+            try:
+                min_x, min_y, max_x, max_y = self.get_bounding_box()
+                bounding_box_renderer = ShapeRenderer(
+                        transform=Transform(),
+                        shape_spec=ShapeSpec(
+                            vertices=np.array([
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
 
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
 
-    # Create a bounding box
-    @staticmethod
-    def get_bounding_box(elem: 'Element') -> Rect2:
-        min_x = min(elem._vertices[::3])
-        min_y = min(elem._vertices[1::3])
-        max_x = max(elem._vertices[::3])
-        max_y = max(elem._vertices[1::3])
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
+                                
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
+                            ], dtype=np.float32),
+                            shader=ShaderDB.get_instance().get_shader('colored'),
+                            render_mode=gl.GL_LINES,
+                        ),
+                    )
+                bounding_box_renderer.render()
+            except NotImplementedError:
+                pass
 
-        vertices = np.array([
-            [min_x, min_y, 0, 0],
-            [max_x, max_y, 0, 0]
-        ])
+    @property
+    def destroyed(self):
+        '''
+        Returns whether the element is destroyed or not
+        '''
+        return self.__destroyed
 
-        # Transform the vertices
-        vertices = vertices @ elem.transform.model_matrix.T
-
-        start = Vec2(vertices[0, 0], vertices[0, 1])
-        end = Vec2(vertices[1, 0], vertices[1, 1])
-
-        return Rect2(start, end) + elem.transform.translation.xy # FIXME: why do we need to add the translation here?
-
+    def destroy(self):
+        '''
+        Destroys the element
+        '''
+        if self.destroyed:
+            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
+            LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
+            return
     
-    def _on_outside_screen(self, screen_rect: Rect2):
+        # LOGGER.log_debug(f"{self} marked for destruction")
+        self.__destroyed = True
+
+
+    def get_bounding_box(self) -> Rect2:
+        '''
+        Returns the bounding box of the element with scale, rotation and translation applied
+        '''
+        return self._bounding_box_cache.get_bounding_box(self._bounding_box_vertices_4d, self.transform.model_matrix)
+
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''
+        Return the bounding box of the element
+        np.array([[x1, y1, z1], [x2, y2, z2], ...])
+        '''
+        raise NotImplementedError(f'{self.__class__.__name__} does not implement _generate_bounding_box_vertices')
+
+
+    def _on_outside_screen(self):
+        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 
-    def move(self, intensity: float = 1.0):
+    def move_forward(self, intensity: float = 1.0):
         '''
         Move the element forward according to the current rotation
         '''
         dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
         dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
         self.transform.translation.xy += Vec2(dx, dy)
-
-        self_rect = Element.get_bounding_box(self)
-        screen_rect = SCREEN_RECT
-
-        if not screen_rect.intersects(self_rect):
-            self._on_outside_screen(screen_rect)
-
+        
 
     def rotate(self, angle: float):
         '''
@@ -151,6 +286,14 @@ class Element:
         '''
         # Rotate over Z axis (2D)
         self.transform.rotation.z += angle
+
+
+    @property
+    def transform(self) -> Transform:
+        '''
+        Returns the transform of the element
+        '''
+        return self._transform
 
     @property
     def x(self):
@@ -199,68 +342,10 @@ class Element:
         '''
         Set the angle of the element on the Z axis
         '''
-        self.transform.rotation.z = value
+        self.transform.rotation.z = value               
 
-    def _physics_update(self, delta_time: float):
+    def __repr__(self) -> str:
         '''
-        Pure virtual method, must be implemented in subclass. Should update the element's physics
-        It is called every physics update (approx. 50 times per second)
+        Return a string representation of the element
         '''
-        raise NotImplementedError("Abstract method, please implement in subclass")
-
-    def update(self):
-        '''
-        Update the element, called every frame.
-        If overridden, make sure to call the super method.
-        Not intended to be overridden.
-        '''
-        if self.destroyed:
-            LOGGER.log_warning(f'Trying to update destroyed element {self}')
-            return
-
-        if (delta_time := time.time() - self._last_physics_update) > 1/50:
-            self._physics_update(delta_time)
-            self._last_physics_update = time.time()
-
-        if IS.is_pressed('t') and not self._was_t_pressed:
-            self._vertices = self._normal_vertices if self._vertices is self._ouline_vertices else self._ouline_vertices
-            gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-            gl.glBufferData(gl.GL_ARRAY_BUFFER, len(self._vertices)*4, (gl.GLfloat * len(self._vertices))(*self._vertices), gl.GL_DYNAMIC_DRAW)
-            self._render_primitive = gl.GL_LINE_STRIP if self._render_primitive is gl.GL_TRIANGLES else gl.GL_TRIANGLES
-        self._was_t_pressed = IS.is_pressed('t')
-
-        self._render()
-        
-    def _render(self):
-        '''
-        Basic rendering method. Can be overridden in subclass.
-        '''
-        # Bind the shader and VAO (VBO is bound in the VAO)
-        gl.glBindVertexArray(self.vao)
-        # gl.glBindBuffer(gl.GL_ARRAY_BUFFER, self.vbo)
-        self.shader.use()
-
-        # Set the transformation matrix
-        self.shader.set_uniform_matrix('transformation', self.transform.model_matrix)
-
-        # Draw the vertices according to the primitive
-        gl.glDrawArrays(self._render_primitive, 0, len(self._vertices))
-
-    @property
-    def destroyed(self):
-        '''
-        Returns whether the element is destroyed or not
-        '''
-        return self.__destroyed
-
-    def destroy(self):
-        '''
-        Destroys the element
-        '''
-        if self.destroyed:
-            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
-            LOGGER.log_warning(f'Trying to destroy already destroyed element {self}')
-            return
-    
-        # LOGGER.log_debug(f"{self} marked for destruction")
-        self.__destroyed = True
+        return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
