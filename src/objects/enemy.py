@@ -8,6 +8,7 @@ from objects.projectile import Projectile
 import numpy as np
 
 from OpenGL import GL as gl
+from shader import ShaderDB
 
 from transformation_matrix import Transform
 
@@ -17,6 +18,11 @@ ACCEL = 0.8
 class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+
+        Orange: Vec3 = Vec3(255,100,100) / 255
+        Light_Red: Vec3 = Vec3(219,48,86) / 255
+        Red: Vec3 = Vec3(255,0,0) / 255
+        Dark_Red: Vec3 = Vec3(133,29,65) / 255
         # TODO: find a better way to do this (kwargs)
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
@@ -26,13 +32,28 @@ class Enemy(Element):
             ),
             shape_specs=[
                 ShapeSpec(vertices=np.array([
-                    *(-0.075, -0.075, +0.0), #*(+0, +0),
-                    *(+0.075, -0.075, +0.0), #*(+1, +0),
-                    *(+0.075, +0.075, +0.0), #*(+1, +1),
-                    *(-0.075, -0.075, +0.0), #*(+0, +0),
-                    *(-0.075, +0.075, +0.0), #*(+0, +1),
-                    *(+0.075, +0.075, +0.0), #*(+1, +1),
-                ], dtype=np.float32)),
+                    #Left
+                    *(-0.075, 0.075, 0.0), *(Orange),
+                    *(-0.075, 0.0, 0.0), *(Orange),
+                    *(0.0, 0.05, 0.0), *(Red),
+
+                    #Right
+                    *(0.0, 0.05, 0.0), *(Red),
+                    *(0.075, 0.0, 0.0), *(Dark_Red),
+                    *(0.075, 0.075, 0.0), *(Dark_Red),
+
+                    #Center
+                    *(-0.075, 0.0, 0.0), *(Orange),
+                    *(0.075, 0.0, 0.0), *(Dark_Red),
+                    *(0.0, 0.05, 0.0), *(Red),
+
+                    #Bottom
+                    *(-0.075, 0.0, 0.0), *(Orange),
+                    *(0.075, 0.0, 0.0), *(Dark_Red),
+                    *(0.0, -0.055, 0.0), *(Light_Red),
+                ], dtype=np.float32),
+                shader=ShaderDB.get_instance().get_shader('colored')
+                ),
             ]
         )
 

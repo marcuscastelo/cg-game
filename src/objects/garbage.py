@@ -7,6 +7,7 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
+from shader import ShaderDB
 from transformation_matrix import Transform
 
 
@@ -27,6 +28,8 @@ class Garbage(Element):
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+
+        Garbage_color: Vec3 = Vec3(119, 119, 119) / 255
         self._render_primitive = gl.GL_TRIANGLE_STRIP
 
         kwargs['specs'] = ElementSpecification(
@@ -38,15 +41,15 @@ class Garbage(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        *(-0.025, -0.0375, +0.0),
-                        *( 0.025, -0.0375, +0.0),
-                        *(-0.025,  0.0375, +0.0),
+                        *(-0.025, -0.040, +0.0), *(Garbage_color),
+                        *( 0.025, -0.040, +0.0), *(Garbage_color),
+                        *(-0.025,  0.040, +0.0), *(Garbage_color),
 
-                        *(-0.025,  0.0375, +0.0),
-                        *( 0.025, -0.0375, +0.0),
-                        *( 0.025,  0.0375, +0.0),
+                        *(-0.025,  0.040, +0.0), *(Garbage_color),
+                        *( 0.025, -0.040, +0.0), *(Garbage_color),
+                        *( 0.025,  0.040, +0.0), *(Garbage_color),
                     ], dtype=np.float32),
-                    render_mode=gl.GL_TRIANGLE_STRIP
+                    shader=ShaderDB.get_instance().get_shader('colored'),
                 )
             ]
         )

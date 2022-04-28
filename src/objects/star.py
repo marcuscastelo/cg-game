@@ -7,6 +7,7 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
+from shader import ShaderDB
 from transformation_matrix import Transform
 
 
@@ -17,6 +18,8 @@ class Stars(Element):
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+
+        Star_color: Vec3 = Vec3(255, 255, 0.0) / 255
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),
@@ -26,18 +29,19 @@ class Stars(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        *( 0.00,  1.00, +0.0), #*(+0, +0),
-                        *(-0.58, -0.81, +0.0), #*(+1, +0),
-                        *( 0.36, -0.12, +0.0), #*(+1, +1),
+                        *( 0.00,  1.00, +0.0), *(Star_color),
+                        *(-0.58, -0.81, +0.0), *(Star_color),
+                        *( 0.36, -0.12, +0.0), *(Star_color),
 
-                        *(-0.58, -0.81, +0.0), #*(+0, +0),
-                        *( 0.95,  0.31, +0.0), #*(+1, +0),
-                        *(-0.22,  0.31, +0.0), #*(+1, +1),
+                        *(-0.58, -0.81, +0.0), *(Star_color),
+                        *( 0.95,  0.31, +0.0), *(Star_color),
+                        *(-0.22,  0.31, +0.0), *(Star_color),
 
-                        *( 0.58, -0.81, +0.0), #*(+0, +0),
-                        *( 0.22,  0.31, +0.0), #*(+1, +0),
-                        *(-0.95,  0.31, +0.0), #*(+1, +1),
+                        *( 0.58, -0.81, +0.0), *(Star_color),
+                        *( 0.22,  0.31, +0.0), *(Star_color),
+                        *(-0.95,  0.31, +0.0), *(Star_color),
                     ], dtype=np.float32),
+                    shader=ShaderDB.get_instance().get_shader('colored'),
                     render_mode=gl.GL_TRIANGLES
                 )
             ]
