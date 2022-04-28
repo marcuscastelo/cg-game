@@ -19,10 +19,10 @@ class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
-        Orange: Vec3 = Vec3(255,100,100) / 255
-        Light_Red: Vec3 = Vec3(219,48,86) / 255
-        Red: Vec3 = Vec3(255,0,0) / 255
-        Dark_Red: Vec3 = Vec3(133,29,65) / 255
+        orange: Vec3 = Vec3(255,100,100) / 255
+        light_red: Vec3 = Vec3(219,48,86) / 255
+        red: Vec3 = Vec3(255,0,0) / 255
+        dark_red: Vec3 = Vec3(133,29,65) / 255
         # TODO: find a better way to do this (kwargs)
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
@@ -33,24 +33,24 @@ class Enemy(Element):
             shape_specs=[
                 ShapeSpec(vertices=np.array([
                     #Left
-                    *(-0.075, 0.075, 0.0), *(Orange),
-                    *(-0.075, 0.0, 0.0), *(Orange),
-                    *(0.0, 0.05, 0.0), *(Red),
+                    *(-0.075, 0.075, 0.0), *(orange),
+                    *(-0.075, 0.0, 0.0), *(orange),
+                    *(0.0, 0.05, 0.0), *(red),
 
                     #Right
-                    *(0.0, 0.05, 0.0), *(Red),
-                    *(0.075, 0.0, 0.0), *(Dark_Red),
-                    *(0.075, 0.075, 0.0), *(Dark_Red),
+                    *(0.0, 0.05, 0.0), *(red),
+                    *(0.075, 0.0, 0.0), *(dark_red),
+                    *(0.075, 0.075, 0.0), *(dark_red),
 
                     #Center
-                    *(-0.075, 0.0, 0.0), *(Orange),
-                    *(0.075, 0.0, 0.0), *(Dark_Red),
-                    *(0.0, 0.05, 0.0), *(Red),
+                    *(-0.075, 0.0, 0.0), *(orange),
+                    *(0.075, 0.0, 0.0), *(dark_red),
+                    *(0.0, 0.05, 0.0), *(red),
 
                     #Bottom
-                    *(-0.075, 0.0, 0.0), *(Orange),
-                    *(0.075, 0.0, 0.0), *(Dark_Red),
-                    *(0.0, -0.055, 0.0), *(Light_Red),
+                    *(-0.075, 0.0, 0.0), *(orange),
+                    *(0.075, 0.0, 0.0), *(dark_red),
+                    *(0.0, -0.055, 0.0), *(light_red),
                 ], dtype=np.float32),
                 shader=ShaderDB.get_instance().get_shader('colored')
                 ),
