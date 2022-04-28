@@ -5,31 +5,6 @@ import numpy as np
 from utils.logger import LOGGER
 
 from constants import FLOAT_SIZE
-
-class AttributeLayout:
-    def __init__(self, name: str, count: int):
-        self.name = name
-        self.count = count
-
-    def get_size(self):
-        raise NotImplementedError(f'{self.__class__.__name__} must implement get_size()')
-
-
-class FloatArrayLayout(AttributeLayout):
-    def get_size(self):
-        return self.count * FLOAT_SIZE
-
-class PositionLayout(FloatArrayLayout):
-    def __init__(self):
-        super().__init__('position', 3)
-
-class TexCoordLayout(FloatArrayLayout):
-    def __init__(self):
-        super().__init__('tex_coord', 2)
-
-class ColorLayout(FloatArrayLayout):
-    def __init__(self):
-        super().__init__('color', 3)
     
 @dataclass
 class Layout:
@@ -37,7 +12,7 @@ class Layout:
     Class responsible for describing the layout of the vertex array (each geometry object is a vertex array).
     Currently only supports floats.
     '''
-    attributes: list[AttributeLayout] # Example: [('position', 3), ('tex_coord', '2')]
+    attributes: list[tuple[str, int]] # Example: [('position', 3), ('tex_coord', '2')]
 
     def __post_init__(self):
         '''
