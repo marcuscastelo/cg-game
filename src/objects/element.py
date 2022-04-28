@@ -57,10 +57,8 @@ class ShapeRenderer:
             data = self.shape_spec.vertices, 
             usage=gl.GL_DYNAMIC_DRAW
         )
-        self.vbo.bind()
         # self.ibo = VertexBuffer(self.shape_spec.indices)
-
-        self.vao.apply_layout(self.shape_spec.shader.layout)
+        self.vao.upload_vertex_buffer(self.vbo)
 
     def render(self):
         # Bind the shader and VAO (VBO is bound in the VAO)

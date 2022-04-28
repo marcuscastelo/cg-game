@@ -17,7 +17,7 @@ class VertexArray:
     def unbind(self):
         gl.glBindVertexArray(0)
 
-    def apply_layout(self, layout: Layout):
+    def _apply_layout(self, layout: Layout):
         stride = layout.calc_stride()
         
         i = 0
@@ -31,7 +31,7 @@ class VertexArray:
     def upload_vertex_buffer(self, vertex_buffer: 'VertexBuffer'):
         self.bind()
         vertex_buffer.bind()
-        self.apply_layout(vertex_buffer.layout)
+        self._apply_layout(vertex_buffer.layout)
         vertex_buffer.unbind()
         self.unbind()
 
