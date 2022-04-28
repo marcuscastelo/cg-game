@@ -36,7 +36,7 @@ class Garbage_Elipse(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
-        Garbage_Elipse_color: Vec3 = Vec3(204, 204, 204) / 255
+        
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),
@@ -44,19 +44,7 @@ class Garbage_Elipse(Element):
                 scale=Vec3(1, 1, 1),
             ),
             shape_specs=[
-                ShapeSpec(
-                    vertices=np.array([
-                        *(0.000, 0.0375, +0.0), *(Garbage_Elipse_color),
-                        *(-0.015, 0.000, +0.0), *(Garbage_Elipse_color),
-                        *(0.015, 0.0, +0.0), *(Garbage_Elipse_color),
-
-                        *(0.015, 0.000, +0.0), *(Garbage_Elipse_color),
-                        *(-0.015, 0.000, +0.0), *(Garbage_Elipse_color),
-                        *(0.000, -0.0375, +0.0), *(Garbage_Elipse_color),
-                    ], dtype=np.float32),
-                    render_mode=gl.GL_TRIANGLE_STRIP,
-                    shader=ShaderDB.get_instance().get_shader('colored'),
-                )
+                
             ]
         )
 

@@ -8,6 +8,8 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from shader import ShaderDB
 from transformation_matrix import Transform
 
+from OpenGL import GL as gl
+
 
 @dataclass(init=False)
 class Garbage(Element):
@@ -16,7 +18,7 @@ class Garbage(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
         garbage_color: Vec3 = Vec3(119, 119, 119) / 255
-
+        diamond_color: Vec3 = Vec3(204, 204, 204) / 255
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),
@@ -34,6 +36,19 @@ class Garbage(Element):
                         *( 0.025, -0.040, +0.0), *(garbage_color),
                         *( 0.025,  0.040, +0.0), *(garbage_color),
                     ], dtype=np.float32),
+                    shader=ShaderDB.get_instance().get_shader('colored'),
+                ),
+                ShapeSpec(
+                    vertices=np.array([
+                        *(0.000, 0.0375, +0.0), *(diamond_color),
+                        *(-0.015, 0.000, +0.0), *(diamond_color),
+                        *(0.015, 0.0, +0.0), *(diamond_color),
+
+                        *(0.015, 0.000, +0.0), *(diamond_color),
+                        *(-0.015, 0.000, +0.0), *(diamond_color),
+                        *(0.000, -0.0375, +0.0), *(diamond_color),
+                    ], dtype=np.float32),
+                    render_mode=gl.GL_TRIANGLE_STRIP,
                     shader=ShaderDB.get_instance().get_shader('colored'),
                 )
             ]
