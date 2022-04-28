@@ -14,9 +14,9 @@ from gl_abstractions.texture import Texture2D, Texture2DParameters
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
-from shader import Shader, ShaderDB
+from gl_abstractions.shader import Shader, ShaderDB
 
-from transformation_matrix import Transform
+from transform import Transform
 
 TEXTURED_SHADER = None
 IMAGE: imageio.core.util.Array = np.array(imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:]) # TODO: relative path
@@ -301,7 +301,7 @@ class Element:
         '''
         Renders the element in debug mode
         '''
-        from app_state import APP_VARS
+        from app_vars import APP_VARS
         if APP_VARS.debug.show_bbox:
             try:
                 min_x, min_y, max_x, max_y = self.get_bounding_box()

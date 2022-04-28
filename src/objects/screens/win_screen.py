@@ -7,9 +7,9 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from OpenGL import GL as gl
 import numpy as np
 
-from transformation_matrix import Transform
+from transform import Transform
 
-from shader import ShaderDB
+from gl_abstractions.shader import ShaderDB
 
 class Screen(Element):
     @metsig(Element.__init__)

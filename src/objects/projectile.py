@@ -9,7 +9,7 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 
 from OpenGL import GL as gl
 
-from transformation_matrix import Transform
+from transform import Transform
 
 import numpy as np
 

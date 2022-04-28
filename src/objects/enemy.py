@@ -8,9 +8,9 @@ from objects.projectile import Projectile
 import numpy as np
 
 from OpenGL import GL as gl
-from shader import ShaderDB
+from gl_abstractions.shader import ShaderDB
 
-from transformation_matrix import Transform
+from transform import Transform
 
 MAX_SPEED = 0.4
 ACCEL = 0.8

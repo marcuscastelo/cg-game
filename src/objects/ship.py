@@ -15,9 +15,9 @@ from objects.projectile import Projectile
 from input.input_system import INPUT_SYSTEM as IS
 
 import numpy as np
-from shader import ShaderDB
+from gl_abstractions.shader import ShaderDB
 
-from transformation_matrix import Transform
+from transform import Transform
 
 BASE_SIZE = 1/16 * (1 - (-1))
 

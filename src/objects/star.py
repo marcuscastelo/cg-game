@@ -7,8 +7,8 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
-from shader import ShaderDB
-from transformation_matrix import Transform
+from gl_abstractions.shader import ShaderDB
+from transform import Transform
 
 
 @dataclass(init=False)

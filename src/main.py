@@ -18,12 +18,12 @@ import OpenGL.GL as gl
 from threading import Thread
 
 from utils.logger import LOGGER
-from app_state import APP_VARS
+from app_vars import APP_VARS
 
 from constants import WINDOW_SIZE
 from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
-from scenes.win_screen import WinScreen
+from objects.screens.win_screen import WinScreen
 
 def create_window():
     '''
