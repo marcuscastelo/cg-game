@@ -58,22 +58,22 @@ class World:
 
         LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
         Garbage(world).transform.translation.xy = Vec2(0.45, 0.45)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, 0.45)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, 0.45)
         
         Garbage(world).transform.translation.xy = Vec2(-0.35, 0.45)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, 0.45)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, 0.45)
         
         Garbage(world).transform.translation.xy = Vec2(0.0, 0.75)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, 0.75)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, 0.75)
         
         Garbage(world).transform.translation.xy = Vec2(0.45, -0.45)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, -0.45)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(0.45, -0.45)
         
         Garbage(world).transform.translation.xy = Vec2(-0.35, -0.45)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, -0.45)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(-0.35, -0.45)
         
         Garbage(world).transform.translation.xy = Vec2(0.0, -0.75)
-        Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, -0.75)
+        # Garbage_Elipse(world).transform.translation.xy = Vec2(0.0, -0.75)
 
 
         LOGGER.log_trace('Adding satellite...', 'world:setup_scene')
