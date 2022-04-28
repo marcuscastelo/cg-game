@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from OpenGL import GL as gl
 import numpy as np
-from numpy import log
 
 from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
@@ -15,22 +13,9 @@ from transformation_matrix import Transform
 class Garbage(Element):
     rotation_speed: float = 0.01
 
-    # def _create_vertex_buffer(self) -> VertexSpecification:
-    #     return VertexSpecification([
-    #         Vertex(Vec3(-0.025, -0.0375, 0.0)),
-    #         Vertex(Vec3(0.025, -0.0375, 0.0)),
-    #         Vertex(Vec3(-0.025, 0.0375, 0.0)),
-
-    #         Vertex(Vec3(-0.025, 0.0375, 0.0)),
-    #         Vertex(Vec3(0.025, -0.0375, 0.0)),
-    #         Vertex(Vec3(0.025, 0.0375, 0.0)),
-    #     ])
-
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
-
-        Garbage_color: Vec3 = Vec3(119, 119, 119) / 255
-        self._render_primitive = gl.GL_TRIANGLE_STRIP
+        garbage_color: Vec3 = Vec3(119, 119, 119) / 255
 
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
@@ -41,13 +26,13 @@ class Garbage(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        *(-0.025, -0.040, +0.0), *(Garbage_color),
-                        *( 0.025, -0.040, +0.0), *(Garbage_color),
-                        *(-0.025,  0.040, +0.0), *(Garbage_color),
+                        *(-0.025, -0.040, +0.0), *(garbage_color),
+                        *( 0.025, -0.040, +0.0), *(garbage_color),
+                        *(-0.025,  0.040, +0.0), *(garbage_color),
 
-                        *(-0.025,  0.040, +0.0), *(Garbage_color),
-                        *( 0.025, -0.040, +0.0), *(Garbage_color),
-                        *( 0.025,  0.040, +0.0), *(Garbage_color),
+                        *(-0.025,  0.040, +0.0), *(garbage_color),
+                        *( 0.025, -0.040, +0.0), *(garbage_color),
+                        *( 0.025,  0.040, +0.0), *(garbage_color),
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                 )
@@ -56,5 +41,14 @@ class Garbage(Element):
 
         super().__init__(*args, **kwargs)
 
+    def _get_bounding_box_vertices(self) -> np.ndarray:
+        return np.array([
+            [*(-0.025, -0.040, +0.0)],
+            [*( 0.025, -0.040, +0.0)],
+            [*(-0.025,  0.040, +0.0)],
+            [*(-0.025,  0.040, +0.0)],
+        ])
+
     def _physics_update(self, delta_time: float):
         self.rotate(self.rotation_speed)
+        super()._physics_update(delta_time)

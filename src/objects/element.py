@@ -152,7 +152,7 @@ class Element:
         min_y = min(vertices, key=lambda x: x[1])[1]
         max_y = max(vertices, key=lambda x: x[1])[1]
 
-        return Rect2(min_x, min_y, max_x, max_y) + self.transform.translation.xy
+        return Rect2(min_x, min_y, max_x, max_y) * self.transform.scale.xy + self.transform.translation.xy
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         '''
@@ -246,9 +246,13 @@ class Element:
         It is called every physics update (approx. 50 times per second)
         '''
 
-        self_rect = self.get_bounding_box()
-        if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
-            self._on_outside_screen()
+        try:
+            self_rect = self.get_bounding_box()
+            if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+                self._on_outside_screen()
+        except NotImplementedError:
+            LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
+            pass
 
     def update(self):
         '''
@@ -274,6 +278,31 @@ class Element:
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
 
+        try:
+            min_x, min_y, max_x, max_y = self.get_bounding_box()
+            bounding_box_renderer = ShapeRenderer(
+                    transform=Transform(),
+                    shape_spec=ShapeSpec(
+                        vertices=np.array([
+                            *( min_x, min_y, 0.0), *(1, 0, 1),
+                            *( max_x, min_y, 0.0), *(1, 0, 1),
+
+                            *( max_x, min_y, 0.0), *(1, 0, 1),
+                            *( max_x, max_y, 0.0), *(1, 0, 1),
+
+                            *( max_x, max_y, 0.0), *(1, 0, 1),
+                            *( min_x, max_y, 0.0), *(1, 0, 1),
+                            
+                            *( min_x, max_y, 0.0), *(1, 0, 1),
+                            *( min_x, min_y, 0.0), *(1, 0, 1),
+                        ], dtype=np.float32),
+                        shader=ShaderDB.get_instance().get_shader('colored'),
+                        render_mode=gl.GL_LINES,
+                    ),
+                )
+            bounding_box_renderer.render()
+        except NotImplementedError:
+            pass
     @property
     def destroyed(self):
         '''

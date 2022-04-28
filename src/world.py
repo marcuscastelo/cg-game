@@ -83,8 +83,7 @@ class World:
         LOGGER.log_trace('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
-        if not element in self.elements:
-            self.elements.append(element)
+        self.elements.append(element)
  
     def destroy(self, element: Element):
         element.destroy()

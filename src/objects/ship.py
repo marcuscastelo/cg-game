@@ -7,7 +7,8 @@ from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.logger import LOGGER
 from utils.sig import metsig
-from objects.element import Element, ElementSpecification, ShapeSpec
+from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
+from objects.garbage import Garbage
 from objects.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -125,7 +126,7 @@ class Ship(Element):
                 scale=Vec3(1, 1, 1),
             ),
             shape_specs=[
-                ShapeSpec(
+                ShapeSpec( 
                     vertices=np.array([
                         # Ship's body
                         *(-0.075, -0.075, 0.0), *(ship_body_color),
@@ -156,7 +157,7 @@ class Ship(Element):
                         *(-0.035, -0.09, 0.0), *(ship_propulsor_color),
                         *(-0.055, -0.09, 0.0), *(ship_propulsor_color),
                     ], dtype=np.float32),
-                    shader=ShaderDB.get_instance().get_shader('colored'),
+                    shader=ShaderDB.get_instance().get_shader('colored'), # Shader uses colors defined in the vertices
                 ),
 
                 ShapeSpec(
@@ -195,6 +196,9 @@ class Ship(Element):
         super().__init__(*args, **kwargs)
         self.controller = ShipController()
         self._last_shot_time = time.time()
+
+        bbox = self.get_bounding_box()
+        min_x, min_y, max_x, max_y = bbox
 
     def _get_bounding_box_vertices(self) -> Rect2:
         return np.array([
@@ -254,6 +258,11 @@ class Ship(Element):
     def _physics_update(self, delta_time: float):
         self._physics_shoot(delta_time)
         self._physics_movement(delta_time)
+
+        for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
+            if self.get_bounding_box().intersects(garbage.get_bounding_box()):
+                garbage.destroy()
+            
 
         return super()._physics_update(delta_time)
 

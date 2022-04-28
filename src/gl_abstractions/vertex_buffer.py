@@ -26,4 +26,5 @@ class VertexBuffer:
 
     def __del__(self):
         # gl.glDeleteBuffers(1, [self.vbo])
-        LOGGER.log_warning(f'VertexBuffer(id={id(self)}) not deleted')
+        # LOGGER.log_warning(f'VertexBuffer(id={id(self)}) not deleted') # TODO: cleanup
+        pass
