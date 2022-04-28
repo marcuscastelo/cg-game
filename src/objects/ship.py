@@ -202,10 +202,10 @@ class Ship(Element):
 
     def _get_bounding_box_vertices(self) -> Rect2:
         return np.array([
-            [-0.1, -0.1, 0], 
-            [+0.1, -0.1, 0],
-            [+0.1, +0.3, 0],
-            [-0.1, +0.3, 0],
+            [-0.075, -0.09 , 0.0],
+            [+0.075, -0.09 , 0.0],
+            [+0.075, +0.225, 0.0],
+            [-0.075, +0.225, 0.0],
         ])
 
     def _physics_shoot(self, delta_time: float):
