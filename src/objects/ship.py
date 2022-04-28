@@ -7,6 +7,7 @@ from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.logger import LOGGER
 from utils.sig import metsig
+from constants import SCREEN_RECT
 from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
 from objects.garbage import Garbage
@@ -268,20 +269,27 @@ class Ship(Element):
         for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
             if self.get_bounding_box().intersects(garbage.get_bounding_box()):
                 garbage.destroy()
-            
+        
+        bbox = self.get_bounding_box()
+
+        # Ship is out of bounds if any of the corners are out of bounds (diferent from the ship)
+        for points in [ bbox.top_left, bbox.top_right, bbox.bottom_left, bbox.bottom_right ]:
+            if not SCREEN_RECT.contains(points):
+                self._on_outside_screen()
+
 
         return super()._physics_update(delta_time)
 
     def _on_outside_screen(self):
         min_x, min_y, max_x, max_y = self.get_bounding_box()
-        if min_x < 0:
-            self.transform.translation.x += -min_x
+        if min_x < -1:
+            self.transform.translation.xy += -Vec2(min_x + 1, 0)/16
         if max_x > 1:
-            self.transform.translation.x -= max_x - 1
-        if min_y < 0:
-            self.transform.translation.y += -min_y
+            self.transform.translation.xy += -Vec2(max_x - 1, 0)/16
+        if min_y < -1:
+            self.transform.translation.xy += -Vec2(0, min_y + 1)/16
         if max_y > 1:
-            self.transform.translation.y -= max_y - 1
+            self.transform.translation.xy += -Vec2(0, max_y - 1)/16
         
 
 
