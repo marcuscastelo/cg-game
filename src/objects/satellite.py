@@ -13,13 +13,13 @@ from shader import Shader, ShaderDB
 
 @dataclass(init=False)
 class Satellite(Element):
-    rotation_speed: float = 0.0
+    rotation_speed: float = 0.01
 
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
         self._render_primitive = gl.GL_TRIANGLES
-
+    
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),
@@ -110,5 +110,37 @@ class Satellite(Element):
 
         super().__init__(*args, **kwargs)
 
+    def _get_bounding_box_vertices(self) -> np.ndarray:
+        circle_verts = self.shape_renderers[0].shape_spec.vertices
+        stuff_verts = self.shape_renderers[1].shape_spec.vertices
+
+        circle_min_x = np.min(circle_verts[0::6])
+        circle_max_x = np.max(circle_verts[0::6])
+        circle_min_y = np.min(circle_verts[1::6])
+        circle_max_y = np.max(circle_verts[1::6])
+
+        stuff_min_x = np.min(stuff_verts[0::6])
+        stuff_max_x = np.max(stuff_verts[0::6])
+        stuff_min_y = np.min(stuff_verts[1::6])
+        stuff_max_y = np.max(stuff_verts[1::6])
+
+        min_x = min(circle_min_x, stuff_min_x)
+        max_x = max(circle_max_x, stuff_max_x)
+
+        min_y = min(circle_min_y, stuff_min_y)
+        max_y = max(circle_max_y, stuff_max_y)
+
+        return np.array([
+            [*(min_x, min_y, 0.0)],
+            [*(max_x, min_y, 0.0)],
+            [*(max_x, max_y, 0.0)],
+            [*(min_x, max_y, 0.0)],
+        ], dtype=np.float32)
+        
+
+
+
+
     def _physics_update(self, delta_time: float):
         self.rotate(self.rotation_speed)
+        super()._physics_update(delta_time)
