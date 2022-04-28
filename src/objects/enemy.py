@@ -64,16 +64,6 @@ class Enemy(Element):
         self.dying = False
         pass
 
-    # def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self) -> VertexSpecification:
-    #     return VertexSpecification([
-    #         Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
-    #         Vertex(Vec3(+0.1, -0.1, +0.0), Vec2(+1, +0)),
-    #         Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
-
-    #         Vertex(Vec3(-0.1, -0.1, +0.0), Vec2(+0, +0)),
-    #         Vertex(Vec3(-0.1, +0.1, +0.0), Vec2(+0, +1)),
-    #         Vertex(Vec3(+0.1, +0.1, +0.0), Vec2(+1, +1)),
-    #     ])
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
@@ -110,8 +100,6 @@ class Enemy(Element):
         self.transform.translation.xy += Vec2(self.speed, 0) * delta_time
 
         return super()._physics_update(delta_time)
-
-        pass
 
     def _render(self):
         if self.dying:

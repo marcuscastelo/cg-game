@@ -16,28 +16,28 @@ class Texture2DParameters:
     wrap_t: int = gl.GL_CLAMP_TO_BORDER
     min_filter: int = gl.GL_LINEAR
     mag_filter: int = gl.GL_LINEAR
-    internal_format: int = gl.GL_RGBA
-    format: int = gl.GL_RGBA
+    internal_format: int = gl.GL_RGB
+    format: int = gl.GL_RGB
     type: int = gl.GL_UNSIGNED_BYTE
 
 class Texture2D(Texture):
-    @metsig
-    def __init__(self, *args, tex2d_params: Texture2DParameters = None, **kwargs):
-        self.params = tex2d_params
-        super().__init__(*args, **kwargs)
+    def __init__(self, tex2d_params: Texture2DParameters = None):
+        super().__init__()
+        self.params = tex2d_params if tex2d_params is not None else Texture2DParameters()
+        self._upload_parameters()
 
-    def upload_raw_texture(self, texture: np.ndarray) -> None:
+    def _upload_parameters(self):
         self.bind()
-        
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, self.params.wrap_s)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, self.params.wrap_t)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, self.params.min_filter)
         gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, self.params.mag_filter)
-
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, self.params.internal_format, texture.shape[1], texture.shape[0], 0, self.params.format, self.params.type, texture)
-
         self.unbind()
-        pass
+
+    def upload_raw_texture(self, texture: np.ndarray) -> None:
+        self.bind()
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, self.params.internal_format, texture.shape[1], texture.shape[0], 0, self.params.format, self.params.type, texture)
+        self.unbind()
 
     def bind(self) -> None:
         gl.glBindTexture(gl.GL_TEXTURE_2D, self.id)

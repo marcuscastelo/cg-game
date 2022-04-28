@@ -10,6 +10,7 @@ from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
+from gl_abstractions.texture import Texture2D, Texture2DParameters
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
@@ -18,7 +19,7 @@ from shader import Shader, ShaderDB
 from transformation_matrix import Transform
 
 TEXTURED_SHADER = None
-IMAGE: imageio.core.util.Array = imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:] # TODO: relative path
+IMAGE: imageio.core.util.Array = np.array(imageio.imread('./textures/enemy_texture.jpg')[::-1,:,:]) # TODO: relative path
 
 from input.input_system import INPUT_SYSTEM as IS
 
@@ -102,18 +103,21 @@ class Element:
 
         print(f'Type of IMAGE: {type(IMAGE)}')
 
-        self.texture = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
-        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture}')
+        self.texture = Texture2D(Texture2DParameters())
+        self.texture.upload_raw_texture(IMAGE)
 
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
+        # self.texture_CHANGEME = gl.glGenTextures(1) # TODO: generate once per different element (self._create_texture)
+        # LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} texture id={self.texture_CHANGEME}')
 
-        w, h, *_ = IMAGE.shape # TODO: Texture class to store image and size
+        # gl.glBindTexture(gl.GL_TEXTURE_2D, self.texture_CHANGEME)
+        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, gl.GL_CLAMP_TO_BORDER)
+        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, gl.GL_CLAMP_TO_BORDER)
+        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, gl.GL_LINEAR)
+        # gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, gl.GL_LINEAR)
 
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
+        # w, h, *_ = IMAGE.shape # TODO: Texture class to store image and size
+
+        # gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, gl.GL_RGB, w, h, 0, gl.GL_RGB, gl.GL_UNSIGNED_BYTE, IMAGE)
         
     def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self):
         '''
@@ -274,6 +278,7 @@ class Element:
         '''
         Basic rendering method. Can be overridden in subclass.
         '''
+        self.texture.bind()
 
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
