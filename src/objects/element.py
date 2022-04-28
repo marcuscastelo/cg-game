@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 import math
-import os
 import time
 from typing import TYPE_CHECKING
 import numpy as np
@@ -141,10 +140,11 @@ class Element:
         '''
         vertices = self._get_bounding_box_vertices()
         # Add forth dimension
-        vertices = np.insert(vertices, 3, 0.0, axis=1)
+        vertices = np.insert(vertices, 3, 1.0, axis=1)
+        # vertices 
 
         # Transform the vertices
-        vertices = self.transform.model_matrix @ vertices.T
+        vertices = (self.transform.model_matrix @ vertices.T).T
 
         # Find the minimum and maximum x and y values
         min_x = min(vertices, key=lambda x: x[0])[0]
@@ -152,7 +152,7 @@ class Element:
         min_y = min(vertices, key=lambda x: x[1])[1]
         max_y = max(vertices, key=lambda x: x[1])[1]
 
-        return Rect2(min_x, min_y, max_x, max_y) * self.transform.scale.xy + self.transform.translation.xy
+        return Rect2(min_x, min_y, max_x, max_y)
 
     def _get_bounding_box_vertices(self) -> np.ndarray:
         '''
@@ -278,31 +278,41 @@ class Element:
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
 
-        try:
-            min_x, min_y, max_x, max_y = self.get_bounding_box()
-            bounding_box_renderer = ShapeRenderer(
-                    transform=Transform(),
-                    shape_spec=ShapeSpec(
-                        vertices=np.array([
-                            *( min_x, min_y, 0.0), *(1, 0, 1),
-                            *( max_x, min_y, 0.0), *(1, 0, 1),
+        self._render_debug()        
 
-                            *( max_x, min_y, 0.0), *(1, 0, 1),
-                            *( max_x, max_y, 0.0), *(1, 0, 1),
+    def _render_debug(self):
+        '''
+        Renders the element in debug mode
+        '''
+        from app_state import APP_VARS
+        if APP_VARS.debug.show_bbox:
+            try:
+                min_x, min_y, max_x, max_y = self.get_bounding_box()
+                bounding_box_renderer = ShapeRenderer(
+                        transform=Transform(),
+                        shape_spec=ShapeSpec(
+                            vertices=np.array([
+                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                                *( max_x, min_y, 0.0), *(1, 0, 1),
 
-                            *( max_x, max_y, 0.0), *(1, 0, 1),
-                            *( min_x, max_y, 0.0), *(1, 0, 1),
-                            
-                            *( min_x, max_y, 0.0), *(1, 0, 1),
-                            *( min_x, min_y, 0.0), *(1, 0, 1),
-                        ], dtype=np.float32),
-                        shader=ShaderDB.get_instance().get_shader('colored'),
-                        render_mode=gl.GL_LINES,
-                    ),
-                )
-            bounding_box_renderer.render()
-        except NotImplementedError:
-            pass
+                                *( max_x, min_y, 0.0), *(1, 0, 1),
+                                *( max_x, max_y, 0.0), *(1, 0, 1),
+
+                                *( max_x, max_y, 0.0), *(1, 0, 1),
+                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                
+                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                            ], dtype=np.float32),
+                            shader=ShaderDB.get_instance().get_shader('colored'),
+                            render_mode=gl.GL_LINES,
+                        ),
+                    )
+                bounding_box_renderer.render()
+            except NotImplementedError:
+                pass
+            
+
     @property
     def destroyed(self):
         '''
