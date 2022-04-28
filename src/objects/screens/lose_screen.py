@@ -17,9 +17,9 @@ class Screen(Element):
         super().__init__(*args, **kwargs)
     pass
 
-_WIN_IMAGE = imageio.imread('textures/end_game_message.png')
+_LOSE_IMAGE = imageio.imread('textures/end_game_loss.png')
 
-class WinScreen(Element):
+class LoseScreen(Element):
     @metsig(Screen.__init__)
     def __init__(self, *args, **kwargs):
 
@@ -43,8 +43,8 @@ class WinScreen(Element):
                     ], dtype=np.float32),
                     # shader=ShaderDB.get_instance().get_shader('simple_red'),
                     shader=ShaderDB.get_instance().get_shader('textured'),
-                    texture=Texture2D.from_image_path('textures/end_game_message.png'),
-                    name='Win Screen',
+                    texture=Texture2D.from_image_path('textures/end_game_loss.png'),
+                    name='Lose Screen',
                 )
             ]
         )

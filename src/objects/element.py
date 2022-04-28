@@ -38,6 +38,7 @@ class ShapeSpec:
         if needs_texture:
             assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
 
+        self.shader.layout.assert_data_ok(self.vertices)
 
 @dataclass
 class ShapeRenderer:
@@ -51,11 +52,13 @@ class ShapeRenderer:
 
         self.vao = VertexArray()
         self.vao.bind()
-        self.vbo = VertexBuffer(self.shape_spec.vertices, usage=gl.GL_DYNAMIC_DRAW)
-        self.vbo.bind()
+        self.vbo = VertexBuffer(
+            layout = self.shader.layout, 
+            data = self.shape_spec.vertices, 
+            usage=gl.GL_DYNAMIC_DRAW
+        )
         # self.ibo = VertexBuffer(self.shape_spec.indices)
-
-        self.vao.apply_layout(self.shape_spec.shader.layout)
+        self.vao.upload_vertex_buffer(self.vbo)
 
     def render(self):
         # Bind the shader and VAO (VBO is bound in the VAO)
@@ -210,17 +213,17 @@ class Element:
                         transform=Transform(),
                         shape_spec=ShapeSpec(
                             vertices=np.array([
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
 
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
+                                [*( max_x, min_y, 0.0), *(1, 0, 1)],
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
 
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                [*( max_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
                                 
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                                [*( min_x, max_y, 0.0), *(1, 0, 1)],
+                                [*( min_x, min_y, 0.0), *(1, 0, 1)],
                             ], dtype=np.float32),
                             shader=ShaderDB.get_instance().get_shader('colored'),
                             render_mode=gl.GL_LINES,

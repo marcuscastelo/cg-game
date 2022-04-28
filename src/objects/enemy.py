@@ -36,24 +36,24 @@ class Enemy(Element):
             shape_specs=[
                 ShapeSpec(vertices=np.array([
                     #Left
-                    *(-0.075, -0.075, 0.0), *(orange),
-                    *(-0.075, 0.0, 0.0), *(orange),
-                    *(0.0, -0.05, 0.0), *(red),
+                    [*(-0.075, -0.075, 0.0), *(orange)],
+                    [*(-0.075, 0.0, 0.0), *(orange)],
+                    [*(0.0, -0.05, 0.0), *(red)],
 
                     #Right
-                    *(0.0, -0.05, 0.0), *(red),
-                    *(0.075, 0.0, 0.0), *(dark_red),
-                    *(0.075, -0.075, 0.0), *(dark_red),
+                    [*(0.0, -0.05, 0.0), *(red)],
+                    [*(0.075, 0.0, 0.0), *(dark_red)],
+                    [*(0.075, -0.075, 0.0), *(dark_red)],
 
                     #Center
-                    *(-0.075, 0.0, 0.0), *(orange),
-                    *(0.075, 0.0, 0.0), *(dark_red),
-                    *(0.0, -0.05, 0.0), *(red),
+                    [*(-0.075, 0.0, 0.0), *(orange)],
+                    [*(0.075, 0.0, 0.0), *(dark_red)],
+                    [*(0.0, -0.05, 0.0), *(red)],
 
                     #Front
-                    *(-0.075, 0.0, 0.0), *(orange),
-                    *(0.075, 0.0, 0.0), *(dark_red),
-                    *(0.0, +0.055, 0.0), *(light_red),
+                    [*(-0.075, 0.0, 0.0), *(orange)],
+                    [*(0.075, 0.0, 0.0), *(dark_red)],
+                    [*(0.0, +0.055, 0.0), *(light_red)],
                 ], dtype=np.float32),
                 shader=ShaderDB.get_instance().get_shader('colored'),
                 name='Enemy Full',
@@ -82,14 +82,12 @@ class Enemy(Element):
         ship = ( element for element in self.world.elements if isinstance(element, Ship) )
         ship = next(ship, None)
         if ship is None:
-            self.rotate(Vec3(0, 0, 0.01))
+            self.rotate(0.01)
         else:
             self.transform.rotation.z = math.atan2(-ship.transform.translation.y + self.transform.translation.y, -ship.transform.translation.x + self.transform.translation.x) + math.pi / 2
-
-
-        if random.random() > 0.99:
-            # Projectile(self.world, ProjectileSpecs())
-            Projectile.create_from_ship(self, specs=ProjectileSpecs(initial_speed=0.025, decay_rate=0.03)).is_enemy = True
+            if random.random() > 0.99:
+                # Projectile(self.world, ProjectileSpecs())
+                Projectile.create_from_ship(self, specs=ProjectileSpecs(initial_speed=0.025, decay_rate=0.03)).is_enemy = True
 
         for projectile in projectiles:
             if projectile.is_particle:

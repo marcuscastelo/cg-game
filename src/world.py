@@ -33,7 +33,6 @@ class World:
 
         LOGGER.log_trace('Adding star ', 'world:setup_scene')
         Star(world).transform.translation.xy = Vec2(-1, 0.8) # TODO: change
-        
         LOGGER.log_trace('Adding ship...', 'world:setup_scene')
         main_ship = Ship(world)
         LOGGER.log_trace('Enabling ship controls', 'world:setup_scene')
@@ -66,7 +65,7 @@ class World:
         
     def spawn(self, element: Element):
         self.elements.append(element)
- 
+
     def destroy(self, element: Element):
         element.destroy()
 
@@ -77,18 +76,24 @@ class World:
         '''
 
         # Update elements
-        for element in self.elements:
+        for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating
-                element.update() 
-        
+                element.update()
+
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
         
     def is_player_victory(self) -> bool:
+        '''
+        If no more enemies or garbage is left, the player has won.
+        '''
         return len(list(element for element in self.elements if isinstance(element, (Enemy, Garbage)))) == 0
 
     def is_player_defeat(self) -> bool:
+        '''
+        If the player has been destroyed, he has lost.
+        '''
         return len(list(element for element in self.elements if isinstance(element, (Ship)))) == 0
 
 WORLD = World()

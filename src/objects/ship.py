@@ -7,6 +7,7 @@ from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.logger import LOGGER
 from utils.sig import metsig
+from constants import SCREEN_RECT
 from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
 from objects.garbage import Garbage
@@ -94,29 +95,14 @@ class Ship(Element):
     _rotation_intensity = 0
     _was_t_pressed = False
 
-    # def DEPRECATED_USE_SPECS_IN_CONSTRUCTOR(self) -> VertexSpecification:
-    #     return VertexSpecification([
-    #         Vertex(Vec3(-0.1, -0.1, 0.0), Vec2(0, 0)),
-    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(1, 0)),
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-            
-    #         Vertex(Vec3(0.1, -0.1, 0.0), Vec2(+1, 0)),
-    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-
-    #         Vertex(Vec3(-0.1, 0.1, 0.0), Vec2(0, +2/4)),
-    #         Vertex(Vec3(0.1, 0.1, 0.0), Vec2(+1, +2/4)),
-    #         Vertex(Vec3(0 , 0.3, 0.0), Vec2(+1/2, +4/4)),
-    #     ])
-        
-
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
-        ship_front_color: Vec3 = Vec3(211,211,211) / 255
-        ship_body_color: Vec3 = Vec3(169,169,169) / 255
-        ship_wing_color: Vec3 = Vec3(192,192,192) / 255
-        ship_propulsor_color: Vec3 = Vec3(128,128,128) / 255
+        darker_silver: Vec3 = Vec3(110, 110, 110) / 255
+        dark_silver: Vec3 = Vec3(121, 121, 121) / 255
+        silver: Vec3 = Vec3(169,169,169) / 255
+        light_silver: Vec3 = Vec3(192,192,192) / 255
+        lighter_silver: Vec3 = Vec3(211,211,211) / 255
         
         # TODO: find a better way to do this (kwargs)
         kwargs['specs'] = ElementSpecification(
@@ -129,33 +115,33 @@ class Ship(Element):
                 ShapeSpec( 
                     vertices=np.array([
                         # Ship's body
-                        *(-0.075, -0.075, 0.0), *(ship_body_color),
-                        *( 0.075, -0.075, 0.0), *(ship_body_color),
-                        *(-0.075,  0.075, 0.0), *(ship_body_color),
-
-                        *( 0.075, -0.075, 0.0), *(ship_body_color),
-                        *( 0.075,  0.075, 0.0), *(ship_body_color),
-                        *(-0.075,  0.075, 0.0), *(ship_body_color),
+                        [*(-0.075, -0.075, 0.0), *(light_silver)],
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
+                            
+                        [*( 0.075, -0.075, 0.0), *(dark_silver)],
+                        [*( 0.075,  0.075, 0.0), *(dark_silver)],
+                        [*(-0.075,  0.075, 0.0), *(silver)],
                         
                         # Ship's point
-                        *(-0.075,  0.075, 0.0), *(ship_front_color),
-                        *( 0.075,  0.075, 0.0), *(ship_front_color),
-                        *( 0.0,  0.225, 0.0), *(ship_front_color),
-
+                        [*(-0.075,  0.075, 0.0), *(light_silver)],
+                        [*( 0.075,  0.075, 0.0), *(darker_silver)],
+                        [*( 0.0,  0.225, 0.0), *(silver)],
+                        
                         # Ship's propulsors
-                        *(0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.09, 0.0), *(ship_propulsor_color),
-                        *(0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(0.035, -0.09, 0.0), *(ship_propulsor_color),
-                        *(0.055, -0.09, 0.0), *(ship_propulsor_color),
-
-                        *(-0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.09, 0.0), *(ship_propulsor_color),
-                        *(-0.035, -0.075, 0.0), *(ship_propulsor_color),
-                        *(-0.035, -0.09, 0.0), *(ship_propulsor_color),
-                        *(-0.055, -0.09, 0.0), *(ship_propulsor_color),
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.075, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        [*(0.035, -0.075, 0.0), *(dark_silver)],
+                        [*(0.035, -0.09, 0.0), *(dark_silver)],
+                        [*(0.055, -0.09, 0.0), *(dark_silver)],
+                        
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.075, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
+                        [*(-0.035, -0.075, 0.0), *(silver)],
+                        [*(-0.035, -0.09, 0.0), *(silver)],
+                        [*(-0.055, -0.09, 0.0), *(silver)],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'), # Shader uses colors defined in the vertices
                 ),
@@ -163,51 +149,33 @@ class Ship(Element):
                 ShapeSpec(
                     vertices=np.array([
                         #Wings
-                        *(0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(0.075, -0.01, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(0.075, 0.0, 0.0), *(silver)],
+                        [*(0.075, -0.01, 0.0), *(silver)],
+                        [*(0.115, -0.015, 0.0), *(dark_silver)],
 
-                        *(0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
-                        *(0.13, 0.0, 0.0), *(ship_wing_color),
+                        [*(0.075, 0.0, 0.0), *(dark_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
 
-                        *(0.13, -0.04, 0.0), *(ship_wing_color),
-                        *(0.13, 0.0, 0.0), *(ship_wing_color),
-                        *(0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(0.13, -0.04, 0.0), *(darker_silver)],
+                        [*(0.13, 0.0, 0.0), *(darker_silver)],
+                        [*(0.115, -0.015, 0.0), *(darker_silver)],
 
-                        *(-0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.075, -0.01, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(-0.075, 0.0, 0.0), *(silver)],
+                        [*(-0.075, -0.01, 0.0), *(silver)],
+                        [*(-0.115, -0.015, 0.0), *(silver)],
 
-                        *(-0.075, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
-                        *(-0.13, 0.0, 0.0), *(ship_wing_color),
+                        [*(-0.075, 0.0, 0.0), *(light_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(light_silver)],
 
-                        *(-0.13, -0.04, 0.0), *(ship_wing_color),
-                        *(-0.13, 0.0, 0.0), *(ship_wing_color),
-                        *(-0.115, -0.015, 0.0), *(ship_wing_color),
+                        [*(-0.13, -0.04, 0.0), *(lighter_silver)],
+                        [*(-0.13, 0.0, 0.0), *(lighter_silver)],
+                        [*(-0.115, -0.015, 0.0), *(lighter_silver)],
                     ], dtype = np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     
                 ),
-
-                ShapeSpec( 
-                    vertices=np.array([
-                        # Ship's body
-                        *(-0.075, -0.075, 0.0), *(0.0, 0.0),
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
-
-                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
-                        *( 0.075,  0.075, 0.0), *(1.0, 1.0),
-                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
-                    ], dtype=np.float32),
-                    shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
-                    name='ship_body_textured',
-                    texture=Texture2D.from_image_path('textures/enemy_texture.jpg'),
-                ),
-
-
             ]
         )
         super().__init__(*args, **kwargs)
@@ -281,12 +249,14 @@ class Ship(Element):
                 t.scale = Vec3(1, 1, 1)
 
     def _die_if_enemy_shot(self):
+        from objects.enemy import Enemy
         if self._dying:
             return
 
-        for projectile in ( element for element in self.world.elements if isinstance(element, Projectile) ):
-            if projectile.is_enemy and self.get_bounding_box().contains(projectile.transform.translation.xy):
+        for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
+            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box().contains(obj.transform.translation.xy):
                 LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
+                obj.destroy()
                 self.die()
                 return
 
@@ -301,20 +271,27 @@ class Ship(Element):
         for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
             if self.get_bounding_box().intersects(garbage.get_bounding_box()):
                 garbage.destroy()
-            
+        
+        bbox = self.get_bounding_box()
+
+        # Ship is out of bounds if any of the corners are out of bounds (diferent from the ship)
+        for points in [ bbox.top_left, bbox.top_right, bbox.bottom_left, bbox.bottom_right ]:
+            if not SCREEN_RECT.contains(points):
+                self._on_outside_screen()
+
 
         return super()._physics_update(delta_time)
 
     def _on_outside_screen(self):
         min_x, min_y, max_x, max_y = self.get_bounding_box()
-        if min_x < 0:
-            self.transform.translation.x += -min_x
+        if min_x < -1:
+            self.transform.translation.xy += -Vec2(min_x + 1, 0)/16
         if max_x > 1:
-            self.transform.translation.x -= max_x - 1
-        if min_y < 0:
-            self.transform.translation.y += -min_y
+            self.transform.translation.xy += -Vec2(max_x - 1, 0)/16
+        if min_y < -1:
+            self.transform.translation.xy += -Vec2(0, min_y + 1)/16
         if max_y > 1:
-            self.transform.translation.y -= max_y - 1
+            self.transform.translation.xy += -Vec2(0, max_y - 1)/16
         
 
 
