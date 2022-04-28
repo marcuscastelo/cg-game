@@ -41,11 +41,11 @@ class World:
         
         LOGGER.log_trace('Adding enemies', 'world:setup_scene')
 
-        # Enemy(world).transform.translation.xy = Vec2(-0.8,    0.5)
-        # Enemy(world).transform.translation.xy = Vec2( 0.0,    0.5)
-        # Enemy(world).transform.translation.xy = Vec2( 0.8,    0.5)
-        # (e4:=Enemy(world)).transform.translation.xy = Vec2( 0.0,    0.9)
-        # e4.speed = -1
+        Enemy(world).transform.translation.xy = Vec2(-0.8,    0.5)
+        Enemy(world).transform.translation.xy = Vec2( 0.0,    0.5)
+        Enemy(world).transform.translation.xy = Vec2( 0.8,    0.5)
+        (e4:=Enemy(world)).transform.translation.xy = Vec2( 0.0,    0.9)
+        e4.speed = -1
 
         LOGGER.log_trace('Adding garbage...', 'world:setup_scene')
         Garbage(world).transform.translation.xy = Vec2(0.45, 0.45)
