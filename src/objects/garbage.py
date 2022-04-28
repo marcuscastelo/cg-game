@@ -18,6 +18,7 @@ class Garbage(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
         garbage_color: Vec3 = Vec3(119, 119, 119) / 255
+        dark_garbage_color: Vec3 = Vec3(80, 80, 80) / 255
         diamond_color: Vec3 = Vec3(204, 204, 204) / 255
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
@@ -28,13 +29,12 @@ class Garbage(Element):
             shape_specs=[
                 ShapeSpec(
                     vertices=np.array([
-                        [*(-0.025, -0.040, +0.0), *(garbage_color)],
-                        [*( 0.025, -0.040, +0.0), *(garbage_color)],
-                        [*(-0.025,  0.040, +0.0), *(garbage_color)],
-
-                        [*(-0.025,  0.040, +0.0), *(garbage_color)],
-                        [*( 0.025, -0.040, +0.0), *(garbage_color)],
-                        [*( 0.025,  0.040, +0.0), *(garbage_color)],
+                        [*(-0.025, -0.040, +0.0), *(garbage_color),],
+                        [*( 0.025, -0.040, +0.0), *(dark_garbage_color),],
+                        [*(-0.025,  0.040, +0.0), *(garbage_color),],
+                        [*(-0.025,  0.040, +0.0), *(garbage_color),],
+                        [*( 0.025, -0.040, +0.0), *(dark_garbage_color),],
+                        [*( 0.025,  0.040, +0.0), *(dark_garbage_color),],
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                 ),

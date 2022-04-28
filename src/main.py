@@ -23,7 +23,9 @@ from app_vars import APP_VARS
 from constants import WINDOW_SIZE
 from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
+from objects.screens.lose_screen import LoseScreen
 from objects.screens.win_screen import WinScreen
+from world import World
 
 def create_window():
     '''
@@ -75,7 +77,10 @@ def glfw_thread():
     B: float = 65/255 
 
     win_screen = WinScreen(world)
+    lose_screen = LoseScreen(world)
     world.elements.remove(win_screen) # TODO: make this less hacky
+    world.elements.remove(lose_screen) # TODO: make this less hacky
+
 
 
     # Render loop: keeps running until the window is closed or the GUI signals to close
@@ -90,7 +95,7 @@ def glfw_thread():
             if world.is_player_victory():
                 win_screen.update()
             elif world.is_player_defeat():
-                win_screen.update() # TODO: lose screen
+                lose_screen.update() # TODO: lose screen
             else:
                 world.update()
 
