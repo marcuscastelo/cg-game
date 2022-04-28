@@ -7,6 +7,7 @@ from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3, VecN
 from utils.logger import LOGGER
 from utils.sig import metsig
+from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
 from objects.garbage import Garbage
 from objects.projectile import Projectile
@@ -14,9 +15,9 @@ from objects.projectile import Projectile
 from input.input_system import INPUT_SYSTEM as IS
 
 import numpy as np
-from shader import ShaderDB
+from gl_abstractions.shader import ShaderDB
 
-from transformation_matrix import Transform
+from transform import Transform
 
 BASE_SIZE = 1/16 * (1 - (-1))
 
@@ -90,7 +91,6 @@ class ShipController:
 class Ship(Element):
     # speed: float = 1
     energy: float = 1 # [1, 2]: indicates glow intensity
-    ship_len = 0.4
     _rotation_intensity = 0
     _was_t_pressed = False
 
@@ -190,7 +190,24 @@ class Ship(Element):
                     ], dtype = np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     
-                )
+                ),
+
+                ShapeSpec( 
+                    vertices=np.array([
+                        # Ship's body
+                        *(-0.075, -0.075, 0.0), *(0.0, 0.0),
+                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
+                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+
+                        *( 0.075, -0.075, 0.0), *(1.0, 0.0),
+                        *( 0.075,  0.075, 0.0), *(1.0, 1.0),
+                        *(-0.075,  0.075, 0.0), *(0.0, 1.0),
+                    ], dtype=np.float32),
+                    shader=ShaderDB.get_instance().get_shader('textured'), # Shader uses colors defined in the vertices
+                    name='ship_body_textured',
+                    texture=Texture2D.from_image_path('textures/enemy_texture.jpg'),
+                ),
+
 
             ]
         )
@@ -201,13 +218,21 @@ class Ship(Element):
         bbox = self.get_bounding_box()
         min_x, min_y, max_x, max_y = bbox
 
-    def _get_bounding_box_vertices(self) -> Rect2:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-0.075, -0.09 , 0.0],
             [+0.075, -0.09 , 0.0],
-            [+0.075, +0.225, 0.0],
-            [-0.075, +0.225, 0.0],
+            [+0.075, +0.155, 0.0],
+            [-0.075, +0.155, 0.0],
         ])
+
+    def move_forward(self, intensity: float = 1.0):
+        '''
+        Move the element forward according to the current rotation
+        '''
+        dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
+        dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
+        self.transform.translation.xy += Vec2(dx, dy)
 
     def _physics_shoot(self, delta_time: float):
         if IS.is_pressed('space'):
@@ -256,9 +281,23 @@ class Ship(Element):
             if t.scale.x > 1:
                 t.scale = Vec3(1, 1, 1)
 
+    def _die_if_enemy_shot(self):
+        if self._dying:
+            return
+
+        for projectile in ( element for element in self.world.elements if isinstance(element, Projectile) ):
+            if projectile.is_enemy and self.get_bounding_box().contains(projectile.transform.translation.xy):
+                LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
+                self.die()
+                return
+
     def _physics_update(self, delta_time: float):
-        self._physics_shoot(delta_time)
-        self._physics_movement(delta_time)
+        if self._dying:
+            self.rotate(math.radians(90) * delta_time)
+        else:
+            self._physics_shoot(delta_time)
+            self._physics_movement(delta_time)
+            self._die_if_enemy_shot()
 
         for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
             if self.get_bounding_box().intersects(garbage.get_bounding_box()):
@@ -266,6 +305,21 @@ class Ship(Element):
             
 
         return super()._physics_update(delta_time)
+
+    def _on_outside_screen(self):
+        min_x, min_y, max_x, max_y = self.get_bounding_box()
+        if min_x < 0:
+            self.transform.translation.x += -min_x
+        if max_x > 1:
+            self.transform.translation.x -= max_x - 1
+        if min_y < 0:
+            self.transform.translation.y += -min_y
+        if max_y > 1:
+            self.transform.translation.y -= max_y - 1
+        
+
+
+
 
     def shoot(self):
         curr_time = time.time()

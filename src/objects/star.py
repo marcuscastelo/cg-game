@@ -7,12 +7,12 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
-from shader import ShaderDB
-from transformation_matrix import Transform
+from gl_abstractions.shader import ShaderDB
+from transform import Transform
 
 
 @dataclass(init=False)
-class Stars(Element):
+class Star(Element):
     star_size: float = 0.02
     rotation_speed: float = 0.1
 
@@ -57,7 +57,7 @@ class Stars(Element):
     def _on_outside_screen(self, _):
         self.transform.translation.xy = Vec2(-1, np.random.random()*(2)-1)
 
-    def _get_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_vertices(self) -> np.ndarray:
         return np.array([
             [-self.star_size*0.95, -self.star_size*0.81, 0.0],
             [ self.star_size*0.95,  self.star_size*0.81, 0.0],

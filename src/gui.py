@@ -3,7 +3,7 @@ from dpgext import elements as el
 from utils.sig import metsig
 from utils.logger import LOGGER
 
-from app_state import APP_VARS
+from app_vars import APP_VARS
 
 class MainWindow(gui.Window):
     @metsig(gui.Window.__init__)

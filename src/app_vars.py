@@ -14,10 +14,10 @@ class DebugOptions:
     show_bbox: bool = False
 
 @dataclass
-class AppState:
+class AppVars:
     closing: bool = False
     # scene: OpenGLScene = None
     world: 'World' = field(default_factory=_create_world)
     debug: DebugOptions = field(default_factory=DebugOptions)
     
-APP_VARS = AppState()
+APP_VARS = AppVars()
