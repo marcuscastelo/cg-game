@@ -19,7 +19,7 @@ class Star(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
-        Star_color: Vec3 = Vec3(255, 255, 0.0) / 255
+        Star_color: Vec3 = Vec3(255, 255, 0.0) / 255 * 0.3 # Make darker
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),

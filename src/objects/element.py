@@ -134,6 +134,7 @@ class Element:
 
         self._last_physics_update = time.time() # Used for physics updates
         self.__destroyed = False
+        self._dying = False
         self.speed = 0.5
 
         # Take all shapes specified in specs and create a list of ShapeRenderers to render them later
@@ -144,6 +145,90 @@ class Element:
         self._bounding_box_vertices_3d = self._generate_bounding_box_vertices()
         self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
         self._bounding_box_cache = BoundingBoxCache()
+
+    def die(self):
+        self._dying = True
+
+    def _physics_update(self, delta_time: float):
+        '''
+        If overriden in sublcass, must call super, updates the element's physics
+        It is called every physics update (approx. 50 times per second)
+        '''
+
+        try:
+            self_rect = self.get_bounding_box()
+            if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+                self._on_outside_screen()
+        except NotImplementedError:
+            LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
+            pass
+
+    def update(self):
+        '''
+        Updates the element, called every frame.
+        If overridden, make sure to call the super method.
+        Not intended to be overridden.
+        '''
+        if self.destroyed:
+            LOGGER.log_warning(f'Trying to update destroyed element {self}')
+            return
+
+        if (delta_time := time.time() - self._last_physics_update) > 1/50:
+            self._physics_update(delta_time)
+            self._last_physics_update = time.time()
+
+        self._render()
+        
+
+        
+    def _render(self):
+        '''
+        Basic rendering method. Can be overridden in subclass.
+        '''
+        if self._dying:
+            LOGGER.log_debug(f'{self} is dying')
+            self.transform.scale *= 0.9
+            if self.transform.scale.x < 0.1:
+                self.destroy()
+                return
+
+
+        for shape_renderer in self.shape_renderers:
+            shape_renderer.render()
+
+        self._render_debug()        
+
+    def _render_debug(self):
+        '''
+        Renders the element in debug mode
+        '''
+        from app_vars import APP_VARS
+        if APP_VARS.debug.show_bbox:
+            try:
+                min_x, min_y, max_x, max_y = self.get_bounding_box()
+                bounding_box_renderer = ShapeRenderer(
+                        transform=Transform(),
+                        shape_spec=ShapeSpec(
+                            vertices=np.array([
+                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                                *( max_x, min_y, 0.0), *(1, 0, 1),
+
+                                *( max_x, min_y, 0.0), *(1, 0, 1),
+                                *( max_x, max_y, 0.0), *(1, 0, 1),
+
+                                *( max_x, max_y, 0.0), *(1, 0, 1),
+                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                
+                                *( min_x, max_y, 0.0), *(1, 0, 1),
+                                *( min_x, min_y, 0.0), *(1, 0, 1),
+                            ], dtype=np.float32),
+                            shader=ShaderDB.get_instance().get_shader('colored'),
+                            render_mode=gl.GL_LINES,
+                        ),
+                    )
+                bounding_box_renderer.render()
+            except NotImplementedError:
+                pass
 
     @property
     def destroyed(self):
@@ -255,82 +340,7 @@ class Element:
         '''
         Set the angle of the element on the Z axis
         '''
-        self.transform.rotation.z = value
-
-    def _physics_update(self, delta_time: float):
-        '''
-        If overriden in sublcass, must call super, updates the element's physics
-        It is called every physics update (approx. 50 times per second)
-        '''
-
-        try:
-            self_rect = self.get_bounding_box()
-            if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
-                self._on_outside_screen()
-        except NotImplementedError:
-            LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
-            pass
-
-    def update(self):
-        '''
-        Updates the element, called every frame.
-        If overridden, make sure to call the super method.
-        Not intended to be overridden.
-        '''
-        if self.destroyed:
-            LOGGER.log_warning(f'Trying to update destroyed element {self}')
-            return
-
-        if (delta_time := time.time() - self._last_physics_update) > 1/50:
-            self._physics_update(delta_time)
-            self._last_physics_update = time.time()
-
-        self._render()
-        
-    def _render(self):
-        '''
-        Basic rendering method. Can be overridden in subclass.
-        '''
-        for shape_renderer in self.shape_renderers:
-            shape_renderer.render()
-
-        self._render_debug()        
-
-    def _render_debug(self):
-        '''
-        Renders the element in debug mode
-        '''
-        from app_vars import APP_VARS
-        if APP_VARS.debug.show_bbox:
-            try:
-                min_x, min_y, max_x, max_y = self.get_bounding_box()
-                bounding_box_renderer = ShapeRenderer(
-                        transform=Transform(),
-                        shape_spec=ShapeSpec(
-                            vertices=np.array([
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
-
-                                *( max_x, min_y, 0.0), *(1, 0, 1),
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
-
-                                *( max_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
-                                
-                                *( min_x, max_y, 0.0), *(1, 0, 1),
-                                *( min_x, min_y, 0.0), *(1, 0, 1),
-                            ], dtype=np.float32),
-                            shader=ShaderDB.get_instance().get_shader('colored'),
-                            render_mode=gl.GL_LINES,
-                        ),
-                    )
-                bounding_box_renderer.render()
-            except NotImplementedError:
-                pass
-                
-
-
-   
+        self.transform.rotation.z = value               
 
     def __repr__(self) -> str:
         '''

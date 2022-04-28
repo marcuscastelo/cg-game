@@ -88,4 +88,7 @@ class World:
     def is_player_victory(self) -> bool:
         return len(list(element for element in self.elements if isinstance(element, (Enemy, Garbage)))) == 0
 
+    def is_player_defeat(self) -> bool:
+        return len(list(element for element in self.elements if isinstance(element, (Ship)))) == 0
+
 WORLD = World()
