@@ -15,7 +15,7 @@ class WinScreen(Element):
     Quad (big rectangle) that displays the win screen.
     Fills the entire screen.
     '''
-    @metsig(Screen.__init__)
+    @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
 
