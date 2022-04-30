@@ -11,12 +11,5 @@ uninstall-all-packages:
 	@read
 	pip uninstall -y $(shell pip freeze | grep -v '^\-e')
 
-requirements.txt: save-deps
-
-.PHONY: save_deps
-save-deps:
-	@echo "Saving dependencies to requirements.txt"
-	./save_deps.sh
-
-run: requirements.txt
+run:
 	python src/main.py
