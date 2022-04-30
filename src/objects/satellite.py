@@ -14,20 +14,21 @@ from gl_abstractions.shader import Shader, ShaderDB
 
 @dataclass(init=False)
 class Satellite(Element):
-    # Basic variables that define the satellite's visible properties
+    '''
+    Satellite is a subclass of Element. It stays still rotating in constant speed.
+    It has no collision detection with other ships.
+    It cannot be destroyed by projectiles and blocks them (destroy projectiles when hit).
+    '''
+    # Basic variable that define the satellite's constant rotation speed
     rotation_speed: float = 0.01
-
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
-        self._render_primitive = gl.GL_TRIANGLES
-
         # Define color pallete to the object Star
         darker_silver: Vec3 = Vec3(110, 110, 110) / 255
         dark_silver: Vec3 = Vec3(121, 121, 121) / 255
         silver: Vec3 = Vec3(169,169,169) / 255
         light_silver: Vec3 = Vec3(192,192,192) / 255
-        lighter_silver: Vec3 = Vec3(211,211,211) / 255
     
         kwargs['specs'] = ElementSpecification(
             initial_transform=Transform(
@@ -123,6 +124,7 @@ class Satellite(Element):
         super().__init__(*args, **kwargs)
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''Override the default bounding box vertices generation'''
         circle_verts = self.shape_renderers[0].shape_spec.vertices[:, :2]
         stuff_verts = self.shape_renderers[1].shape_spec.vertices[:, :2]
 
@@ -150,10 +152,8 @@ class Satellite(Element):
         ], dtype=np.float32)
         
 
-
-
-
     def _physics_update(self, delta_time: float):
+        '''Override the default physics update'''
         self.rotate(self.rotation_speed)
 
         bbox = self.get_bounding_box()
