@@ -9,7 +9,6 @@ from objects.projectile import Projectile, ProjectileSpecs
 
 import numpy as np
 
-from OpenGL import GL as gl
 from gl_abstractions.shader import ShaderDB
 from objects.ship import Ship
 
@@ -19,6 +18,13 @@ MAX_SPEED = 0.4
 ACCEL = 0.8
 
 class Enemy(Element):
+    '''
+    Represents an enemy ship in the game.
+    The enemy ship is made of 4 triangles, each one representing a side of the ship.
+    It checks every physics update if it collides with any projectile. If it does, it dies. and the projectile is destroyed.
+    It moves in a straight, back and forth motion. It also rotates around its center to aim at the player.
+    It shoots a projectile randomly (with a probability of 0.01) every second.
+    '''
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
@@ -69,6 +75,7 @@ class Enemy(Element):
         pass
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''Overrides the bounding box generation of the Element class'''
         return np.array([
             [-0.075, -0.075, 0],
             [+0.075, -0.075, 0],
@@ -77,6 +84,7 @@ class Enemy(Element):
         ])
 
     def _physics_update(self, delta_time: float):
+        '''Overrides the physics update of the Element class'''
         bbox = self.get_bounding_box()
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 
@@ -115,7 +123,3 @@ class Enemy(Element):
         self.transform.translation.xy += Vec2(self.speed, 0) * delta_time
 
         return super()._physics_update(delta_time)
-
-
-    def destroy(self):
-        return super().destroy()
