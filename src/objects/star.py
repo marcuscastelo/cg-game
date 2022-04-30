@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 from OpenGL import GL as gl
-from math import atan2, cos, sin
 import numpy as np
 
 from utils.geometry import Vec2, Vec3
@@ -13,7 +12,10 @@ from transform import Transform
 
 @dataclass(init=False)
 class Star(Element):
-    
+    '''
+    Star is a subclass of Element. It just kicks from one side to the other of the screen.
+    It has no collision detection.
+    '''
     # Basic variables that define the star's visible properties
     star_size: float = 0.02
     rotation_speed: float = 0.1
@@ -21,7 +23,6 @@ class Star(Element):
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
-
         yellow: Vec3 = Vec3(230, 230, 0.0) / 255 * 0.7
         dark_yellow: Vec3 = Vec3(200, 200, 0.0) / 255 * 0.7
 
@@ -57,14 +58,14 @@ class Star(Element):
         super().__init__(*args, **kwargs)
 
     def _physics_update(self, delta_time: float):
+        '''Overrides the default physics update'''
         self.transform.translation.xy += self.speed_vec * delta_time * 50
         self.rotate(self.rotation_speed)
 
         super()._physics_update(delta_time)
 
     def _on_outside_screen(self):
-        # min_x, max_x, min_y, max_y = self.get_bounding_box()
-        # min_x, min_y, max_x, max_y = self.get_bounding_box()
+        '''Overrides the default on_outside_screen, to kick the star back to the other side instead of deleting it'''
         min_x, min_y, max_x, max_y = (*self.transform.translation.xy, *self.transform.translation.xy)
         if min_x < -1 or max_x > 1:
             self.speed_vec.x *= -1
@@ -75,6 +76,7 @@ class Star(Element):
         
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''Overrides the default bounding box generation'''
         return np.array([
             [-self.star_size*0.95, -self.star_size*0.81, 0.0],
             [ self.star_size*0.95,  self.star_size*0.81, 0.0],
