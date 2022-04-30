@@ -14,6 +14,7 @@ from gl_abstractions.shader import Shader, ShaderDB
 
 @dataclass(init=False)
 class Satellite(Element):
+    # Basic variables that define the satellite's visible properties
     rotation_speed: float = 0.01
 
 
@@ -21,6 +22,7 @@ class Satellite(Element):
     def __init__(self, *args, **kwargs):
         self._render_primitive = gl.GL_TRIANGLES
 
+        # Define color pallete to the object Star
         darker_silver: Vec3 = Vec3(110, 110, 110) / 255
         dark_silver: Vec3 = Vec3(121, 121, 121) / 255
         silver: Vec3 = Vec3(169,169,169) / 255
@@ -34,6 +36,8 @@ class Satellite(Element):
                 scale=Vec3(1, 1, 1),
             ), # TODO: allow world to set this
             shape_specs=[
+
+                # Circle part of the satellite, summing up to 30 vertices
                 ShapeSpec(
                     vertices=np.array([
                         [* ( 4.89084832e-02,  1.03903916e-02,  0.00000000e+00), *(darker_silver), ], 
@@ -71,6 +75,8 @@ class Satellite(Element):
                     shader=ShaderDB.get_instance().get_shader('colored'),
                     render_mode=gl.GL_TRIANGLE_FAN,
                 ), 
+
+                # "Square" parts of the satellite
                 ShapeSpec(
                     vertices=np.array([
                         [*(-0.051, 0.01, 0.0),        *(0.290, 0.290, 0.290)],

@@ -72,10 +72,12 @@ def glfw_thread():
     world = APP_VARS.world
     world.setup_scene()
 
+    # Background color
     R: float = 32/255 
     G: float = 31/255 
     B: float = 65/255 
 
+    # Add win and lose screens to the world, so they can pop up when their condition os satisfied (end game)
     win_screen = WinScreen(world)
     lose_screen = LoseScreen(world)
     world.elements.remove(win_screen) # TODO: make this less hacky
@@ -92,10 +94,11 @@ def glfw_thread():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)
 
+            # Decides if player won, lose, or game is still going
             if world.is_player_victory():
                 win_screen.update()
             elif world.is_player_defeat():
-                lose_screen.update() # TODO: lose screen
+                lose_screen.update()
             else:
                 world.update()
 

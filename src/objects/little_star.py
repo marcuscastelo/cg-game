@@ -14,20 +14,27 @@ from transform import Transform
 
 @dataclass(init=False)
 class LittleStar(Element):
+
+    # Basic variables that define the little star's visible properties
     star_size: float = 0.004
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
+        # Define color pallete to the object Little star
         white: Vec3 = Vec3(255, 255, 255) / 255
 
         kwargs['specs'] = ElementSpecification(
+
+            # Each little star should spawn with an random angle
             initial_transform=Transform(
                 translation=Vec3(0, 0, 0),
                 rotation=Vec3(0, 0, np.random.uniform()*2*3.14),
                 scale=Vec3(self.star_size, self.star_size, 1) * 3,
             ), # TODO: allow world to set this
             shape_specs=[
+
+                # Little star vertices, making 3 triangles
                 ShapeSpec(
                     vertices=np.array([
                         [*( 0.00,  1.00, +0.0), *(white)],

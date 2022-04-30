@@ -90,6 +90,7 @@ class ShipController:
 
 @dataclass(init=False)
 class Ship(Element):
+    # Basic variables that define the ship's visible properties
     # speed: float = 1
     energy: float = 1 # [1, 2]: indicates glow intensity
     _rotation_intensity = 0
@@ -98,6 +99,7 @@ class Ship(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
+        # Define color pallete to the object Star
         darker_silver: Vec3 = Vec3(110, 110, 110) / 255
         dark_silver: Vec3 = Vec3(121, 121, 121) / 255
         silver: Vec3 = Vec3(169,169,169) / 255

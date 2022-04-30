@@ -23,6 +23,7 @@ class ProjectileSpecs(ElementSpecification):
     This class is used to store the movement of the ship.
     User input is stored in this class. (in the current frame)
     """
+    # Basic variables that define the projectile's visible properties
     initial_speed: float = 0.06
     acceleration: float = +0.005
     decay_rate: float = 0.1

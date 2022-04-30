@@ -13,10 +13,13 @@ from OpenGL import GL as gl
 
 @dataclass(init=False)
 class Garbage(Element):
+    # Basic variables that define the garbage's visible properties
     rotation_speed: float = 0.01
 
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
+        
+        # Define color pallete to the object Garbage
         garbage_color: Vec3 = Vec3(119, 119, 119) / 255
         dark_garbage_color: Vec3 = Vec3(80, 80, 80) / 255
         diamond_color: Vec3 = Vec3(204, 204, 204) / 255
@@ -27,6 +30,7 @@ class Garbage(Element):
                 scale=Vec3(1, 1, 1),
             ),
             shape_specs=[
+                # Garbage outer draw
                 ShapeSpec(
                     vertices=np.array([
                         [*(-0.025, -0.040, +0.0), *(garbage_color),],
@@ -38,6 +42,8 @@ class Garbage(Element):
                     ], dtype=np.float32),
                     shader=ShaderDB.get_instance().get_shader('colored'),
                 ),
+
+                # Garbage inner draw
                 ShapeSpec(
                     vertices=np.array([
                         [*(0.000, 0.0375, +0.0), *(diamond_color)],
