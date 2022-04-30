@@ -33,6 +33,11 @@ class ProjectileSpecs(ElementSpecification):
 
 @dataclass
 class Projectile(Element):
+    '''
+    The projectile is shot by both the ship and the enemies. It can also kill them both.
+    When a projectile hits a ship, an enemym, the screen border or the satellite, it
+    spreads into smaller non-damage projectile, as if it's shattering itself
+    '''
     def __init__(self, world: 'World', specs: ProjectileSpecs, *args, **kwargs):
         self.live_time = 0
         self.specs = specs
@@ -59,17 +64,27 @@ class Projectile(Element):
         self.speed = self.specs.initial_speed
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''
+        Overrides the generate_bounding_box_vertices of class Element.
+        '''
         return np.array([
             [-0.01, -0.1, 0],
             [+0.01, +0.1, 0],
         ])
 
     def _render(self):
+        '''
+        Overrides the render of class Element.
+        '''
         gl.glLineWidth(self.specs.width)
         return super()._render()
 
     @classmethod
     def create_from_ship(cls, ship: 'Ship', specs: ProjectileSpecs = None) -> 'Projectile':
+        '''
+        The projectile is created by a ship, getting the position and the angle of the latter,
+        so it can represent with fidelity what is supposed to happen
+        '''
         shiplike_len = ship.get_bounding_box().size.y
 
 
@@ -91,9 +106,18 @@ class Projectile(Element):
         return obj
 
     def too_small(self):
+        '''
+        Small method to determine if the projectile is smaller than a pre-set value
+        '''
         return self.transform.scale.y < 0.01
     
     def _physics_update(self, delta_time: float):
+        
+        '''
+        Overrides the generate_bounding_box_vertices of class Element.
+        Physics update method, which also verify if the projectile is out of bounds.
+        If outside of the screen or too small, it gets destroyed.
+        '''
         self.live_time += delta_time
         if self.destroyed:
             LOGGER.log_error(f"Trying to update destroyed projectile {self}")
@@ -114,6 +138,12 @@ class Projectile(Element):
         return super()._physics_update(delta_time)
 
     def destroy(self):
+        '''
+        Overrides the generate_bounding_box_vertices of class Element.
+        When destroyed, the projectile shatters itself in an certain amount of
+        small projectile (up to 25), based on the distance it traveled.
+        They are spread with an equal angle, and also decay as they go by the space.
+        '''
         if not self.destroyed and not self.too_small() and not self.is_particle:
             impact_xyz = self.transform.translation.xyz
             TIME_TO_TRAVEL_SCREEN = 1 # seconds
