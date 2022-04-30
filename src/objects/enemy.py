@@ -22,6 +22,7 @@ class Enemy(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
+        # Define color pallete to the object Star
         orange: Vec3 = Vec3(255,100,100) / 255
         light_red: Vec3 = Vec3(219,48,86) / 255
         red: Vec3 = Vec3(255,0,0) / 255

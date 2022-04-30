@@ -25,6 +25,8 @@ class World:
         '''
         This function is called when the user presses the 'r' key and when the application starts.
         It populates the world with the elements that are needed to play the game.
+
+        Objects declared at the "bottom" of the code (last line) as rendered behind the upper ones.
         '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
         world = self

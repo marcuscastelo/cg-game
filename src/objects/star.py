@@ -13,6 +13,8 @@ from transform import Transform
 
 @dataclass(init=False)
 class Star(Element):
+    
+    # Basic variables that define the star's visible properties
     star_size: float = 0.02
     rotation_speed: float = 0.1
     speed_vec = Vec2( 0.01, 0.01)
@@ -20,6 +22,7 @@ class Star(Element):
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
+        # Define color pallete to the object Star
         yellow: Vec3 = Vec3(230, 230, 0.0) / 255
         dark_yellow: Vec3 = Vec3(200, 200, 0.0) / 255
 
@@ -30,6 +33,9 @@ class Star(Element):
                 scale=Vec3(self.star_size, self.star_size, 1) * 3,
             ), # TODO: allow world to set this
             shape_specs=[
+
+                # These vertices were based on a pentagram,
+                # consisting of 3 triangles and 3 lines intersection
                 ShapeSpec(
                     vertices=np.array([
                         [*( 0.00,  1.00, +0.0), *(yellow)],
