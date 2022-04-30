@@ -165,6 +165,7 @@ class Element:
         self._bounding_box_cache = BoundingBoxCache()
 
     def die(self):
+        '''Set the element to start a death animation'''
         self._dying = True
 
     def _physics_update(self, delta_time: float):
@@ -203,25 +204,29 @@ class Element:
         '''
         Basic rendering method. Can be overridden in subclass.
         '''
+
+        # Death animation
         if self._dying:
             self.transform.scale *= 0.9
             if self.transform.scale.x < 0.1:
                 self.destroy()
                 return
 
-
+        # Render all the shapes
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
 
+        # Render the bounding box (if enabled)
         self._render_debug()        
 
     def _render_debug(self):
         '''
-        Renders the element in debug mode
+        Renders debug information about the element if enabled.
         '''
         from app_vars import APP_VARS
         if APP_VARS.debug.show_bbox:
             try:
+                # Create a new shape renderer for the bounding box (uses CPU to compute the bounding box and transform its vertices)
                 min_x, min_y, max_x, max_y = self.get_bounding_box()
                 bounding_box_renderer = ShapeRenderer(
                         transform=Transform(),
@@ -245,6 +250,8 @@ class Element:
                     )
                 bounding_box_renderer.render()
             except NotImplementedError:
+                # If the element does not implement get_bounding_box, we cannot render the bounding box
+                # So we just ignore it 
                 pass
 
     @property
@@ -282,6 +289,10 @@ class Element:
 
 
     def _on_outside_screen(self):
+        '''
+        Define what to do when the element is outside the screen
+        Can be overridden in subclass
+        '''
         LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 
