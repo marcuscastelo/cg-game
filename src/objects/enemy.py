@@ -19,6 +19,10 @@ MAX_SPEED = 0.4
 ACCEL = 0.8
 
 class Enemy(Element):
+    '''
+    Enemy class, responsible to try to destroy the ship by shooting at it.
+    Must all be destroyed so the player can win.
+    '''
     @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 

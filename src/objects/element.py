@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 
 @dataclass
 class ShapeSpec:
+    '''
+    Basic class that tore the vertices data of the object.
+    It contains the vertices coordinates and its color
+    '''
     vertices: np.ndarray
     indices: np.ndarray = None
     render_mode: int = field(default=gl.GL_TRIANGLES)
@@ -42,6 +46,9 @@ class ShapeSpec:
 
 @dataclass
 class ShapeRenderer:
+    '''
+    Basic class that render the object, according to its vertices, texture, shader and primitive.
+    '''
     shape_spec: ShapeSpec
     transform: Transform
 
@@ -79,6 +86,9 @@ class ShapeRenderer:
 
 @dataclass
 class ElementSpecification:
+    '''
+    Basic class that holds the object basic data.
+    '''
     initial_transform: Transform = field(default_factory=Transform)
     shape_specs: list[ShapeSpec] = field(default_factory=list)
 
@@ -90,6 +100,9 @@ class ElementSpecification:
 
 @dataclass
 class BoundingBoxCache:
+    '''
+    Class that defines the boundaries (hitbox) of all its children classes
+    '''
     _bounding_box: Rect2 = None
     
     _last_vertices: np.ndarray = None
@@ -118,7 +131,9 @@ class BoundingBoxCache:
 
 class Element:
     '''
-    An abstract class for all the elements in the game
+    Basic class that derives all the others ones in the world.
+    Responsible for defining their size, behavior (translarion, rotation, scale),
+    rendering, update and boundaries
     '''
 
     def __init__(self, world: 'World', specs: ElementSpecification):
