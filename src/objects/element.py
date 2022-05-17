@@ -25,6 +25,10 @@ if TYPE_CHECKING:
 
 @dataclass
 class ShapeSpec:
+    '''
+    Basic class that tore the vertices data of the object.
+    It contains the vertices coordinates and its color
+    '''
     vertices: np.ndarray
     indices: np.ndarray = None
     render_mode: int = field(default=gl.GL_TRIANGLES)
@@ -42,6 +46,9 @@ class ShapeSpec:
 
 @dataclass
 class ShapeRenderer:
+    '''
+    Basic class that render the object, according to its vertices, texture, shader and primitive.
+    '''
     shape_spec: ShapeSpec
     transform: Transform
 
@@ -79,6 +86,9 @@ class ShapeRenderer:
 
 @dataclass
 class ElementSpecification:
+    '''
+    Basic class that holds the object basic data.
+    '''
     initial_transform: Transform = field(default_factory=Transform)
     shape_specs: list[ShapeSpec] = field(default_factory=list)
 
@@ -90,6 +100,9 @@ class ElementSpecification:
 
 @dataclass
 class BoundingBoxCache:
+    '''
+    Class that defines the boundaries (hitbox) of all its children classes
+    '''
     _bounding_box: Rect2 = None
     
     _last_vertices: np.ndarray = None
@@ -118,7 +131,9 @@ class BoundingBoxCache:
 
 class Element:
     '''
-    An abstract class for all the elements in the game
+    Basic class that derives all the others ones in the world.
+    Responsible for defining their size, behavior (translarion, rotation, scale),
+    rendering, update and boundaries
     '''
 
     def __init__(self, world: 'World', specs: ElementSpecification):
@@ -150,6 +165,7 @@ class Element:
         self._bounding_box_cache = BoundingBoxCache()
 
     def die(self):
+        '''Set the element to start a death animation'''
         self._dying = True
 
     def _physics_update(self, delta_time: float):
@@ -188,25 +204,29 @@ class Element:
         '''
         Basic rendering method. Can be overridden in subclass.
         '''
+
+        # Death animation
         if self._dying:
             self.transform.scale *= 0.9
             if self.transform.scale.x < 0.1:
                 self.destroy()
                 return
 
-
+        # Render all the shapes
         for shape_renderer in self.shape_renderers:
             shape_renderer.render()
 
+        # Render the bounding box (if enabled)
         self._render_debug()        
 
     def _render_debug(self):
         '''
-        Renders the element in debug mode
+        Renders debug information about the element if enabled.
         '''
         from app_vars import APP_VARS
         if APP_VARS.debug.show_bbox:
             try:
+                # Create a new shape renderer for the bounding box (uses CPU to compute the bounding box and transform its vertices)
                 min_x, min_y, max_x, max_y = self.get_bounding_box()
                 bounding_box_renderer = ShapeRenderer(
                         transform=Transform(),
@@ -230,6 +250,8 @@ class Element:
                     )
                 bounding_box_renderer.render()
             except NotImplementedError:
+                # If the element does not implement get_bounding_box, we cannot render the bounding box
+                # So we just ignore it 
                 pass
 
     @property
@@ -267,6 +289,10 @@ class Element:
 
 
     def _on_outside_screen(self):
+        '''
+        Define what to do when the element is outside the screen
+        Can be overridden in subclass
+        '''
         LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
         self.destroy()
 

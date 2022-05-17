@@ -14,7 +14,10 @@ from transform import Transform
 
 @dataclass(init=False)
 class LittleStar(Element):
-
+    '''
+    Class that defines the little stars, present in the background.
+    It does nothing important to the gameplay, only decorates the background
+    '''
     # Basic variables that define the little star's visible properties
     star_size: float = 0.004
 

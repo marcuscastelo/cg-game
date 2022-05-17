@@ -11,16 +11,12 @@ from transform import Transform
 
 from gl_abstractions.shader import ShaderDB
 
-class Screen(Element):
-    @metsig(Element.__init__)
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-    pass
-
-_LOSE_IMAGE = imageio.imread('textures/end_game_loss.png')
-
 class LoseScreen(Element):
-    @metsig(Screen.__init__)
+    '''
+    Quad (big rectangle) that displays the lose screen.
+    Fills the entire screen.
+    '''
+    @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
 
@@ -52,6 +48,7 @@ class LoseScreen(Element):
         super().__init__(*args, **kwargs)
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''Overrides the default bounding box generation method.'''
         return np.array([
             [-1.0, -1.0, 0.0],
             [+1.0, -1.0, 0.0],

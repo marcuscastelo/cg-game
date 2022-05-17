@@ -26,7 +26,7 @@ class World:
         This function is called when the user presses the 'r' key and when the application starts.
         It populates the world with the elements that are needed to play the game.
 
-        Objects declared at the "bottom" of the code (last line) as rendered behind the upper ones.
+        Objects declared at the "bottom" of the code (last line) are rendered behind the upper ones.
         '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
         world = self
@@ -89,6 +89,7 @@ class World:
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
+        '''Objects spawned later are rendered behind the .'''
         self.elements.append(element)
 
     def destroy(self, element: Element):

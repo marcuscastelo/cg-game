@@ -4,23 +4,18 @@ from utils.sig import metsig
 from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeSpec
 
-from OpenGL import GL as gl
 import numpy as np
 
 from transform import Transform
 
 from gl_abstractions.shader import ShaderDB
 
-class Screen(Element):
-    @metsig(Element.__init__)
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-    pass
-
-_WIN_IMAGE = imageio.imread('textures/end_game_message.png')
-
 class WinScreen(Element):
-    @metsig(Screen.__init__)
+    '''
+    Quad (big rectangle) that displays the win screen.
+    Fills the entire screen.
+    '''
+    @metsig(Element.__init__)
     def __init__(self, *args, **kwargs):
 
 
@@ -52,6 +47,7 @@ class WinScreen(Element):
         super().__init__(*args, **kwargs)
 
     def _generate_bounding_box_vertices(self) -> np.ndarray:
+        '''Overrides the default bounding box generation method.'''
         return np.array([
             [-1.0, -1.0, 0.0],
             [+1.0, -1.0, 0.0],

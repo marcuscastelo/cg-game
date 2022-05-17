@@ -13,6 +13,10 @@ from OpenGL import GL as gl
 
 @dataclass(init=False)
 class Garbage(Element):
+    '''
+    Class that represents the garbage floating in the space (screen).
+    All must be collected so the player can win.
+    '''
     # Basic variables that define the garbage's visible properties
     rotation_speed: float = 0.01
 

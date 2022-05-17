@@ -8,8 +8,6 @@ Membros:
     Vitor Souza Amim
 '''
 
-from colorsys import hsv_to_rgb
-from dataclasses import dataclass
 from threading import Thread
 
 import glfw
@@ -21,11 +19,9 @@ from utils.logger import LOGGER
 from app_vars import APP_VARS
 
 from constants import WINDOW_SIZE
-from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
 from objects.screens.lose_screen import LoseScreen
 from objects.screens.win_screen import WinScreen
-from world import World
 
 def create_window():
     '''
@@ -53,7 +49,7 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
     return window
 
-def glfw_thread():
+def glfw_run():
     '''
     This function runs in a separate thread. 
     It is the whole OpenGL application.
@@ -141,19 +137,8 @@ def main():
     LOGGER.log_trace("Init Glfw", 'main')
     glfw.init()
     
-    # LOGGER.log_trace("Init GUI", 'main')
-    # gui = AppGui() # GUI thread (main thread)
-
-    LOGGER.log_trace("Start GLFW thread", 'main')
-    t = Thread(target=glfw_thread)
-    t.start() # GLFW thread (2nd thread)
-
-    # LOGGER.log_trace("Start GUI", 'main')
-    # gui.run()
-
-    LOGGER.log_info("GUI Has been closed, waiting for GLFW to close...", 'main')
-    t.join()
-    LOGGER.log_info("GLFW thread has been closed", 'main')
+    LOGGER.log_info("Start glfw window and start game", 'main')
+    glfw_run()
 
     LOGGER.log_trace("Terminating Glfw", 'main')
     glfw.terminate()
