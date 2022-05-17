@@ -1,9 +1,11 @@
 from dpgext import gui
-from dpgext import elements as el
+from dpgext.elements import elements as el
+import dearpygui.dearpygui as dpg
 from utils.sig import metsig
 from utils.logger import LOGGER
 
 from app_vars import APP_VARS
+from constants import GUI_WIDTH
 
 class MainWindow(gui.Window):
     @metsig(gui.Window.__init__)
@@ -12,11 +14,16 @@ class MainWindow(gui.Window):
 
     def describe(self):
         with self:
-            el.Text("Hello World!").construct()
+            el.Text("Hello World!").add()
 
 class AppGui(gui.Gui):
     def _init_windows(self):
         self.windows['main'] = MainWindow()
+
+        dpg.set_viewport_pos([0, 0])
+        dpg.set_viewport_width(GUI_WIDTH)
+        dpg.set_viewport_height(1080)
+
         return super()._init_windows()
 
     def _before_exit(self):

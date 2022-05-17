@@ -20,12 +20,14 @@ from threading import Thread
 from utils.logger import LOGGER
 from app_vars import APP_VARS
 
-from constants import WINDOW_SIZE
+from constants import GUI_WIDTH, WINDOW_SIZE
 from gl_abstractions.texture import Texture2D
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
 from objects.screens.lose_screen import LoseScreen
 from objects.screens.win_screen import WinScreen
 from world import World
+
+from gui import AppGui
 
 def create_window():
     '''
@@ -43,7 +45,7 @@ def create_window():
 
     LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
-
+    glfw.set_window_pos(window, GUI_WIDTH, 0)
     glfw.make_context_current(window)
     glfw.show_window(window)
 
@@ -141,15 +143,15 @@ def main():
     LOGGER.log_trace("Init Glfw", 'main')
     glfw.init()
     
-    # LOGGER.log_trace("Init GUI", 'main')
-    # gui = AppGui() # GUI thread (main thread)
+    LOGGER.log_trace("Init GUI", 'main')
+    gui = AppGui() # GUI thread (main thread)
 
     LOGGER.log_trace("Start GLFW thread", 'main')
     t = Thread(target=glfw_thread)
     t.start() # GLFW thread (2nd thread)
 
-    # LOGGER.log_trace("Start GUI", 'main')
-    # gui.run()
+    LOGGER.log_trace("Start GUI", 'main')
+    gui.run()
 
     LOGGER.log_info("GUI Has been closed, waiting for GLFW to close...", 'main')
     t.join()
