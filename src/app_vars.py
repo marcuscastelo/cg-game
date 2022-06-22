@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 
 
 def _create_world():
-    from world import World
+    from objects.world import World
     return World()
     
 if TYPE_CHECKING:
-    from world import World
+    from objects.world import World
 
 @dataclass
 class DebugOptions:

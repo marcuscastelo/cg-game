@@ -21,7 +21,7 @@ from transform import Transform
 from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
-    from world import World
+    from objects._2d._2dworld import World
 
 @dataclass
 class ShapeSpec:
@@ -99,7 +99,7 @@ class ElementSpecification:
         assert isinstance(self.initial_transform, Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
 
 @dataclass
-class BoundingBoxCache:
+class BoundingBox2DCache:
     '''
     Class that defines the boundaries (hitbox) of all its children classes
     '''
@@ -140,7 +140,7 @@ class Element:
         '''
         Initialize the element inside the world, with an optional initial transform
         '''
-        from world import World
+        from objects.world import World
         assert isinstance(world, World), f'{world} is not a World'
         assert isinstance(specs, ElementSpecification), f'{specs} is not an Elementspecs'
 
@@ -160,9 +160,15 @@ class Element:
             ShapeRenderer(shape_spec, self.transform) for shape_spec in specs.shape_specs
         ]
 
-        self._bounding_box_vertices_3d = self._generate_bounding_box_vertices()
-        self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
-        self._bounding_box_cache = BoundingBoxCache()
+        # try:
+        #     self._bounding_box_vertices_3d = self._generate_bounding_box_vertices()
+        # except NotImplementedError:
+        #     LOGGER.log_warning(f'Element {self.__class__} does not have a bounding box! ignoring...')
+        #     self._bounding_box_vertices_4d = np.empty_like()
+        # else:
+        #     self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
+        
+        # self._bounding_box_cache = BoundingBoxCache()
 
     def die(self):
         '''Set the element to start a death animation'''
@@ -174,13 +180,13 @@ class Element:
         It is called every physics update (approx. 50 times per second)
         '''
 
-        try:
-            self_rect = self.get_bounding_box()
-            if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
-                self._on_outside_screen()
-        except NotImplementedError:
-            LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
-            pass
+        # try:
+        #     self_rect = self.get_bounding_box_2d()
+        #     if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
+        #         self._on_outside_screen()
+        # except NotImplementedError:
+        #     LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
+        #     pass
 
     def update(self):
         '''
@@ -227,7 +233,7 @@ class Element:
         if APP_VARS.debug.show_bbox:
             try:
                 # Create a new shape renderer for the bounding box (uses CPU to compute the bounding box and transform its vertices)
-                min_x, min_y, max_x, max_y = self.get_bounding_box()
+                min_x, min_y, max_x, max_y = self.get_bounding_box_2d()
                 bounding_box_renderer = ShapeRenderer(
                         transform=Transform(),
                         shape_spec=ShapeSpec(
@@ -274,46 +280,37 @@ class Element:
         self.__destroyed = True
 
 
-    def get_bounding_box(self) -> Rect2:
-        '''
-        Returns the bounding box of the element with scale, rotation and translation applied
-        '''
-        return self._bounding_box_cache.get_bounding_box(self._bounding_box_vertices_4d, self.transform.model_matrix)
+    # def get_bounding_box_2d(self) -> Rect2:
+    #     '''
+    #     Returns the bounding box of the element with scale, rotation and translation applied
+    #     '''
+    #     return self._bounding_box_cache.get_bounding_box(self._bounding_box_vertices_4d, self.transform.model_matrix)
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
-        '''
-        Return the bounding box of the element
-        np.array([[x1, y1, z1], [x2, y2, z2], ...])
-        '''
-        raise NotImplementedError(f'{self.__class__.__name__} does not implement _generate_bounding_box_vertices')
+    # def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
+    #     '''
+    #     Return the bounding box of the element
+    #     np.array([[x1, y1, z1], [x2, y2, z2], ...])
+    #     '''
+    #     raise NotImplementedError(f'{self.__class__.__name__} does not implement _generate_bounding_box_vertices')
 
 
-    def _on_outside_screen(self):
-        '''
-        Define what to do when the element is outside the screen
-        Can be overridden in subclass
-        '''
-        LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
-        self.destroy()
+    # TODO: what does this mean for 3D?
+    # def _on_outside_screen(self):
+    #     '''
+    #     Define what to do when the element is outside the screen
+    #     Can be overridden in subclass
+    #     '''
+    #     LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
+    #     self.destroy()
 
-    def move_forward(self, intensity: float = 1.0):
-        '''
-        Move the element forward according to the current rotation
-        '''
-        dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
-        dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
-        self.transform.translation.xy += Vec2(dx, dy)
+    # def move_forward(self, intensity: float = 1.0):
+    #     '''
+    #     Move the element forward according to the current rotation
+    #     '''
+    #     dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
+    #     dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
+    #     self.transform.translation.xy += Vec2(dx, dy)
         
-
-    def rotate(self, angle: float):
-        '''
-        Rotates the element on the Z axis (2D rotation)
-        angle: angle in radians
-        '''
-        # Rotate over Z axis (2D)
-        self.transform.rotation.z += angle
-
-
     @property
     def transform(self) -> Transform:
         '''
@@ -356,19 +353,26 @@ class Element:
         '''
         return self.transform.translation.z
 
-    @property
-    def angle(self):
+    @z.setter
+    def z(self, value: float):
         '''
-        Get the angle of the element on the Z axis
+        Set the z coordinate of the element
         '''
-        return self.transform.rotation.z
+        self.transform.translation.z = value
 
-    @angle.setter
-    def angle(self, value: float):
-        '''
-        Set the angle of the element on the Z axis
-        '''
-        self.transform.rotation.z = value               
+    # @property
+    # def angle(self):
+    #     '''
+    #     Get the angle of the element on the Z axis
+    #     '''
+    #     return self.transform.rotation.z
+
+    # @angle.setter
+    # def angle(self, value: float):
+    #     '''
+    #     Set the angle of the element on the Z axis
+    #     '''
+    #     self.transform.rotation.z = value               
 
     def __repr__(self) -> str:
         '''

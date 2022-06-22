@@ -10,24 +10,37 @@ Membros:
 
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
+import math
+from shutil import move
 from threading import Thread
+from time import time
 
 import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
+import glm
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
+from camera import Camera
 
 from constants import GUI_WIDTH, WINDOW_SIZE
+from gl_abstractions.layout import Layout
+from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
+from gl_abstractions.vertex_array import VertexArray
+from gl_abstractions.vertex_buffer import VertexBuffer
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
-from objects.screens.lose_screen import LoseScreen
-from objects.screens.win_screen import WinScreen
-from world import World
+from objects._2d.screens.lose_screen import LoseScreen
+from objects._2d.screens.win_screen import WinScreen
+from objects.cube import Cube
+from objects._2d._2dworld import World
 
 from gui import AppGui
+import constants
+
+import numpy as np
 
 def create_window():
     '''
@@ -55,6 +68,23 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
     return window
 
+def model():
+    mat_model = glm.mat4(1.0) # matriz identidade (não aplica transformação!)
+    mat_model = np.array(mat_model)    
+    return mat_model
+
+def view(camera: Camera):
+    mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
+    mat_view = np.array(mat_view)
+    return mat_view
+
+def projection():
+    # perspective parameters: fovy, aspect, near, far
+    mat_projection = glm.perspective(glm.radians(45.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 100.0)
+    mat_projection = np.array(mat_projection)    
+    return mat_projection
+    
+
 def glfw_thread():
     '''
     This function runs in a separate thread. 
@@ -67,7 +97,16 @@ def glfw_thread():
     gl.glEnable(gl.GL_BLEND) # Enable blending
     gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA) # Set blending function
 
-    set_glfw_callbacks(window)
+    gl.glEnable(gl.GL_DEPTH_TEST)
+
+    camera = Camera()
+
+    # TODO: refactor
+    # set_glfw_callbacks(window)
+    glfw.set_key_callback(window, camera.on_key )
+    glfw.set_cursor_pos_callback(window, camera.on_mouse)
+    #### 
+
 
     # Create the scene (world)
     LOGGER.log_info("Preparing world", 'glfw_thread')
@@ -86,13 +125,22 @@ def glfw_thread():
     world.elements.remove(lose_screen) # TODO: make this less hacky
 
 
-
+    # cubes_layout = Layout([('position', 3)])
+    # cubes_vbo = VertexBuffer(layout=cubes_layout, data=cube_vertices)
+    # cubes_vao = VertexArray()
+    # cubes_vao.upload_vertex_buffer(cubes_vbo)
+    # cube_program = ShaderDB.get_instance().get_shader('simple_red')
     # Render loop: keeps running until the window is closed or the GUI signals to close
+
+    _last_frame_time = time()
+
+    glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
+
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
 
         # Actual rendering of the scene
-        def render():
+        def render_1st_deliver():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)
 
@@ -111,7 +159,47 @@ def glfw_thread():
             if IS.just_pressed('b'):
                 APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
-        render() # Render to the default framebuffer (screen)
+        def render_2nd_deliver():
+            nonlocal _last_frame_time, camera
+            gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
+            gl.glClearColor(R, G, B, 1.0)   
+
+            
+
+            cube1: Cube = world.elements[0]
+            cube2: Cube = world.elements[1]
+
+            def draw_cube(cube: Cube):
+                # cube.update()
+                assert isinstance(cube, Cube), 'Test code crashed, please rewrite this line'
+
+                renderer = cube.shape_renderers[0]
+
+                # TODO: multiply inside shader (GPU)
+                # mat_model = model()
+                mat_model = renderer.transform.model_matrix # TODO: use real model matrix
+                mat_view = view(camera)
+                mat_projection = projection()
+                mat_transform = mat_projection @ mat_view @ mat_model
+
+                renderer.shader.use()
+                renderer.vao.bind()
+                renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
+                
+                gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
+            
+            draw_cube(cube1)
+            draw_cube(cube2)
+
+            t = time()
+            camera.update(t - _last_frame_time)
+            _last_frame_time = t
+
+            if IS.just_pressed('r'):
+                camera = Camera()
+
+        # render_1st_deliver()
+        render_2nd_deliver()
 
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
     
