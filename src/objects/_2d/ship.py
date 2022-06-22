@@ -10,8 +10,8 @@ from utils.sig import metsig
 from constants import SCREEN_RECT
 from gl_abstractions.texture import Texture2D
 from objects.element import Element, ElementSpecification, ShapeRenderer, ShapeSpec
-from objects.garbage import Garbage
-from objects.projectile import Projectile
+from objects._2d.garbage import Garbage
+from objects._2d.projectile import Projectile
 
 from input.input_system import INPUT_SYSTEM as IS
 
@@ -198,7 +198,7 @@ class Ship(Element):
         self.controller = ShipController()
         self._last_shot_time = time.time()
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         '''Overrides the default bounding box generation'''
         return np.array([
             [-0.075, -0.09 , 0.0],
@@ -266,7 +266,7 @@ class Ship(Element):
             return
 
         for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
-            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box().contains(obj.transform.translation.xy):
+            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box_2d().contains(obj.transform.translation.xy):
                 LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
                 obj.destroy()
                 self.die()
@@ -283,11 +283,11 @@ class Ship(Element):
             self._physics_movement(delta_time)
             self._die_if_enemy_shot()
         
-        bbox = self.get_bounding_box()
+        bbox = self.get_bounding_box_2d()
 
         # Collect garbage near the ship
         for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
-            if bbox.intersects(garbage.get_bounding_box()):
+            if bbox.intersects(garbage.get_bounding_box_2d()):
                 garbage.destroy()
         
         # Ship is out of bounds if any of the corners are outside the screen (diferent from other elements, in which all the vertices must be outside the screen)
@@ -306,7 +306,7 @@ class Ship(Element):
         '''
 
         # Apply a pseudo-force to the ship to keep it inside the screen
-        min_x, min_y, max_x, max_y = self.get_bounding_box()
+        min_x, min_y, max_x, max_y = self.get_bounding_box_2d()
         if min_x < -1:
             self.transform.translation.xy += -Vec2(min_x + 1, 0)/16
         if max_x > 1:

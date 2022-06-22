@@ -7,7 +7,7 @@ from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 
 from objects.element import Element, ElementSpecification, ShapeSpec
-from objects.projectile import Projectile
+from objects._2d.projectile import Projectile
 from transform import Transform
 from gl_abstractions.shader import Shader, ShaderDB
 
@@ -122,7 +122,7 @@ class Satellite(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         circle_verts = self.shape_renderers[0].shape_spec.vertices[:, :2]
         stuff_verts = self.shape_renderers[1].shape_spec.vertices[:, :2]
 
@@ -156,7 +156,7 @@ class Satellite(Element):
     def _physics_update(self, delta_time: float):
         self.rotate(self.rotation_speed)
 
-        bbox = self.get_bounding_box()
+        bbox = self.get_bounding_box_2d()
         for projectile in (element for element in self.world.elements if isinstance(element, Projectile)):
             if not projectile.is_particle and bbox.contains(projectile.transform.translation.xy):
                 projectile.destroy()

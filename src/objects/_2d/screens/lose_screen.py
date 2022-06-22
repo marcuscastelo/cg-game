@@ -47,7 +47,7 @@ class LoseScreen(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         '''Overrides the default bounding box generation method.'''
         return np.array([
             [-1.0, -1.0, 0.0],

@@ -5,12 +5,12 @@ from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from utils.sig import metsig
 from objects.element import Element, ElementSpecification, ShapeSpec
-from objects.projectile import Projectile, ProjectileSpecs
+from objects._2d.projectile import Projectile, ProjectileSpecs
 
 import numpy as np
 
 from gl_abstractions.shader import ShaderDB
-from objects.ship import Ship
+from objects._2d.ship import Ship
 
 from transform import Transform
 
@@ -72,11 +72,12 @@ class Enemy(Element):
 
 
         super().__init__(*args, **kwargs)
+        # TODO: remove old 2D logic
         self.speed = 1 # [-MAX_SPEED, MAX_SPEED]
         self._accel_dir = 1 # {-1, 1}
         pass
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         '''Overrides the bounding box generation of the Element class'''
         return np.array([
             [-0.075, -0.075, 0],
@@ -87,7 +88,7 @@ class Enemy(Element):
 
     def _physics_update(self, delta_time: float):
         '''Overrides the physics update of the Element class'''
-        bbox = self.get_bounding_box()
+        bbox = self.get_bounding_box_2d()
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 
         ship = ( element for element in self.world.elements if isinstance(element, Ship) )

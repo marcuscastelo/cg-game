@@ -32,9 +32,10 @@ from gl_abstractions.texture import Texture2D
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
-from objects.screens.lose_screen import LoseScreen
-from objects.screens.win_screen import WinScreen
-from world import World
+from objects._2d.screens.lose_screen import LoseScreen
+from objects._2d.screens.win_screen import WinScreen
+from objects.cube import Cube
+from objects._2d._2dworld import World
 
 from gui import AppGui
 import constants
@@ -123,88 +124,12 @@ def glfw_thread():
     world.elements.remove(win_screen) # TODO: make this less hacky
     world.elements.remove(lose_screen) # TODO: make this less hacky
 
-    cube_vertices = np.array([
-        ### CUBO 1
-        # Face 1 do Cubo 1 (vértices do quadrado)
-        (-0.2, -0.2, +0.2),
-        (+0.2, -0.2, +0.2),
-        (-0.2, +0.2, +0.2),
-        (+0.2, +0.2, +0.2),
 
-        # Face 2 do Cubo 1
-        (+0.2, -0.2, +0.2),
-        (+0.2, -0.2, -0.2),         
-        (+0.2, +0.2, +0.2),
-        (+0.2, +0.2, -0.2),
-        
-        # Face 3 do Cubo 1
-        (+0.2, -0.2, -0.2),
-        (-0.2, -0.2, -0.2),            
-        (+0.2, +0.2, -0.2),
-        (-0.2, +0.2, -0.2),
-
-        # Face 4 do Cubo 1
-        (-0.2, -0.2, -0.2),
-        (-0.2, -0.2, +0.2),         
-        (-0.2, +0.2, -0.2),
-        (-0.2, +0.2, +0.2),
-
-        # Face 5 do Cubo 1
-        (-0.2, -0.2, -0.2),
-        (+0.2, -0.2, -0.2),         
-        (-0.2, -0.2, +0.2),
-        (+0.2, -0.2, +0.2),
-        
-        # Face 6 do Cubo 1
-        (-0.2, +0.2, +0.2),
-        (+0.2, +0.2, +0.2),           
-        (-0.2, +0.2, -0.2),
-        (+0.2, +0.2, -0.2),
-
-
-        #### CUBO 2
-        # Face 1 do Cubo 2 (vértices do quadrado)
-        (+0.1, +0.1, -0.5),
-        (+0.5, +0.1, -0.5),
-        (+0.1, +0.5, -0.5),
-        (+0.5, +0.5, -0.5),
-
-        # Face 2 do Cubo 2
-        (+0.5, +0.1, -0.5),
-        (+0.5, +0.1, -0.9),         
-        (+0.5, +0.5, -0.5),
-        (+0.5, +0.5, -0.9),
-        
-        # Face 3 do Cubo 2
-        (+0.5, +0.1, -0.9),
-        (+0.1, +0.1, -0.9),            
-        (+0.5, +0.5, -0.9),
-        (+0.1, +0.5, -0.9),
-
-        # Face 4 do Cubo 2
-        (+0.1, +0.1, -0.9),
-        (+0.1, +0.1, -0.5),         
-        (+0.1, +0.5, -0.9),
-        (+0.1, +0.5, -0.5),
-
-        # Face 5 do Cubo 2
-        (+0.1, +0.1, -0.9),
-        (+0.5, +0.1, -0.9),         
-        (+0.1, +0.1, -0.5),
-        (+0.5, +0.1, -0.5),
-        
-        # Face 6 do Cubo 2
-        (+0.1, +0.5, -0.5),
-        (+0.5, +0.5, -0.5),           
-        (+0.1, +0.5, -0.9),
-        (+0.5, +0.5, -0.9)
-    ], dtype=np.float32)
-
-    cubes_layout = Layout([('position', 3)])
-    cubes_vbo = VertexBuffer(layout=cubes_layout, data=cube_vertices)
-    cubes_vao = VertexArray()
-    cubes_vao.upload_vertex_buffer(cubes_vbo)
-    cube_program = ShaderDB.get_instance().get_shader('simple_red')
+    # cubes_layout = Layout([('position', 3)])
+    # cubes_vbo = VertexBuffer(layout=cubes_layout, data=cube_vertices)
+    # cubes_vao = VertexArray()
+    # cubes_vao.upload_vertex_buffer(cubes_vbo)
+    # cube_program = ShaderDB.get_instance().get_shader('simple_red')
     # Render loop: keeps running until the window is closed or the GUI signals to close
 
     _last_frame_time = time()
@@ -239,23 +164,35 @@ def glfw_thread():
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)   
 
-            cubes_vao.bind()
-            cube_program.use()
+            
 
-            # TODO: multiply inside shader
-            mat_model = model()
-            mat_view = view(camera)
-            mat_projection = projection()
-            # mat_transform = mat_model @ mat_view @ mat_projection
-            mat_transform = mat_projection @ mat_view @ mat_model
-            # mat_transform = mat_model
+            cube: Cube = world.elements[0]
+            assert isinstance(cube, Cube), 'Test code crashed, please rewrite this line'
 
-            cube_program.upload_uniform_matrix4f('u_Transformation', mat_transform)
+            # cube_program.upload_uniform_matrix4f('u_Transformation', mat_transform)
             # loc = gl.glGetAttribLocation(cube_program.program, "transform")
             # gl.glUniformMatrix4fv(loc, 1, gl.GL_FALSE, mat_transform)
 
-            for i in range(0,48,4): # incremento de 4 em 4
-                gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, i, 4)
+            # for i in range(0,48,4): # incremento de 4 em 4
+            #     gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, i, 4)
+
+
+            # TODO: multiply inside shader (GPU)
+            # mat_model = model()
+            mat_model = model() # TODO: use real model matrix
+            mat_view = view(camera)
+            mat_projection = projection()
+            mat_transform = mat_projection @ mat_view @ mat_model
+
+            renderer = cube.shape_renderers[0]
+            renderer.shader.use()
+            renderer.vao.bind()
+            renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
+            # cube.update()
+            # Set the transformation matrix
+
+            # Draw the vertices according to the primitive
+            gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
 
             t = time()
             camera.update(t - _last_frame_time)

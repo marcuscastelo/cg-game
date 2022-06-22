@@ -74,7 +74,7 @@ class Star(Element):
         print(f'{self.speed_vec}')
         
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         return np.array([
             [-self.star_size*0.95, -self.star_size*0.81, 0.0],
             [ self.star_size*0.95,  self.star_size*0.81, 0.0],

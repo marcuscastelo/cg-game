@@ -66,7 +66,7 @@ class Garbage(Element):
 
         super().__init__(*args, **kwargs)
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         return np.array([
             [*(-0.025, -0.040, +0.0)],
             [*( 0.025, -0.040, +0.0)],

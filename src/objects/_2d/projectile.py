@@ -14,8 +14,8 @@ from transform import Transform
 import numpy as np
 
 if TYPE_CHECKING:
-    from objects.ship import Ship
-    from world import World
+    from objects._2d.ship import Ship
+    from objects._2d._2dworld import World
 
 @dataclass
 class ProjectileSpecs(ElementSpecification):
@@ -63,7 +63,7 @@ class Projectile(Element):
         self.is_enemy = False # TODO: better way to do this?
         self.speed = self.specs.initial_speed
 
-    def _generate_bounding_box_vertices(self) -> np.ndarray:
+    def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
         '''
         Overrides the generate_bounding_box_vertices of class Element.
         '''
@@ -85,7 +85,7 @@ class Projectile(Element):
         The projectile is created by a ship, getting the position and the angle of the latter,
         so it can represent with fidelity what is supposed to happen
         '''
-        shiplike_len = ship.get_bounding_box().size.y
+        shiplike_len = ship.get_bounding_box_2d().size.y
 
 
         relatite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * shiplike_len

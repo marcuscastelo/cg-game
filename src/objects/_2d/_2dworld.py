@@ -1,14 +1,14 @@
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
-from objects.garbage import Garbage
-from objects.little_star import LittleStar
-from objects.satellite import Satellite
-from objects.star import Star
+from objects._2d.garbage import Garbage
+from objects._2d.little_star import LittleStar
+from objects._2d.satellite import Satellite
+from objects._2d.star import Star
 from objects.element import Element
 
-from objects.enemy import Enemy
+from objects._2d.enemy import Enemy
 
-from objects.ship import Ship
+from objects._2d.ship import Ship
 
 class World:
     '''
