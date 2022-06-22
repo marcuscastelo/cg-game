@@ -30,6 +30,7 @@ class World:
 
         # ... #
         Cube(world)
+        Cube(world).transform.translation = Vec3(1,1,1)
 
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')

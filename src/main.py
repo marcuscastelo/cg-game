@@ -166,33 +166,30 @@ def glfw_thread():
 
             
 
-            cube: Cube = world.elements[0]
-            assert isinstance(cube, Cube), 'Test code crashed, please rewrite this line'
+            cube1: Cube = world.elements[0]
+            cube2: Cube = world.elements[1]
 
-            # cube_program.upload_uniform_matrix4f('u_Transformation', mat_transform)
-            # loc = gl.glGetAttribLocation(cube_program.program, "transform")
-            # gl.glUniformMatrix4fv(loc, 1, gl.GL_FALSE, mat_transform)
+            def draw_cube(cube: Cube):
+                # cube.update()
+                assert isinstance(cube, Cube), 'Test code crashed, please rewrite this line'
 
-            # for i in range(0,48,4): # incremento de 4 em 4
-            #     gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, i, 4)
+                renderer = cube.shape_renderers[0]
 
+                # TODO: multiply inside shader (GPU)
+                # mat_model = model()
+                mat_model = renderer.transform.model_matrix # TODO: use real model matrix
+                mat_view = view(camera)
+                mat_projection = projection()
+                mat_transform = mat_projection @ mat_view @ mat_model
 
-            # TODO: multiply inside shader (GPU)
-            # mat_model = model()
-            mat_model = model() # TODO: use real model matrix
-            mat_view = view(camera)
-            mat_projection = projection()
-            mat_transform = mat_projection @ mat_view @ mat_model
-
-            renderer = cube.shape_renderers[0]
-            renderer.shader.use()
-            renderer.vao.bind()
-            renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
-            # cube.update()
-            # Set the transformation matrix
-
-            # Draw the vertices according to the primitive
-            gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
+                renderer.shader.use()
+                renderer.vao.bind()
+                renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
+                
+                gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
+            
+            draw_cube(cube1)
+            draw_cube(cube2)
 
             t = time()
             camera.update(t - _last_frame_time)
