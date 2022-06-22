@@ -11,7 +11,9 @@ Membros:
 from colorsys import hsv_to_rgb
 from dataclasses import dataclass
 import math
+from shutil import move
 from threading import Thread
+from time import time
 
 import glfw
 import OpenGL.GL as gl
@@ -64,61 +66,95 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
     return window
 
-cameraPos   = glm.vec3(0.0,  0.0,  1.0);
-cameraFront = glm.vec3(0.0,  0.0, -1.0);
-cameraUp    = glm.vec3(0.0,  1.0,  0.0);
+@dataclass
+class Camera:
+    cameraPos   = glm.vec3(0.0,  0.0,  1.0);
+    cameraFront = glm.vec3(0.0,  0.0, -1.0);
+    cameraUp    = glm.vec3(0.0,  1.0,  0.0);
+    cameraSpeed = 0.01
 
+    firstMouse = True
+    yaw = -90.0 
+    pitch = 0.0
+    lastX =  constants.WINDOW_SIZE[0]/2
+    lastY =  constants.WINDOW_SIZE[1]/2
+
+    _cameraMovement = glm.vec3(0)
+
+    @property
+    def cameraRight(self):
+        return glm.normalize(glm.cross(camera.cameraFront, camera.cameraUp))
+
+    def set_movement(self, xyz_mov: glm.vec3):
+        self._cameraMovement = xyz_mov
+        pass
+    
+    def update(self, delta: float):
+        self.cameraPos += self._cameraMovement * delta
+    
+camera = Camera() # TODO: make local var
 
 def key_event(window,key,scancode,action,mods):
-    global cameraPos, cameraFront, cameraUp
+    # cameraRight = glm.normalize(glm.cross(camera.cameraFront, camera.cameraUp))
+
+    positive_actions = [ glfw.PRESS, glfw.REPEAT ]
+    negative_actions = [ glfw.RELEASE ]
+
+    if action not in (positive_actions + negative_actions):
+        return
+
+    invert_keymap = action in negative_actions
+
+    keymap = {
+        glfw.KEY_W: + camera.cameraFront,
+        glfw.KEY_S: - camera.cameraFront,
+        glfw.KEY_D: + camera.cameraRight,
+        glfw.KEY_A: - camera.cameraRight,
+        glfw.KEY_SPACE: + camera.cameraUp,
+        glfw.KEY_LEFT_SHIFT: - camera.cameraUp,
+    }
+
     
-    cameraSpeed = 0.01
-    if key == 87 and (action==1 or action==2): # tecla W
-        cameraPos += cameraSpeed * cameraFront
-    
-    if key == 83 and (action==1 or action==2): # tecla S
-        cameraPos -= cameraSpeed * cameraFront
-    
-    if key == 65 and (action==1 or action==2): # tecla A
-        cameraPos -= glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed
-        
-    if key == 68 and (action==1 or action==2): # tecla D
-        cameraPos += glm.normalize(glm.cross(cameraFront, cameraUp)) * cameraSpeed
-        
-firstMouse = True
-yaw = -90.0 
-pitch = 0.0
-lastX =  constants.WINDOW_SIZE[0]/2
-lastY =  constants.WINDOW_SIZE[1]/2
+    camera.cameraSpeed = 0.01
+    movement = camera._cameraMovement
+
+    for keybind, direction in keymap.items():
+        if invert_keymap:
+            direction = -direction
+        if key == keybind:
+            movement += direction * camera.cameraSpeed
+
+    camera.set_movement(movement)
+
+
 
 def mouse_event(window, xpos, ypos):
-    global firstMouse, cameraFront, yaw, pitch, lastX, lastY
-    if firstMouse:
-        lastX = xpos
-        lastY = ypos
-        firstMouse = False
+    if camera.firstMouse:
+        camera.lastX = xpos
+        camera.lastY = ypos
+        camera.firstMouse = False
 
-    xoffset = xpos - lastX
-    yoffset = lastY - ypos
-    lastX = xpos
-    lastY = ypos
+    xoffset = xpos - camera.lastX
+    yoffset = camera.lastY - ypos
+    camera.lastX = xpos
+    camera.lastY = ypos
 
     sensitivity = 0.3 
     xoffset *= sensitivity
     yoffset *= sensitivity
 
-    yaw += xoffset;
-    pitch += yoffset;
+    camera.yaw += xoffset;
+    camera.pitch += yoffset;
 
     
-    if pitch >= 90.0: pitch = 90.0
-    if pitch <= -90.0: pitch = -90.0
+    if camera.pitch >= 90.0: camera.pitch = 90.0
+    if camera.pitch <= -90.0: camera.pitch = -90.0
 
     front = glm.vec3()
-    front.x = math.cos(glm.radians(yaw)) * math.cos(glm.radians(pitch))
-    front.y = math.sin(glm.radians(pitch))
-    front.z = math.sin(glm.radians(yaw)) * math.cos(glm.radians(pitch))
-    cameraFront = glm.normalize(front)
+    front.x = math.cos(glm.radians(camera.yaw)) * math.cos(glm.radians(camera.pitch))
+    front.y = math.sin(glm.radians(camera.pitch))
+    front.z = math.sin(glm.radians(camera.yaw)) * math.cos(glm.radians(camera.pitch))
+    camera.cameraFront = glm.normalize(front)
 
 def model():
     mat_model = glm.mat4(1.0) # matriz identidade (não aplica transformação!)
@@ -126,8 +162,7 @@ def model():
     return mat_model
 
 def view():
-    global cameraPos, cameraFront, cameraUp
-    mat_view = glm.lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
     mat_view = np.array(mat_view)
     return mat_view
 
@@ -157,7 +192,6 @@ def glfw_thread():
     glfw.set_key_callback(window,key_event)
     glfw.set_cursor_pos_callback(window, mouse_event)
     #### 
-
 
 
     # Create the scene (world)
@@ -259,6 +293,9 @@ def glfw_thread():
     cubes_vao.upload_vertex_buffer(cubes_vbo)
     cube_program = ShaderDB.get_instance().get_shader('simple_red')
     # Render loop: keeps running until the window is closed or the GUI signals to close
+
+    _last_frame_time = time()
+
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
 
@@ -283,6 +320,7 @@ def glfw_thread():
                 APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
         def render_2nd_deliver():
+            nonlocal _last_frame_time
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)   
 
@@ -304,6 +342,9 @@ def glfw_thread():
             for i in range(0,48,4): # incremento de 4 em 4
                 gl.glDrawArrays(gl.GL_TRIANGLE_STRIP, i, 4)
 
+            t = time()
+            camera.update(t - _last_frame_time)
+            _last_frame_time = t
 
 
         # render_1st_deliver()
