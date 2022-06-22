@@ -111,7 +111,7 @@ class Shader:
 class ShaderDB:
     _instance: 'ShaderDB' = None
     def __init__(self):
-        self.shaders = {}
+        self.shaders: dict[str, Shader] = {}
         self.shaders['simple_red'] = Shader(
             'shaders/simple_red.vert', 'shaders/simple_red.frag',
             layout=Layout([
