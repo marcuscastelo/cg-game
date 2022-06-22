@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Union
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect, Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
