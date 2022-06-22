@@ -1,0 +1,11 @@
+Notas do professor:
+
+Esse codigo foi desenvolvido durante a disciplina SCC0250 - Computacao Grafica (2020).
+O codigo é de autoria de Marcelo Isaias de Moraes Junior, que portou as rotinas estudadas em aula de Python para C++. Algumas simplificações foram realizadas para efeito de demonstração e disponibilização do código-base.
+
+o codigo foi disponibilizado para exemplificar em C++:
+* carregamento de malhas / objetos wavefront
+* carregamento de texturas
+* manipulacao de cameras
+
+Codigo similar em Python foi disponibilizado no curso da disciplina.
