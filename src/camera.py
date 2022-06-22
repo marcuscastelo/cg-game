@@ -11,7 +11,7 @@ class Camera:
     cameraPos   = glm.vec3(0.0,  0.0,  1.0)
     cameraFront = glm.vec3(0.0,  0.0, -1.0)
     cameraUp    = glm.vec3(0.0,  1.0,  0.0)
-    cameraSpeed = 0.01
+    cameraSpeed = 1
 
     firstMouse = True
     yaw = -75
@@ -31,11 +31,20 @@ class Camera:
     
     def update(self, delta: float):
         cameraStep = self._rotate_vec_to_face_front(self._keyboardMovementInput)
-        self.cameraPos += cameraStep * delta
+        self.cameraPos += cameraStep * delta * self.cameraSpeed
 
     def on_key(self, window, key: int, scancode, action: int, mods):
         positive_actions = [ glfw.PRESS ]
         negative_actions = [ glfw.RELEASE ]
+
+        if key == glfw.KEY_LEFT_CONTROL:
+            if action in positive_actions:
+                self.cameraSpeed *= 2
+            else:
+                self.cameraSpeed /= 2
+
+            print(f'{self.cameraSpeed=}')
+            return
 
         if action not in (positive_actions + negative_actions):
             return
