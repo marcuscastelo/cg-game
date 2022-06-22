@@ -132,7 +132,6 @@ def view():
     return mat_view
 
 def projection():
-    global altura, largura
     # perspective parameters: fovy, aspect, near, far
     mat_projection = glm.perspective(glm.radians(45.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 100.0)
     mat_projection = np.array(mat_projection)    
@@ -294,7 +293,8 @@ def glfw_thread():
             mat_model = model()
             mat_view = view()
             mat_projection = projection()
-            mat_transform = mat_model @ mat_view @ mat_projection
+            # mat_transform = mat_model @ mat_view @ mat_projection
+            mat_transform = mat_projection @ mat_view @ mat_model
             # mat_transform = mat_model
 
             cube_program.upload_uniform_matrix4f('u_Transformation', mat_transform)
