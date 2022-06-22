@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from itertools import accumulate
 import math
 from shutil import move
 import glm
@@ -7,29 +8,30 @@ import glfw
 
 @dataclass
 class Camera:
-    cameraPos   = glm.vec3(0.0,  0.0,  1.0);
-    cameraFront = glm.vec3(0.0,  0.0, -1.0);
-    cameraUp    = glm.vec3(0.0,  1.0,  0.0);
+    cameraPos   = glm.vec3(0.0,  0.0,  1.0)
+    cameraFront = glm.vec3(0.0,  0.0, -1.0)
+    cameraUp    = glm.vec3(0.0,  1.0,  0.0)
     cameraSpeed = 0.01
 
     firstMouse = True
-    yaw = -90.0 
+    yaw = -75
     pitch = 0.0
     lastX =  constants.WINDOW_SIZE[0]/2
     lastY =  constants.WINDOW_SIZE[1]/2
 
-    _movementInput = glm.vec3(0)
+    _keyboardMovementInput = glm.vec3(0, 0, 0)
 
     @property
     def cameraRight(self):
         return glm.normalize(glm.cross(self.cameraFront, self.cameraUp))
 
     def set_movement(self, movement_input: glm.vec3):
-        self._movementInput = movement_input
+        self._keyboardMovementInput = movement_input
         pass
     
     def update(self, delta: float):
-        self.cameraPos += self._movementInput * delta
+        cameraStep = self._rotate_vec_to_face_front(self._keyboardMovementInput)
+        self.cameraPos += cameraStep * delta
 
     def on_key(self, window, key: int, scancode, action: int, mods):
         positive_actions = [ glfw.PRESS ]
@@ -38,29 +40,39 @@ class Camera:
         if action not in (positive_actions + negative_actions):
             return
 
-        invert_keymap = action in negative_actions
-
-        keymap = {
-            glfw.KEY_W: + self.cameraFront,
-            glfw.KEY_S: - self.cameraFront,
-            glfw.KEY_D: + self.cameraRight,
-            glfw.KEY_A: - self.cameraRight,
-            glfw.KEY_SPACE: + self.cameraUp,
-            glfw.KEY_LEFT_SHIFT: - self.cameraUp,
+        direction_vecs = {
+            'front':    glm.vec3(+1, 0, 0),
+            'back':     glm.vec3(-1, 0, 0),
+            'right':    glm.vec3(0, 0, +1),
+            'left':     glm.vec3(0, 0, -1),
+            'up':       glm.vec3(0, +1, 0),
+            'down':     glm.vec3(0, -1, 0),
         }
 
-        
-        self.cameraSpeed = 0.01
-        movement = self._movementInput
+        keymap = {
+            glfw.KEY_W: 'front',
+            glfw.KEY_S: 'back',
+            glfw.KEY_A: 'left',
+            glfw.KEY_D: 'right',
+            glfw.KEY_SPACE: 'up',
+            glfw.KEY_LEFT_SHIFT: 'down'
+        }
 
-        for keybind, direction in keymap.items():
-            if invert_keymap:
-                direction = -direction
-            if key == keybind:
-                movement += direction
-                
-        movement = glm.normalize(movement)
-        self.set_movement(movement)
+        for keyname, direction in keymap.items():
+            direction_vec = direction_vecs[direction]
+            if key == keyname:
+                if action in positive_actions:
+                    self._keyboardMovementInput += direction_vec 
+                if action in negative_actions:
+                    self._keyboardMovementInput -= direction_vec 
+
+        print(f'Keyboard input: {self._keyboardMovementInput}')
+
+
+    def _rotate_vec_to_face_front(self, vec: glm.vec3) -> glm.vec3:
+        aligned_vec = vec
+        aligned_vec = glm.rotateY(aligned_vec, math.radians(-self.yaw))
+        return aligned_vec
 
     def on_mouse(self, window, xpos, ypos):
         if self.firstMouse:

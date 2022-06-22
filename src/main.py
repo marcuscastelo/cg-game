@@ -235,7 +235,7 @@ def glfw_thread():
                 APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
 
         def render_2nd_deliver():
-            nonlocal _last_frame_time
+            nonlocal _last_frame_time, camera
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)   
 
@@ -261,6 +261,8 @@ def glfw_thread():
             camera.update(t - _last_frame_time)
             _last_frame_time = t
 
+            if IS.just_pressed('r'):
+                camera = Camera()
 
         # render_1st_deliver()
         render_2nd_deliver()
