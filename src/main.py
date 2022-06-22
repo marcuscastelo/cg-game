@@ -23,6 +23,7 @@ import glm
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
+from camera import Camera
 
 from constants import GUI_WIDTH, WINDOW_SIZE
 from gl_abstractions.layout import Layout
@@ -66,102 +67,12 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
     return window
 
-@dataclass
-class Camera:
-    cameraPos   = glm.vec3(0.0,  0.0,  1.0);
-    cameraFront = glm.vec3(0.0,  0.0, -1.0);
-    cameraUp    = glm.vec3(0.0,  1.0,  0.0);
-    cameraSpeed = 0.01
-
-    firstMouse = True
-    yaw = -90.0 
-    pitch = 0.0
-    lastX =  constants.WINDOW_SIZE[0]/2
-    lastY =  constants.WINDOW_SIZE[1]/2
-
-    _cameraMovement = glm.vec3(0)
-
-    @property
-    def cameraRight(self):
-        return glm.normalize(glm.cross(camera.cameraFront, camera.cameraUp))
-
-    def set_movement(self, xyz_mov: glm.vec3):
-        self._cameraMovement = xyz_mov
-        pass
-    
-    def update(self, delta: float):
-        self.cameraPos += self._cameraMovement * delta
-    
-camera = Camera() # TODO: make local var
-
-def key_event(window,key,scancode,action,mods):
-    # cameraRight = glm.normalize(glm.cross(camera.cameraFront, camera.cameraUp))
-
-    positive_actions = [ glfw.PRESS, glfw.REPEAT ]
-    negative_actions = [ glfw.RELEASE ]
-
-    if action not in (positive_actions + negative_actions):
-        return
-
-    invert_keymap = action in negative_actions
-
-    keymap = {
-        glfw.KEY_W: + camera.cameraFront,
-        glfw.KEY_S: - camera.cameraFront,
-        glfw.KEY_D: + camera.cameraRight,
-        glfw.KEY_A: - camera.cameraRight,
-        glfw.KEY_SPACE: + camera.cameraUp,
-        glfw.KEY_LEFT_SHIFT: - camera.cameraUp,
-    }
-
-    
-    camera.cameraSpeed = 0.01
-    movement = camera._cameraMovement
-
-    for keybind, direction in keymap.items():
-        if invert_keymap:
-            direction = -direction
-        if key == keybind:
-            movement += direction * camera.cameraSpeed
-
-    camera.set_movement(movement)
-
-
-
-def mouse_event(window, xpos, ypos):
-    if camera.firstMouse:
-        camera.lastX = xpos
-        camera.lastY = ypos
-        camera.firstMouse = False
-
-    xoffset = xpos - camera.lastX
-    yoffset = camera.lastY - ypos
-    camera.lastX = xpos
-    camera.lastY = ypos
-
-    sensitivity = 0.3 
-    xoffset *= sensitivity
-    yoffset *= sensitivity
-
-    camera.yaw += xoffset;
-    camera.pitch += yoffset;
-
-    
-    if camera.pitch >= 90.0: camera.pitch = 90.0
-    if camera.pitch <= -90.0: camera.pitch = -90.0
-
-    front = glm.vec3()
-    front.x = math.cos(glm.radians(camera.yaw)) * math.cos(glm.radians(camera.pitch))
-    front.y = math.sin(glm.radians(camera.pitch))
-    front.z = math.sin(glm.radians(camera.yaw)) * math.cos(glm.radians(camera.pitch))
-    camera.cameraFront = glm.normalize(front)
-
 def model():
     mat_model = glm.mat4(1.0) # matriz identidade (não aplica transformação!)
     mat_model = np.array(mat_model)    
     return mat_model
 
-def view():
+def view(camera: Camera):
     mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
     mat_view = np.array(mat_view)
     return mat_view
@@ -187,10 +98,12 @@ def glfw_thread():
 
     gl.glEnable(gl.GL_DEPTH_TEST)
 
+    camera = Camera()
+
     # TODO: refactor
     # set_glfw_callbacks(window)
-    glfw.set_key_callback(window,key_event)
-    glfw.set_cursor_pos_callback(window, mouse_event)
+    glfw.set_key_callback(window, camera.on_key )
+    glfw.set_cursor_pos_callback(window, camera.on_mouse)
     #### 
 
 
@@ -296,6 +209,8 @@ def glfw_thread():
 
     _last_frame_time = time()
 
+    glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
+
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
 
@@ -329,7 +244,7 @@ def glfw_thread():
 
             # TODO: multiply inside shader
             mat_model = model()
-            mat_view = view()
+            mat_view = view(camera)
             mat_projection = projection()
             # mat_transform = mat_model @ mat_view @ mat_projection
             mat_transform = mat_projection @ mat_view @ mat_model
