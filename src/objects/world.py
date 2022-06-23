@@ -1,3 +1,4 @@
+import time
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
 from objects.cube import Cube
@@ -13,6 +14,7 @@ class World:
     def __init__(self):
         self.elements: list[Element] = []
         self._updating_inner = False
+        self._last_update_time = time.time()
 
     def setup_scene(self):
         '''
@@ -26,7 +28,6 @@ class World:
 
         LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         self.elements.clear()
-
 
         # ... #
         cube1 = Cube(world)
@@ -52,15 +53,19 @@ class World:
         This function is called every frame.
         It updates the world and all the elements in it.
         '''
+        t = time.time()
+        delta_time = t - self._last_update_time
 
         # Update elements
         for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating
-                element.update()
+                element.update(delta_time)
 
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
+
+        self._last_update_time = t
         
     def is_player_victory(self) -> bool:
         '''

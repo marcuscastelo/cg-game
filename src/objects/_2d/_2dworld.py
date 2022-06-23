@@ -103,7 +103,7 @@ class World:
         # Update elements
         for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating
-                element.update()
+                element.update() # FIXME: old world does not have delta time yet
 
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]

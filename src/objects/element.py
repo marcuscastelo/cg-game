@@ -210,7 +210,7 @@ class Element:
         #     LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
         #     pass
 
-    def update(self):
+    def update(self, delta_time: float):
         '''
         Updates the element, called every frame.
         If overridden, make sure to call the super method.
@@ -220,6 +220,7 @@ class Element:
             LOGGER.log_warning(f'Trying to update destroyed element {self}')
             return
 
+        # TODO: move this to world? world is already processing update's delta_time, so why should element calculate physics delta_time?
         if (delta_time := time.time() - self._last_physics_update) > 1/50:
             self._physics_update(delta_time)
             self._last_physics_update = time.time()

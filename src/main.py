@@ -125,9 +125,9 @@ def glfw_thread():
 
             # Decides if player won, lose, or game is still going
             if world.is_player_victory():
-                win_screen.update()
+                win_screen.update(delta_time=0) # Delta time is not used by this element
             elif world.is_player_defeat():
-                lose_screen.update()
+                lose_screen.update(delta_time=0) # Delta time is not used by this element
             else:
                 world.update()
                 pass
@@ -143,14 +143,8 @@ def glfw_thread():
             nonlocal _last_frame_time, camera
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)   
-            
-            cube1: Cube = world.elements[0]
-            cube2: Cube = world.elements[1]
-            lose_screen: LoseScreen = world.elements[2]
 
-            cube1.update()
-            cube2.update()
-            lose_screen.update()
+            world.update()
 
             t = time.time()
             camera.update(t - _last_frame_time)
