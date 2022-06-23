@@ -190,6 +190,7 @@ class Element:
         #     self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
         
         # self._bounding_box_cache = BoundingBoxCache()
+        
 
     def select(self) -> None:
         if self._selected: return

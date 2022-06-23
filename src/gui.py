@@ -33,7 +33,7 @@ class MainWindow(gui.Window):
             el.SliderFloat(cube.transform.scale, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
 
             def tp_to_element():
-                camera.transform.translation = cube.transform.translation.xyz
+                camera.transform.translation.xyz = cube.transform.translation.xyz
 
             
 

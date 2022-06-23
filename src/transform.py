@@ -23,9 +23,9 @@ class Transform:
     ### Enforce Types ###
 
     def __post_init__(self):
-        self.translation = Vec3(self.translation)
-        self.rotation = Vec3(self.rotation)
-        self.scale = Vec3(self.scale)
+        self.translation.xyz = Vec3(self.translation)
+        self.rotation.xyz = Vec3(self.rotation)
+        self.scale.xyz = Vec3(self.scale)
         self._matrix_cache = MatrixCache()
 
     @property

@@ -35,9 +35,9 @@ class World:
         # ... #
         cube1 = Cube(world)
         cube1.transform.scale = Vec3(0.2, 0.2, 0.2)
-        cube1.transform.translation = Vec3(10, 10, 10)
+        cube1.transform.translation.xyz = Vec3(10, 10, 10)
         cube2 = Cube(world)
-        cube2.transform.translation = Vec3(1,1,1)
+        cube2.transform.translation.xyz = Vec3(1,1,1)
         cube2.transform.scale = Vec3(-0.2, 0.2, 0.2)
 
         ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
@@ -50,7 +50,7 @@ class World:
         self.diamond_blocks = []
         for i in range(3):
             diamond_block = Cube(world, custom_texture=diamond_block_texture)
-            diamond_block.transform.translation = Vec3(2 + i, 0.5, 0)
+            diamond_block.transform.translation.xyz = Vec3(2 + i, 0.5, 0)
             diamond_block.transform.scale = Vec3(1,1,1) * 0.5
             self.diamond_blocks.append(diamond_block)
 

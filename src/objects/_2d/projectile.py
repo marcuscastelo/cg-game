@@ -94,7 +94,7 @@ class Projectile(Element):
         if specs is None:
             specs = ProjectileSpecs()
 
-        specs.initial_transform.translation = projectile_pos
+        specs.initial_transform.translation.xyz = projectile_pos
         specs.initial_transform.rotation = Vec3(0, 0, ship.transform.rotation.z)
 
         obj = cls(
