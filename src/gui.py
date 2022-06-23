@@ -17,7 +17,9 @@ class MainWindow(gui.Window):
     def describe(self):
         with self:
             el.Text("Hello World!").add()
-            cube = APP_VARS.world.elements[0]
+            cube = APP_VARS.world.elements[1]
+            camera = APP_VARS.camera
+
             el.Text().add(el.TextParams('Translation'))
             el.SliderFloat(cube.transform.translation, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
             el.SliderFloat(cube.transform.translation, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
@@ -29,6 +31,11 @@ class MainWindow(gui.Window):
             el.SliderFloat(cube.transform.scale, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
             el.SliderFloat(cube.transform.scale, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
             el.SliderFloat(cube.transform.scale, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+
+            def tp_to_element():
+                camera.transform.translation = cube.transform.translation.xyz
+
+            el.Button().add(el.ButtonParams(callback=tp_to_element))
 
 
 class AppGui(gui.Gui):

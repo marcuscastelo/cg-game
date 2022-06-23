@@ -11,7 +11,7 @@ from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
 
 import imageio
-from gl_abstractions.texture import Texture2D, TextureParameters
+from gl_abstractions.texture import Texture, Texture2D, TextureParameters
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
@@ -34,7 +34,7 @@ class ShapeSpec:
     indices: np.ndarray = None
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()['simple_red']) # TODO: more readable way to do this?
-    texture: Union[Texture2D, None] = None
+    texture: Union[Texture, None] = None
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
@@ -86,13 +86,13 @@ class ShapeRenderer:
 
         # def view(camera: Camera):
         camera = APP_VARS.camera
-        mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
+        mat_view = glm.lookAt(glm.vec3(*camera.transform.translation), glm.vec3(*camera.transform.translation) + camera.cameraFront, camera.cameraUp);
         mat_view = np.array(mat_view)
             # return mat_view
 
         # def projection():
             # perspective parameters: fovy, aspect, near, far
-        mat_projection = glm.perspective(glm.radians(45.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 100.0)
+        mat_projection = glm.perspective(glm.radians(70.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
         mat_projection = np.array(mat_projection)    
             # return mat_projection
 

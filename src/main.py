@@ -146,7 +146,7 @@ def main():
     t.start() # GLFW thread (2nd thread)
 
     _tries = 0
-    while len(APP_VARS.world.elements) == 0:
+    while len(APP_VARS.world.elements) < 2: # TODO: remove gambiarra feia
         LOGGER.log_debug("Hack: waiting for cube to be spawned...", 'main')
         time.sleep(0.1)
         if _tries > 10:

@@ -1,6 +1,7 @@
 import time
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
 
@@ -37,6 +38,12 @@ class World:
         cube2.transform.translation = Vec3(1,1,1)
         cube2.transform.scale = Vec3(-0.2, 0.2, 0.2)
 
+        ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
+        ground.transform.scale = Vec3(10, 0, 10)
+
+        sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
+        sky.transform.scale = Vec3(300, 300, 300)
+
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
@@ -60,7 +67,6 @@ class World:
 
         # Remove elements that are marked for removal
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
-
 
         self._last_update_time = t
         
