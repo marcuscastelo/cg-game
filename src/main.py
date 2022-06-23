@@ -262,9 +262,13 @@ def main():
     t = Thread(target=glfw_thread)
     t.start() # GLFW thread (2nd thread)
 
+    _tries = 0
     while len(APP_VARS.world.elements) == 0:
         LOGGER.log_debug("Hack: waiting for cube to be spawned...", 'main')
         time.sleep(0.1)
+        if _tries > 10:
+            exit(1)
+        _tries += 1
 
     LOGGER.log_trace("Init GUI", 'main')
     gui = AppGui() # GUI thread (main thread)
