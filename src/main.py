@@ -15,17 +15,12 @@ import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
-import glm
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
 
 from constants import GUI_WIDTH, WINDOW_SIZE
 from input.input_system import setup_input_system, INPUT_SYSTEM as IS
-from objects._2d.screens.lose_screen import LoseScreen
-from objects._2d.screens.win_screen import WinScreen
-from objects._2d.ship import Ship
-from objects.cube import Cube
 
 from gui import AppGui
 
@@ -108,66 +103,20 @@ def glfw_thread():
     G: float = 31/255 
     B: float = 65/255 
 
-    # Add win and lose screens to the world, so they can pop up when their condition os satisfied (end game)
-    win_screen = WinScreen(world)
-    lose_screen = LoseScreen(world)
-    world.elements.remove(win_screen) # TODO: make this less hacky
-    world.elements.remove(lose_screen) # TODO: make this less hacky
-
-    from objects._2d._2dworld import _2DWorld
-    world2d = _2DWorld()
-    world2d.setup_scene()
-
-    _last_frame_time = time.time()
-
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(R, G, B, 1.0)
 
-        # Actual rendering of the scene
-        def render_1st_deliver():
-            # Decides if player won, lose, or game is still going
-            # if world2d.is_player_victory():
-            #     win_screen.update(delta_time=0) # Delta time is not used by this element
-            # elif world2d.is_player_defeat():
-            #     lose_screen.update(delta_time=0) # Delta time is not used by this element
-            # else:
-            world2d.update()
-            ship: Ship = world2d.elements[0] 
-            ship.controller.disable()
-                # pass
-
-            # Special shortcut to reset scene
-            if IS.just_pressed('r'):
-                world2d.setup_scene()
-
-            if IS.just_pressed('b'):
-                APP_VARS.debug.show_bbox = not APP_VARS.debug.show_bbox
-
-        def render_2nd_deliver():
-            nonlocal _last_frame_time, camera
-
+        def render():
             world.update()
 
-            # t = time.time()
-            # camera.update(t - _last_frame_time)
-            # _last_frame_time = t
-
-            # if IS.just_pressed('r'):
-            #     LOGGER.log_debug('Reseting camera...')
-            #     camera.reset()
-
-        render_1st_deliver()
-        render_2nd_deliver()
+        render()
 
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
-    
-    
 
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
     APP_VARS.closing = True # Make the GUI close too
-
 
 def _set_signal_handler():
     '''
