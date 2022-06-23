@@ -32,27 +32,28 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        # ... #
         cube1 = Cube(world)
         cube1.transform.scale = Vec3(0.2, 0.2, 0.2)
         cube1.transform.translation.xyz = Vec3(10, 10, 10)
         cube2 = Cube(world)
         cube2.transform.translation.xyz = Vec3(1,1,1)
-        cube2.transform.scale = Vec3(-0.2, 0.2, 0.2)
+        cube2.transform.scale = Vec3(0.2, 0.2, 0.2)
 
         ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
         ground.transform.scale = Vec3(10, 0, 10)
 
         sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
-        sky.transform.scale = Vec3(300, 300, 300)
+        sky.transform.scale = Vec3(-300, 300, 300)
 
         diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
         self.diamond_blocks = []
-        for i in range(3):
-            diamond_block = Cube(world, custom_texture=diamond_block_texture)
-            diamond_block.transform.translation.xyz = Vec3(2 + i, 0.5, 0)
-            diamond_block.transform.scale = Vec3(1,1,1) * 0.5
-            self.diamond_blocks.append(diamond_block)
+        for i in range(10):
+            for j in range(10):
+                # for k in range(10):
+                    diamond_block = Cube(world, custom_texture=diamond_block_texture)
+                    diamond_block.transform.translation.xyz = Vec3(2 + i, 0.5 + 0, 0 + j)
+                    diamond_block.transform.scale = Vec3(1,1,1) * 0.5
+                    self.diamond_blocks.append(diamond_block)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

@@ -96,10 +96,10 @@ class ShapeRenderer:
         mat_projection = np.array(mat_projection)    
             # return mat_projection
 
-        mat_transform = mat_projection @ mat_view @ mat_model
-
         # Set the transformation matrix
-        self.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
+        self.shader.upload_uniform_matrix4f('u_Model', mat_model)
+        self.shader.upload_uniform_matrix4f('u_View', mat_view)
+        self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self.shape_spec.render_mode, 0, len(self.shape_spec.vertices))
