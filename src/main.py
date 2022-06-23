@@ -107,7 +107,6 @@ def glfw_thread():
     camera = Camera()
 
     def key_callback(window, key: int, scancode, action: int, mods: int):
-        print(f'{key=}')
         if APP_VARS.cursor.capturing and key == glfw.KEY_ESCAPE and action == glfw.RELEASE:
             APP_VARS.cursor.capturing = False
             glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_NORMAL);

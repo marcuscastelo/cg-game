@@ -46,7 +46,6 @@ class Camera:
             else:
                 self.cameraSpeed /= 2
 
-            print(f'{self.cameraSpeed=}')
             return
 
         if action not in (positive_actions + negative_actions):
@@ -77,8 +76,6 @@ class Camera:
                     self._keyboardMovementInput += direction_vec 
                 if action in negative_actions:
                     self._keyboardMovementInput -= direction_vec 
-
-        print(f'Keyboard input: {self._keyboardMovementInput}')
 
 
     def _rotate_vec_to_face_front(self, vec: glm.vec3) -> glm.vec3:
