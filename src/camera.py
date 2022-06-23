@@ -3,7 +3,6 @@ from itertools import accumulate
 import math
 from shutil import move
 import glm
-from app_vars import APP_VARS
 import constants
 import glfw
 
@@ -84,6 +83,8 @@ class Camera:
         return aligned_vec
 
     def on_cursor_pos(self, window, xpos, ypos):
+        from app_vars import APP_VARS
+
         # if APP_VARS.cursor.lastX == None or APP_VARS.cursor.lastY == None:
         #     # Do not move camera if mouse just returned from pause screen
         #     APP_VARS.cursor.lastX = xpos

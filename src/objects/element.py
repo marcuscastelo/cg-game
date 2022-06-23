@@ -1,12 +1,15 @@
+import constants
 from dataclasses import dataclass, field
 import math
 import time
 from typing import TYPE_CHECKING, Union
+import glm
 import numpy as np
 
 from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
+from camera import Camera
 from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
@@ -68,6 +71,8 @@ class ShapeRenderer:
         self.vao.upload_vertex_buffer(self.vbo)
 
     def render(self):
+        from app_vars import APP_VARS
+
         # Bind the shader and VAO (VBO is bound in the VAO)
         self.vao.bind()
 
@@ -78,8 +83,25 @@ class ShapeRenderer:
 
         # gl.glBindTextureUnit(0, self.texture)
 
+        # Calculate MVP
+        mat_model = self.transform.model_matrix
+
+        # def view(camera: Camera):
+        camera = APP_VARS.camera
+        mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
+        mat_view = np.array(mat_view)
+            # return mat_view
+
+        # def projection():
+            # perspective parameters: fovy, aspect, near, far
+        mat_projection = glm.perspective(glm.radians(45.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 100.0)
+        mat_projection = np.array(mat_projection)    
+            # return mat_projection
+
+        mat_transform = mat_projection @ mat_view @ mat_model
+
         # Set the transformation matrix
-        self.shader.upload_uniform_matrix4f('u_Transformation', self.transform.model_matrix)
+        self.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
 
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self.shape_spec.render_mode, 0, len(self.shape_spec.vertices))

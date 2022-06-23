@@ -23,7 +23,6 @@ import glm
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
-from camera import Camera
 
 from constants import GUI_WIDTH, WINDOW_SIZE
 from gl_abstractions.layout import Layout
@@ -75,23 +74,6 @@ def create_window():
 
     return window
 
-def model():
-    mat_model = glm.mat4(1.0) # matriz identidade (não aplica transformação!)
-    mat_model = np.array(mat_model)    
-    return mat_model
-
-def view(camera: Camera):
-    mat_view = glm.lookAt(camera.cameraPos, camera.cameraPos + camera.cameraFront, camera.cameraUp);
-    mat_view = np.array(mat_view)
-    return mat_view
-
-def projection():
-    # perspective parameters: fovy, aspect, near, far
-    mat_projection = glm.perspective(glm.radians(45.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 100.0)
-    mat_projection = np.array(mat_projection)    
-    return mat_projection
-    
-
 def glfw_thread():
     '''
     This function runs in a separate thread. 
@@ -106,7 +88,7 @@ def glfw_thread():
 
     gl.glEnable(gl.GL_DEPTH_TEST)
 
-    camera = Camera()
+    camera = APP_VARS.camera
 
     def key_callback(window, key: int, scancode, action: int, mods: int):
         if APP_VARS.cursor.capturing and key == glfw.KEY_ESCAPE and action == glfw.RELEASE:
@@ -197,32 +179,34 @@ def glfw_thread():
             cube2: Cube = world.elements[1]
             lose_screen: LoseScreen = world.elements[2]
 
-            def draw(elem: Element):
-                # cube.update()
-                assert isinstance(elem, Element), 'Test code crashed, please rewrite this line'
+            # def draw(elem: Element):
+            #     # cube.update()
+            #     assert isinstance(elem, Element), 'Test code crashed, please rewrite this line'
+            #     renderer = elem.shape_renderers[0]
+            #     renderer.render()
+            #     # # TODO: multiply inside shader (GPU)
+            #     # # mat_model = model()
+            #     # mat_model = renderer.transform.model_matrix # TODO: use real model matrix
+            #     # mat_view = view(camera)
+            #     # mat_projection = projection()
+            #     # mat_transform = mat_projection @ mat_view @ mat_model
 
-                renderer = elem.shape_renderers[0]
+            #     # if renderer.texture is not None:
+            #     #     renderer.texture.bind()
 
-                # TODO: multiply inside shader (GPU)
-                # mat_model = model()
-                mat_model = renderer.transform.model_matrix # TODO: use real model matrix
-                mat_view = view(camera)
-                mat_projection = projection()
-                mat_transform = mat_projection @ mat_view @ mat_model
-
-                if renderer.texture is not None:
-                    renderer.texture.bind()
-
-                renderer.shader.use()
-                renderer.vao.bind()
-                renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
+            #     # renderer.shader.use()
+            #     # renderer.vao.bind()
+            #     # renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
                 
-                gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
+            #     # gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
             
-            draw(cube1)
-            draw(cube2)
-            draw(lose_screen)
+            # draw(cube1)
+            # draw(cube2)
+            # draw(lose_screen)
 
+            cube1.update()
+            cube2.update()
+            lose_screen.update()
 
             t = time.time()
             camera.update(t - _last_frame_time)

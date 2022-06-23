@@ -67,3 +67,9 @@ class Cube(Element):
         )
         kwargs['specs'] = specification
         super().__init__(*args, **kwargs)
+
+    def _physics_update(self, delta_time: float):
+
+        self.transform.scale.x *= 1.01
+
+        return super()._physics_update(delta_time)

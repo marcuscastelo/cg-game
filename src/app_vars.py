@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
+from camera import Camera
+
 
 def _create_world():
     from objects.world import World
@@ -26,5 +28,5 @@ class AppVars:
     world: 'World' = field(default_factory=_create_world)
     debug: DebugOptions = field(default_factory=DebugOptions)
     cursor: Cursor = field(default_factory=Cursor)
-    
+    camera: Camera = field(default_factory=Camera)
 APP_VARS = AppVars()
