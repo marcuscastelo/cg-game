@@ -31,11 +31,13 @@ class World:
         # ... #
         cube1 = Cube(world)
         cube1.transform.scale = Vec3(0.2, 0.2, 0.2)
-        cube1.transform.translation = Vec3(0, 0, 0)
+        cube1.transform.translation = Vec3(10, 10, 10)
         cube2 = Cube(world)
         cube2.transform.translation = Vec3(1,1,1)
         cube2.transform.scale = Vec3(-0.2, 0.2, 0.2)
 
+        from objects._2d.screens.lose_screen import LoseScreen
+        LoseScreen(world)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

@@ -42,6 +42,8 @@ import constants
 
 import numpy as np
 
+from objects.element import Element
+
 def create_window():
     '''
     Creates a GLFW window and returns it.
@@ -177,6 +179,7 @@ def glfw_thread():
                 lose_screen.update()
             else:
                 world.update()
+                pass
 
             # Special shortcut to reset scene
             if IS.just_pressed('r'):
@@ -192,12 +195,13 @@ def glfw_thread():
             
             cube1: Cube = world.elements[0]
             cube2: Cube = world.elements[1]
+            lose_screen: LoseScreen = world.elements[2]
 
-            def draw_cube(cube: Cube):
+            def draw(elem: Element):
                 # cube.update()
-                assert isinstance(cube, Cube), 'Test code crashed, please rewrite this line'
+                assert isinstance(elem, Element), 'Test code crashed, please rewrite this line'
 
-                renderer = cube.shape_renderers[0]
+                renderer = elem.shape_renderers[0]
 
                 # TODO: multiply inside shader (GPU)
                 # mat_model = model()
@@ -206,14 +210,19 @@ def glfw_thread():
                 mat_projection = projection()
                 mat_transform = mat_projection @ mat_view @ mat_model
 
+                if renderer.texture is not None:
+                    renderer.texture.bind()
+
                 renderer.shader.use()
                 renderer.vao.bind()
                 renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
                 
                 gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
             
-            draw_cube(cube1)
-            draw_cube(cube2)
+            draw(cube1)
+            draw(cube2)
+            draw(lose_screen)
+
 
             t = time.time()
             camera.update(t - _last_frame_time)
