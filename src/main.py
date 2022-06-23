@@ -8,10 +8,6 @@ Membros:
     Vitor Souza Amim
 '''
 
-from colorsys import hsv_to_rgb
-from dataclasses import dataclass
-import math
-from shutil import move
 from threading import Thread
 import time
 
@@ -25,23 +21,12 @@ from utils.logger import LOGGER
 from app_vars import APP_VARS
 
 from constants import GUI_WIDTH, WINDOW_SIZE
-from gl_abstractions.layout import Layout
-from gl_abstractions.shader import ShaderDB
-from gl_abstractions.texture import Texture2D
-from gl_abstractions.vertex_array import VertexArray
-from gl_abstractions.vertex_buffer import VertexBuffer
 from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 from objects._2d.screens.lose_screen import LoseScreen
 from objects._2d.screens.win_screen import WinScreen
 from objects.cube import Cube
-from objects._2d._2dworld import World
 
 from gui import AppGui
-import constants
-
-import numpy as np
-
-from objects.element import Element
 
 def create_window():
     '''
@@ -107,17 +92,10 @@ def glfw_thread():
             APP_VARS.cursor.capturing = True
             glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
 
-    # TODO: refactor
     setup_input_system(window)
     IS.add_key_callback(key_callback)
     IS.add_mouse_button_callback(mouse_button_callback)
     IS.add_cursor_pos_callback(cursor_pos_callback)
-
-    # glfw.set_key_callback(window, key_callback)
-    # glfw.set_cursor_pos_callback(window, cursor_pos_callback)
-    # glfw.set_mouse_button_callback(window, mouse_button_callback)
-    #### 
-
 
     # Create the scene (world)
     LOGGER.log_info("Preparing world", 'glfw_thread')
@@ -135,16 +113,7 @@ def glfw_thread():
     world.elements.remove(win_screen) # TODO: make this less hacky
     world.elements.remove(lose_screen) # TODO: make this less hacky
 
-
-    # cubes_layout = Layout([('position', 3)])
-    # cubes_vbo = VertexBuffer(layout=cubes_layout, data=cube_vertices)
-    # cubes_vao = VertexArray()
-    # cubes_vao.upload_vertex_buffer(cubes_vbo)
-    # cube_program = ShaderDB.get_instance().get_shader('simple_red')
-    # Render loop: keeps running until the window is closed or the GUI signals to close
-
     _last_frame_time = time.time()
-
 
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
@@ -178,31 +147,6 @@ def glfw_thread():
             cube1: Cube = world.elements[0]
             cube2: Cube = world.elements[1]
             lose_screen: LoseScreen = world.elements[2]
-
-            # def draw(elem: Element):
-            #     # cube.update()
-            #     assert isinstance(elem, Element), 'Test code crashed, please rewrite this line'
-            #     renderer = elem.shape_renderers[0]
-            #     renderer.render()
-            #     # # TODO: multiply inside shader (GPU)
-            #     # # mat_model = model()
-            #     # mat_model = renderer.transform.model_matrix # TODO: use real model matrix
-            #     # mat_view = view(camera)
-            #     # mat_projection = projection()
-            #     # mat_transform = mat_projection @ mat_view @ mat_model
-
-            #     # if renderer.texture is not None:
-            #     #     renderer.texture.bind()
-
-            #     # renderer.shader.use()
-            #     # renderer.vao.bind()
-            #     # renderer.shader.upload_uniform_matrix4f('u_Transformation', mat_transform)
-                
-            #     # gl.glDrawArrays(renderer.shape_spec.render_mode, 0, len(renderer.shape_spec.vertices))
-            
-            # draw(cube1)
-            # draw(cube2)
-            # draw(lose_screen)
 
             cube1.update()
             cube2.update()
