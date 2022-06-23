@@ -1,3 +1,5 @@
+from curses import textpad
+from typing import Text
 from dpgext import gui
 from dpgext.elements import elements as el
 import dearpygui.dearpygui as dpg
@@ -15,6 +17,19 @@ class MainWindow(gui.Window):
     def describe(self):
         with self:
             el.Text("Hello World!").add()
+            cube = APP_VARS.world.elements[0]
+            el.Text().add(el.TextParams('Translation'))
+            el.SliderFloat(cube.transform.translation, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+            el.SliderFloat(cube.transform.translation, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+            el.SliderFloat(cube.transform.translation, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+
+            dpg.add_separator()
+
+            el.Text().add(el.TextParams('Scale'))
+            el.SliderFloat(cube.transform.scale, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+            el.SliderFloat(cube.transform.scale, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+            el.SliderFloat(cube.transform.scale, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+
 
 class AppGui(gui.Gui):
     def _init_windows(self):

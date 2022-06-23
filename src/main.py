@@ -13,7 +13,7 @@ from dataclasses import dataclass
 import math
 from shutil import move
 from threading import Thread
-from time import time
+import time
 
 import glfw
 import OpenGL.GL as gl
@@ -31,7 +31,7 @@ from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
-from input.input_system import set_glfw_callbacks, INPUT_SYSTEM as IS
+from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 from objects._2d.screens.lose_screen import LoseScreen
 from objects._2d.screens.win_screen import WinScreen
 from objects.cube import Cube
@@ -62,10 +62,15 @@ def create_window():
     glfw.make_context_current(window)
     glfw.show_window(window)
 
+    LOGGER.log_trace("Disabling mouse", 'create_window')
+    glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
+
     LOGGER.log_trace("Enabling VSync", 'create_window')
     glfw.swap_interval(1)
 
     LOGGER.log_info("Window created", 'create_window')
+
+
     return window
 
 def model():
@@ -101,10 +106,33 @@ def glfw_thread():
 
     camera = Camera()
 
+    def key_callback(window, key: int, scancode, action: int, mods: int):
+        print(f'{key=}')
+        if APP_VARS.cursor.capturing and key == glfw.KEY_ESCAPE and action == glfw.RELEASE:
+            APP_VARS.cursor.capturing = False
+            glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_NORMAL);
+
+        camera.on_key(window, key, scancode, action, mods)
+
+    def cursor_pos_callback(window, xpos, ypos):
+        if APP_VARS.cursor.capturing:
+            camera.on_cursor_pos(window, xpos, ypos)
+
+    def mouse_button_callback(window, button: int, action: int, mods: int):
+        if not APP_VARS.cursor.capturing and action == glfw.PRESS:
+            APP_VARS.cursor.capturing = True
+            APP_VARS.cursor.capturing = True
+            glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
+
     # TODO: refactor
-    # set_glfw_callbacks(window)
-    glfw.set_key_callback(window, camera.on_key )
-    glfw.set_cursor_pos_callback(window, camera.on_mouse)
+    setup_input_system(window)
+    IS.add_key_callback(key_callback)
+    IS.add_mouse_button_callback(mouse_button_callback)
+    IS.add_cursor_pos_callback(cursor_pos_callback)
+
+    # glfw.set_key_callback(window, key_callback)
+    # glfw.set_cursor_pos_callback(window, cursor_pos_callback)
+    # glfw.set_mouse_button_callback(window, mouse_button_callback)
     #### 
 
 
@@ -132,9 +160,8 @@ def glfw_thread():
     # cube_program = ShaderDB.get_instance().get_shader('simple_red')
     # Render loop: keeps running until the window is closed or the GUI signals to close
 
-    _last_frame_time = time()
+    _last_frame_time = time.time()
 
-    glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
 
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
@@ -163,9 +190,7 @@ def glfw_thread():
             nonlocal _last_frame_time, camera
             gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
             gl.glClearColor(R, G, B, 1.0)   
-
             
-
             cube1: Cube = world.elements[0]
             cube2: Cube = world.elements[1]
 
@@ -191,12 +216,13 @@ def glfw_thread():
             draw_cube(cube1)
             draw_cube(cube2)
 
-            t = time()
+            t = time.time()
             camera.update(t - _last_frame_time)
             _last_frame_time = t
 
             if IS.just_pressed('r'):
-                camera = Camera()
+                LOGGER.log_debug('Reseting camera...')
+                camera.reset()
 
         # render_1st_deliver()
         render_2nd_deliver()
@@ -231,12 +257,17 @@ def main():
     LOGGER.log_trace("Init Glfw", 'main')
     glfw.init()
     
-    LOGGER.log_trace("Init GUI", 'main')
-    gui = AppGui() # GUI thread (main thread)
 
     LOGGER.log_trace("Start GLFW thread", 'main')
     t = Thread(target=glfw_thread)
     t.start() # GLFW thread (2nd thread)
+
+    while len(APP_VARS.world.elements) == 0:
+        LOGGER.log_debug("Hack: waiting for cube to be spawned...", 'main')
+        time.sleep(0.1)
+
+    LOGGER.log_trace("Init GUI", 'main')
+    gui = AppGui() # GUI thread (main thread)
 
     LOGGER.log_trace("Start GUI", 'main')
     gui.run()

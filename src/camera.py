@@ -3,6 +3,7 @@ from itertools import accumulate
 import math
 from shutil import move
 import glm
+from app_vars import APP_VARS
 import constants
 import glfw
 
@@ -13,17 +14,19 @@ class Camera:
     cameraUp    = glm.vec3(0.0,  1.0,  0.0)
     cameraSpeed = 1
 
-    firstMouse = True
     yaw = -75
     pitch = 0.0
-    lastX =  constants.WINDOW_SIZE[0]/2
-    lastY =  constants.WINDOW_SIZE[1]/2
 
     _keyboardMovementInput = glm.vec3(0, 0, 0)
 
     @property
     def cameraRight(self):
         return glm.normalize(glm.cross(self.cameraFront, self.cameraUp))
+
+    def reset(self):
+        new_camera = Camera()
+        for attr in self.__dict__.keys():
+            setattr(self, attr, getattr(new_camera, attr))
 
     def set_movement(self, movement_input: glm.vec3):
         self._keyboardMovementInput = movement_input
@@ -83,16 +86,25 @@ class Camera:
         aligned_vec = glm.rotateY(aligned_vec, math.radians(-self.yaw))
         return aligned_vec
 
-    def on_mouse(self, window, xpos, ypos):
-        if self.firstMouse:
-            self.lastX = xpos
-            self.lastY = ypos
-            self.firstMouse = False
+    def on_cursor_pos(self, window, xpos, ypos):
+        # if APP_VARS.cursor.lastX == None or APP_VARS.cursor.lastY == None:
+        #     # Do not move camera if mouse just returned from pause screen
+        #     APP_VARS.cursor.lastX = xpos
+        #     APP_VARS.cursor.lastY = ypos    
 
-        xoffset = xpos - self.lastX
-        yoffset = self.lastY - ypos
-        self.lastX = xpos
-        self.lastY = ypos
+        if APP_VARS.cursor.lastX == None:
+            APP_VARS.cursor.lastX = xpos
+
+        if APP_VARS.cursor.lastY == None:
+            APP_VARS.cursor.lastY = ypos
+
+        xoffset = xpos - APP_VARS.cursor.lastX
+        yoffset = APP_VARS.cursor.lastY - ypos
+        APP_VARS.cursor.lastX = xpos
+        APP_VARS.cursor.lastY = ypos
+
+
+        
 
         sensitivity = 0.06 
         xoffset *= sensitivity
