@@ -8,39 +8,107 @@ from utils.logger import LOGGER
 
 from app_vars import APP_VARS
 from constants import GUI_WIDTH
+from objects.element import Element
 
 class MainWindow(gui.Window):
     @metsig(gui.Window.__init__)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.available_elements: dict[str, Element] = {}
+        self.test_list = [1,2,3,4]
+
+        self.target_element = None
+        self.translation_obj = None
+        self.rotation_obj = None
+        self.scale_obj = None
+
+        self.translation_clients = []
+        self.rotation_clients = []
+        self.scale_clients = []
+
+
+    def _update_available_elements(self):
+        id = 0
+        self.available_elements.clear()
+        for element in APP_VARS.world.elements:
+            if hasattr(element, 'shape_renderers'):
+                element_shape_names = [ renderer.shape_spec.name for renderer in element.shape_renderers ]
+                element_name = f"{id}: {type(element)}[{'-'.join(element_shape_names)}]"
+            else:
+                element_name = f'{id}: {type(element)}[MISSING RENDERER]'
+            self.available_elements[element_name] = element
+            id += 1
+
+    def _update_by_list_selection(self, *args, **kwargs):
+        element_name = dpg.get_value('element-list')
+        element = self.available_elements[element_name]
+
+        self.target_element = element
+        tranform = self.target_element.transform
+        self.translation_obj = tranform.translation
+        self.scale_obj = tranform.scale
+        self.rotation_obj = tranform.rotation
+
+        for client in self.translation_clients:
+            client.object = self.translation_obj
+        for client in self.rotation_clients:
+            client.object = self.rotation_obj
+        for client in self.scale_clients:
+            client.object = self.scale_obj
+            
 
     def describe(self):
         with self:
             el.Text("Hello World!").add()
             cube = APP_VARS.world.elements[1]
             camera = APP_VARS.camera
+            COORDS = ['x', 'y', 'z']
+
+            dpg.add_listbox(list(self.available_elements.keys()), tag='element-list', callback=self._update_by_list_selection)
+
+            self.target_element = cube
+            self.translation_obj = cube.transform.translation
+            self.scale_obj = cube.transform.scale
+            self.rotation_obj = cube.transform.rotation
+
+            ## Translation ##
 
             el.Text().add(el.TextParams('Translation'))
-            el.SliderFloat(cube.transform.translation, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
-            el.SliderFloat(cube.transform.translation, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
-            el.SliderFloat(cube.transform.translation, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+
+            self.translation_clients = [ el.SliderFloat(self.translation_obj, coord) for coord in COORDS]
+            for client in self.translation_clients:
+                client.add(params=el.SliderFloatParams(min_value=0.2, max_value=10) )
+                
+            #################
 
             dpg.add_separator()
 
+            ## Scale ##
+
             el.Text().add(el.TextParams('Scale'))
-            el.SliderFloat(cube.transform.scale, 'x').add(el.SliderFloatParams(min_value=0.2, max_value=10))
-            el.SliderFloat(cube.transform.scale, 'y').add(el.SliderFloatParams(min_value=0.2, max_value=10))
-            el.SliderFloat(cube.transform.scale, 'z').add(el.SliderFloatParams(min_value=0.2, max_value=10))
+
+            self.scale_clients = [ el.SliderFloat(self.scale_obj, coord) for coord in  COORDS]
+            for client in self.scale_clients:
+                client.add(params=el.SliderFloatParams(min_value=0.2, max_value=10))
+
+            ###########
+
+
+            ## Buttons ##
 
             def tp_to_element():
                 camera.transform.translation.xyz = cube.transform.translation.xyz
-
-            
 
             el.Button().add(el.ButtonParams(label='Teleport to', callback=tp_to_element))
             el.Button().add(el.ButtonParams(label='Select', callback=cube.select))
             el.Button().add(el.ButtonParams(label='Unselect', callback=cube.unselect))
 
+            #############
+
+    def update(self):
+        self._update_available_elements()
+        dpg.configure_item('element-list', items=list(self.available_elements.keys()))
+        return super().update()
 
 class AppGui(gui.Gui):
     def _init_windows(self):
