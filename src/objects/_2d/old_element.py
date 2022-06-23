@@ -10,7 +10,7 @@ from utils.logger import LOGGER
 from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
-from gl_abstractions.texture import Texture2D, Texture2DParameters
+from gl_abstractions.texture import Texture2D, TextureParameters
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
