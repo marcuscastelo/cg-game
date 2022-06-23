@@ -38,6 +38,7 @@ def create_window():
     glfw.window_hint(glfw.OPENGL_PROFILE, glfw.OPENGL_CORE_PROFILE)
     glfw.window_hint(glfw.RESIZABLE, gl.GL_FALSE)
 
+
     LOGGER.log_trace("Creating window", 'create_window')
     window = glfw.create_window(*WINDOW_SIZE, "CG Trab 1", monitor=None, share=None)
     glfw.set_window_pos(window, GUI_WIDTH, 0)
@@ -52,6 +53,10 @@ def create_window():
 
     LOGGER.log_info("Window created", 'create_window')
 
+
+    gl.glEnable(gl.GL_CULL_FACE);  
+    gl.glCullFace(gl.GL_FRONT);  
+    gl.glFrontFace(gl.GL_CW);  
 
     return window
 
@@ -113,6 +118,8 @@ def glfw_thread():
 
         render()
 
+        APP_VARS.game_fps.update_calc_fps(time.time())
+        print(f'Game FPS: {APP_VARS.game_fps.fps}')
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
 
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')

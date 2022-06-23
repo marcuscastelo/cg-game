@@ -26,6 +26,8 @@ class MainWindow(gui.Window):
         self.rotation_clients = []
         self.scale_clients = []
 
+        self.game_fps_label = el.Text()
+
 
     def _update_available_elements(self):
         id = 0
@@ -55,7 +57,7 @@ class MainWindow(gui.Window):
             client.object = self.rotation_obj
         for client in self.scale_clients:
             client.object = self.scale_obj
-            
+        
 
     def describe(self):
         with self:
@@ -105,9 +107,14 @@ class MainWindow(gui.Window):
 
             #############
 
+            self.game_fps_label.add(el.TextParams('Game FPS: ?'))
+
     def update(self):
         self._update_available_elements()
         dpg.configure_item('element-list', items=list(self.available_elements.keys()))
+
+        dpg.set_value(self.game_fps_label.tag, APP_VARS.game_fps.fps)
+
         return super().update()
 
 class AppGui(gui.Gui):

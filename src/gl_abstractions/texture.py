@@ -55,7 +55,6 @@ class Texture2D(Texture):
         # TODO: support RGBA
         if image.shape[2] == 4: # if image is RGBA (png)
             image = image[:,:,:3] # remove alpha channel and remove last column
-        
 
         obj = Texture2D(
             # texture_type=gl.GL_TEXTURE_2D,

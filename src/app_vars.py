@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import time
 from typing import TYPE_CHECKING
 
 from camera import Camera
@@ -23,6 +24,21 @@ class Cursor:
     capturing: bool = True
 
 @dataclass
+class FpsTracker:
+    last_time: float = time.time()
+    last_delta: float = 0
+
+    @property
+    def fps(self) -> int:
+        if self.last_delta == 0: return 0
+        return 1/self.last_delta
+
+    def update_calc_fps(self, time: float):
+        delta = time - self.last_time
+        self.last_time = time
+        self.last_delta = delta
+
+@dataclass
 class AppVars:
     closing: bool = False
     # scene: OpenGLScene = None
@@ -30,6 +46,9 @@ class AppVars:
     debug: DebugOptions = field(default_factory=DebugOptions)
     cursor: Cursor = field(default_factory=Cursor)
     camera: Camera = None
+
+    game_fps: FpsTracker = field(default_factory=FpsTracker)
+    gui_fps: FpsTracker = field(default_factory=FpsTracker)
 
     def __post_init__(self):
         if self.camera is None:
