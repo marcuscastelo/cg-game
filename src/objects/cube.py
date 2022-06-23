@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from OpenGL import GL as gl 
 from utils.geometry import Vec3
@@ -7,6 +8,10 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
+from objects.wavefront import WaveFrontReader
+
+cube_model = WaveFrontReader().load_model_from_file('./src/objects/caixa2.obj')
+cube_vertices = cube_model.to_raw_vertices()
 
 class Cube(Element):
     @metsig(Element.__init__)
@@ -20,61 +25,7 @@ class Cube(Element):
             shape_specs=[
                 # TODO: read from Wavefront file
                 ShapeSpec(vertices=np.array([
-                    ### CUBO 1
-                    # Face 1 do Cubo 1 (vértices do quadrado)
-                    [*(-1.0, -1.0, +1.0), *(0.0, 0.0)],
-                    [*(+1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(-1.0, +1.0, +1.0), *(0.0, 1.0)],
-
-                    [*(-1.0, +1.0, +1.0), *(0.0, 1.0)],
-                    [*(+1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(+1.0, +1.0, +1.0), *(1.0, 1.0)],
-
-                    # Face 2 do Cubo 1
-                    [*(+1.0, -1.0, -1.0), *(0.0, 0.0)],
-                    [*(+1.0, +1.0, -1.0), *(1.0, 0.0)],
-                    [*(+1.0, -1.0, +1.0), *(0.0, 1.0)],
-
-                    [*(+1.0, -1.0, +1.0), *(0.0, 1.0)],
-                    [*(+1.0, +1.0, -1.0), *(1.0, 0.0)],
-                    [*(+1.0, +1.0, +1.0), *(1.0, 1.0)],
-                    
-                    # Face 3 do Cubo 1
-                    [*(-1.0, -1.0, -1.0), *(0.0, 0.0)],
-                    [*(-1.0, +1.0, -1.0), *(1.0, 0.0)],
-                    [*(+1.0, -1.0, -1.0), *(0.0, 1.0)],
-
-                    [*(+1.0, -1.0, -1.0), *(0.0, 1.0)],
-                    [*(-1.0, +1.0, -1.0), *(1.0, 0.0)],
-                    [*(+1.0, +1.0, -1.0), *(1.0, 1.0)],
-
-                    # Face 4 do Cubo 1
-                    [*(-1.0, -1.0, -1.0), *(0.0, 0.0)],
-                    [*(-1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(-1.0, +1.0, -1.0), *(0.0, 1.0)],
-
-                    [*(-1.0, +1.0, -1.0), *(0.0, 1.0)],
-                    [*(-1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(-1.0, +1.0, +1.0), *(1.0, 1.0)],
-
-                    # Face 5 do Cubo 1
-                    [*(-1.0, -1.0, -1.0), *(0.0, 0.0)],
-                    [*(-1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(+1.0, -1.0, -1.0), *(0.0, 1.0)],
-
-                    [*(+1.0, -1.0, -1.0), *(0.0, 1.0)],
-                    [*(-1.0, -1.0, +1.0), *(1.0, 0.0)],
-                    [*(+1.0, -1.0, +1.0), *(1.0, 1.0)],
-                    
-                    # Face 6 do Cubo 1
-                    [*(-1.0, +1.0, -1.0), *(0.0, 0.0)],
-                    [*(-1.0, +1.0, +1.0), *(1.0, 0.0)],
-                    [*(+1.0, +1.0, -1.0), *(0.0, 1.0)],
-
-                    [*(+1.0, +1.0, -1.0), *(0.0, 1.0)],
-                    [*(-1.0, +1.0, +1.0), *(1.0, 0.0)],
-                    [*(+1.0, +1.0, +1.0), *(1.0, 1.0)],
-
+                    (*vertex.position, *vertex.texture_coords) for vertex in cube_vertices 
                 ], dtype=np.float32),
                 shader=ShaderDB.get_instance().get_shader('textured'),
                 render_mode=gl.GL_TRIANGLES,
