@@ -1,3 +1,4 @@
+import math
 from pickle import APPEND
 import random
 import time
@@ -32,12 +33,14 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        cube1 = Cube(world)
-        cube1.transform.scale = Vec3(0.2, 0.2, 0.2)
-        cube1.transform.translation.xyz = Vec3(10, 10, 10)
-        cube2 = Cube(world)
-        cube2.transform.translation.xyz = Vec3(1,1,1)
-        cube2.transform.scale = Vec3(0.2, 0.2, 0.2)
+        wall = Cube(world)
+        wall.transform.scale = Vec3(0.1, 3, 3)
+        wall.transform.translation.xyz = Vec3(4, 0, 0)
+        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        
+        box = Cube(world)
+        box.transform.translation.xyz = Vec3(1,0.5,1)
+        box.transform.scale = Vec3(0.4, 0.4, 0.4)
 
         ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
         ground.transform.scale = Vec3(10, 0, 10)
@@ -51,7 +54,7 @@ class World:
             for j in range(10):
                 # for k in range(10):
                     diamond_block = Cube(world, custom_texture=diamond_block_texture)
-                    diamond_block.transform.translation.xyz = Vec3(2 + i, 0.5 + 0, 0 + j)
+                    diamond_block.transform.translation.xyz = Vec3(-4 - i, 0.5 - 0, 0 - j)
                     diamond_block.transform.scale = Vec3(1,1,1) * 0.5
                     self.diamond_blocks.append(diamond_block)
 
