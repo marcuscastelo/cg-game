@@ -35,7 +35,11 @@ class MainWindow(gui.Window):
             def tp_to_element():
                 camera.transform.translation = cube.transform.translation.xyz
 
-            el.Button().add(el.ButtonParams(callback=tp_to_element))
+            
+
+            el.Button().add(el.ButtonParams(label='Teleport to', callback=tp_to_element))
+            el.Button().add(el.ButtonParams(label='Select', callback=cube.select))
+            el.Button().add(el.ButtonParams(label='Unselect', callback=cube.unselect))
 
 
 class AppGui(gui.Gui):

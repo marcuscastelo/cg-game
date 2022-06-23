@@ -174,6 +174,7 @@ class Element:
         self.__destroyed = False
         self._dying = False
         self.speed = 0.5
+        self._selected = False
 
         # Take all shapes specified in specs and create a list of ShapeRenderers to render them later
         self.shape_renderers = [
@@ -189,6 +190,16 @@ class Element:
         #     self._bounding_box_vertices_4d = np.insert(self._bounding_box_vertices_3d, 3, 1.0, axis=1)
         
         # self._bounding_box_cache = BoundingBoxCache()
+
+    def select(self) -> None:
+        if self._selected: return
+        self._selected = True
+        self.transform.translation += 10
+
+    def unselect(self) -> None:
+        if not self._selected: return
+        self._selected = False
+        self.transform.translation -= 10
 
     def die(self):
         '''Set the element to start a death animation'''
