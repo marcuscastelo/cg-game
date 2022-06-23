@@ -85,17 +85,17 @@ class Projectile(Element):
         The projectile is created by a ship, getting the position and the angle of the latter,
         so it can represent with fidelity what is supposed to happen
         '''
-        shiplike_len = ship.get_bounding_box_2d().size.y
+        shiplike_len = 1 # ship.get_bounding_box_2d().size.y
 
 
-        relatite_weapon_distance = Vec3(-sin(ship.angle), cos(ship.angle), 0) * shiplike_len
+        relatite_weapon_distance = Vec3(-sin(ship.transform.rotation.z), cos(ship.transform.rotation.z), 0) * shiplike_len
         projectile_pos = ship.transform.translation.xyz + relatite_weapon_distance 
 
         if specs is None:
             specs = ProjectileSpecs()
 
         specs.initial_transform.translation = projectile_pos
-        specs.initial_transform.rotation = Vec3(0, 0, ship.angle)
+        specs.initial_transform.rotation = Vec3(0, 0, ship.transform.rotation.z)
 
         obj = cls(
             world = ship.world,
@@ -123,7 +123,10 @@ class Projectile(Element):
             LOGGER.log_error(f"Trying to update destroyed projectile {self}")
             return
 
-        self.move_forward()
+        dx = np.cos(self.transform.rotation.z + math.radians(90)) * 1 * self.speed
+        dy = np.sin(self.transform.rotation.z + math.radians(90)) * 1 * self.speed
+        self.transform.translation.xy += Vec2(dx, dy)
+        
         self.speed = max(self.speed + self.speed * self.specs.acceleration, 0)
 
         self.transform.scale.y *= (1 - self.specs.decay_rate)

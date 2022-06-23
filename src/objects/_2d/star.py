@@ -58,7 +58,7 @@ class Star(Element):
 
     def _physics_update(self, delta_time: float):
         self.transform.translation.xy += self.speed_vec * delta_time * 50
-        self.rotate(self.rotation_speed)
+        self.transform.rotation.z += self.rotation_speed
 
         super()._physics_update(delta_time)
 

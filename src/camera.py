@@ -1,29 +1,44 @@
 from dataclasses import dataclass
 from itertools import accumulate
 import math
-from shutil import move
+from turtle import shape
 import glm
+from utils.geometry import Vec3
+from utils.sig import metsig
 import constants
 import glfw
 
-@dataclass
-class Camera:
-    cameraPos   = glm.vec3(0.0,  0.0,  1.0)
-    cameraFront = glm.vec3(0.0,  0.0, -1.0)
-    cameraUp    = glm.vec3(0.0,  1.0,  0.0)
-    cameraSpeed = 1
+from objects.element import Element, ElementSpecification, ShapeSpec
+from objects.world import World
+from transform import Transform
 
-    yaw = -75
-    pitch = 0.0
+class Camera(Element):
+    @metsig(Element.__init__)
+    def __init__(self, world: World):
+        self.cameraPos   = glm.vec3(0.0,  0.0,  1.0)
+        self.cameraFront = glm.vec3(0.0,  0.0, -1.0)
+        self.cameraUp    = glm.vec3(0.0,  1.0,  0.0)
+        self.cameraSpeed = 1
 
-    _keyboardMovementInput = glm.vec3(0, 0, 0)
+        self.yaw = -75
+        self.pitch = 0.0
+
+        self._keyboardMovementInput = glm.vec3(0, 0, 0)
+        
+        specification = ElementSpecification(
+            shape_specs=[] # Camera has no Shape
+        )
+
+        super().__init__(world=world, specs=specification)
+
+        print(f'Camera._transform: {self._transform}')
 
     @property
     def cameraRight(self):
         return glm.normalize(glm.cross(self.cameraFront, self.cameraUp))
 
     def reset(self):
-        new_camera = Camera()
+        new_camera = Camera(self.world)
         for attr in self.__dict__.keys():
             setattr(self, attr, getattr(new_camera, attr))
 

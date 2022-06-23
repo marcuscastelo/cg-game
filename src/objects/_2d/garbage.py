@@ -75,5 +75,5 @@ class Garbage(Element):
         ])
 
     def _physics_update(self, delta_time: float):
-        self.rotate(self.rotation_speed)
+        self.transform.rotation.z += self.rotation_speed
         super()._physics_update(delta_time)

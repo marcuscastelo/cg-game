@@ -9,8 +9,6 @@ import numpy as np
 from OpenGL import GL as gl
 from utils.geometry import Rect2, Vec2, Vec3
 from utils.logger import LOGGER
-from camera import Camera
-from constants import FLOAT_SIZE, SCREEN_RECT
 
 import imageio
 from gl_abstractions.texture import Texture2D, TextureParameters
@@ -163,8 +161,8 @@ class Element:
         Initialize the element inside the world, with an optional initial transform
         '''
         from objects.world import World
-        assert isinstance(world, World), f'{world} is not a World'
-        assert isinstance(specs, ElementSpecification), f'{specs} is not an Elementspecs'
+        assert isinstance(world, World), f'Expected world to be a World, got {type(world)} instead'
+        assert isinstance(specs, ElementSpecification), f'Expected specs to be a ElementSpecification, got {type(specs)} instead'
 
         self._transform = specs.initial_transform
         self.primitives = specs.shape_specs

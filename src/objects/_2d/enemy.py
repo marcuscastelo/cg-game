@@ -88,7 +88,7 @@ class Enemy(Element):
 
     def _physics_update(self, delta_time: float):
         '''Overrides the physics update of the Element class'''
-        bbox = self.get_bounding_box_2d()
+        # bbox = self.get_bounding_box_2d()
         projectiles = ( element for element in self.world.elements if isinstance(element, Projectile) )
 
         ship = ( element for element in self.world.elements if isinstance(element, Ship) )
@@ -105,16 +105,16 @@ class Enemy(Element):
             if projectile.is_particle:
                 continue
             
-            if not bbox.contains(projectile.transform.translation.xy):
-                continue
+            # if not bbox.contains(projectile.transform.translation.xy):
+            #     continue
 
-            LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
-            if not projectile.is_enemy:
-                self.speed = 0
-                self._accel_dir = 0
-                self.die()
+            # LOGGER.log_debug(f'Enemy(id={id(self)}) hit by projectile(id={id(projectile)})')
+            # if not projectile.is_enemy:
+            #     self.speed = 0
+            #     self._accel_dir = 0
+            #     self.die()
 
-            projectile.destroy()
+            # projectile.destroy()
 
 
         # Move

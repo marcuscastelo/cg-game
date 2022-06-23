@@ -7,6 +7,7 @@ from camera import Camera
 def _create_world():
     from objects.world import World
     return World()
+
     
 if TYPE_CHECKING:
     from objects.world import World
@@ -28,5 +29,9 @@ class AppVars:
     world: 'World' = field(default_factory=_create_world)
     debug: DebugOptions = field(default_factory=DebugOptions)
     cursor: Cursor = field(default_factory=Cursor)
-    camera: Camera = field(default_factory=Camera)
+    camera: Camera = None
+
+    def __post_init__(self):
+        if self.camera is None:
+            self.camera = Camera(self.world)
 APP_VARS = AppVars()

@@ -9,18 +9,15 @@ from objects.element import Element
 from objects._2d.enemy import Enemy
 
 from objects._2d.ship import Ship
+from objects.world import World
 
-class World:
+class _2DWorld(World):
     '''
     Class responsible for describing the world.
     It holds all the elements in a list and updates them.
     When they are marked for removal, they are removed from the list in the next update.
     '''
     
-    def __init__(self):
-        self.elements: list[Element] = []
-        self._updating_inner = False
-
     def setup_scene(self):
         '''
         This function is called when the user presses the 'r' key and when the application starts.
@@ -93,21 +90,6 @@ class World:
 
     def destroy(self, element: Element):
         element.destroy()
-
-    def update(self):
-        '''
-        This function is called every frame.
-        It updates the world and all the elements in it.
-        '''
-
-        # Update elements
-        for element in self.elements[::-1]:
-            if not element.destroyed: # In case the element was destroyed while updating
-                element.update() # FIXME: old world does not have delta time yet
-
-        # Remove elements that are marked for removal
-        self.elements[:] = [ element for element in self.elements if not element.destroyed ]
-
         
     def is_player_victory(self) -> bool:
         '''
@@ -120,5 +102,3 @@ class World:
         If the player has been destroyed, he has lost.
         '''
         return len(list(element for element in self.elements if isinstance(element, (Ship)))) == 0
-
-WORLD = World()

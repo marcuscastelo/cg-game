@@ -219,7 +219,9 @@ class Ship(Element):
         
         if self.controller.input_movement != 0:
             # Translation occurs in the direction of the current angle we are facing
-            self.move_forward(self.controller.input_movement)
+            dx = np.cos(self.transform.rotation.z + math.radians(90)) * 1 * self.speed
+            dy = np.sin(self.transform.rotation.z + math.radians(90)) * 1 * self.speed
+            self.transform.translation.xy += Vec2(dx, dy)
         if self.controller.input_rotation != 0:
             # Rotation occurs in a smoothed fashion (gradually accelerate to the target angular speed)
             ROT_ACCEL = 3.5
@@ -234,7 +236,7 @@ class Ship(Element):
             max_rot = inp_abs
             self._rotation_intensity = clamp(self._rotation_intensity, min_rot, max_rot)
 
-            self.rotate(self._rotation_intensity)
+            self.transform.rotation.z += self._rotation_intensity
         else:
             # Imediatelly stop rotation
             self._rotation_intensity = 0
@@ -261,16 +263,16 @@ class Ship(Element):
 
     def _die_if_enemy_shot(self):
         '''Check if the ship was shot by an enemy and die if so'''
-        from objects.enemy import Enemy
+        from objects._2d.enemy import Enemy
         if self._dying:
             return
 
-        for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
-            if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box_2d().contains(obj.transform.translation.xy):
-                LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
-                obj.destroy()
-                self.die()
-                return
+        # for obj in ( element for element in self.world.elements if isinstance(element, (Projectile, Enemy ) )):
+        #     if (not isinstance(obj, Projectile) or obj.is_enemy) and self.get_bounding_box_2d().contains(obj.transform.translation.xy):
+        #         LOGGER.log_debug('Ship hit by enemy projectile', 'Ship')
+        #         obj.destroy()
+        #         self.die()
+        #         return
 
     def _physics_update(self, delta_time: float):
         '''Overrides the default physics update to add custom physics'''
@@ -283,17 +285,17 @@ class Ship(Element):
             self._physics_movement(delta_time)
             self._die_if_enemy_shot()
         
-        bbox = self.get_bounding_box_2d()
+        # bbox = self.get_bounding_box_2d()
 
-        # Collect garbage near the ship
-        for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
-            if bbox.intersects(garbage.get_bounding_box_2d()):
-                garbage.destroy()
+        # # Collect garbage near the ship
+        # for garbage in (element for element in self.world.elements if isinstance(element, Garbage)):
+        #     if bbox.intersects(garbage.get_bounding_box_2d()):
+        #         garbage.destroy()
         
-        # Ship is out of bounds if any of the corners are outside the screen (diferent from other elements, in which all the vertices must be outside the screen)
-        for points in [ bbox.top_left, bbox.top_right, bbox.bottom_left, bbox.bottom_right ]:
-            if not SCREEN_RECT.contains(points):
-                self._on_outside_screen()
+        # # Ship is out of bounds if any of the corners are outside the screen (diferent from other elements, in which all the vertices must be outside the screen)
+        # for points in [ bbox.top_left, bbox.top_right, bbox.bottom_left, bbox.bottom_right ]:
+        #     if not SCREEN_RECT.contains(points):
+        #         self._on_outside_screen()
 
 
         return super()._physics_update(delta_time)

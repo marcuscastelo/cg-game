@@ -26,8 +26,8 @@ class World:
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
         world = self
 
-        LOGGER.log_trace('Emptying scene', 'world:setup_scene')
-        self.elements.clear()
+        # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
+        # self.elements.clear()
 
         # ... #
         cube1 = Cube(world)
@@ -36,9 +36,6 @@ class World:
         cube2 = Cube(world)
         cube2.transform.translation = Vec3(1,1,1)
         cube2.transform.scale = Vec3(-0.2, 0.2, 0.2)
-
-        from objects._2d.screens.lose_screen import LoseScreen
-        LoseScreen(world)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
