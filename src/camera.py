@@ -40,6 +40,7 @@ class Momentum:
 class Camera(Element):
     shape_specs: list[ShapeSpec] = field(default_factory=list)
     fov = 70
+    _sprinting = False
 
     def __post_init__(self):
         super().__post_init__()
@@ -73,13 +74,18 @@ class Camera(Element):
 
     def update(self, delta_time: float):
         if IS.just_pressed('ctrl'):
-            self.fov = 90
+            self._sprinting = True
             self._momentum.max_speed = 0.2
             self._momentum.accel = 0.1
         if IS.just_released('ctrl'):
-            self.fov = 70
+            self._sprinting = False
             self._momentum.max_speed = 0.1
             self._momentum.accel = 0.01
+
+        fov_delta_sig = +1 if self._sprinting else -1
+        self.fov += fov_delta_sig * delta_time * 60 * 1.5
+        if self.fov < 70: self.fov = 70
+        elif self.fov > 90: self.fov = 90
 
         super().update(delta_time)
         pass
