@@ -24,7 +24,6 @@ class Momentum:
         y_vel = self.velocity.y + force.y * delta_time * PHYSICS_TPS * 0.01
 
         self.velocity += force * delta_time * PHYSICS_TPS * self.accel
-        print(f'{self.velocity=}')
         self.velocity.y = 0
 
         if self.velocity.magnitude() > self.max_speed:
@@ -73,11 +72,11 @@ class Camera(Element):
             setattr(self, attr, getattr(new_camera, attr))
 
     def update(self, delta_time: float):
-        if IS.just_pressed('ctrl'):
+        if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
             self._sprinting = True
             self._momentum.max_speed = 0.2
             self._momentum.accel = 0.1
-        if IS.just_released('ctrl'):
+        if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
             self._sprinting = False
             self._momentum.max_speed = 0.1
             self._momentum.accel = 0.01

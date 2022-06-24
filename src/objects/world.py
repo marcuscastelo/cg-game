@@ -62,7 +62,7 @@ class World:
         for i in range(10):
             for j in range(10):
                 # for k in range(10):
-                    SCALE = 0.8
+                    SCALE = 1.2
                     diamond_block = Cube(f'diamond{i}{j}', texture=diamond_block_texture)
                     diamond_block.transform.translation.xyz = Vec3(-4 - i * SCALE, 0, 0 - j * SCALE)
                     diamond_block.transform.scale = Vec3(1,1,1) * SCALE
