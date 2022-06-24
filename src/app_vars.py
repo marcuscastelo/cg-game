@@ -52,5 +52,6 @@ class AppVars:
 
     def __post_init__(self):
         if self.camera is None:
-            self.camera = Camera(self.world)
+            self.camera = Camera('Main Camera')
+            self.world.spawn(self.camera)
 APP_VARS = AppVars()

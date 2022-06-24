@@ -35,13 +35,14 @@ class Model:
     normals: list[tuple] = field(default_factory=list)
     faces: list[Face] = field(default_factory=list)
 
-    def to_raw_vertices(self) -> list[RawVertex]:
+    def to_unindexed_vertices(self) -> list[RawVertex]:
+        LOGGER.log_trace('Converting model to raw vertices list', 'WaveFront - Model')
         raw_vertices: list[RawVertex] = []
-        f = 1
+        # f = 1
         for face in self.faces:
-            print(f'--- Face {f} ---')
-            print(f'Face: {face}')
-            f+=1
+            # print(f'--- Face {f} ---')
+            # print(f'Face: {face}')
+            # f+=1
 
             assert len(face.position_indices) == len(face.texture_indices) == len(face.normal_indices), f'Mismatch between {len(face.position_indices)=}, {len(face.texture_indices)=}, {len(face.normal_indices)=}'
 
@@ -54,10 +55,11 @@ class Model:
                 )
                 raw_vertices.append(vertex)
                 face_vertices.append(vertex) # Debug purposes TODO: remove
-            print(f'\t--- Vertices ---')
-            for vertex in face_vertices:
-                print(f'\t{vertex}')
+            # print(f'\t--- Vertices ---')
+            # for vertex in face_vertices:
+            #     print(f'\t{vertex}')
 
+        LOGGER.log_trace('Model convetted to raw vertices list!', 'WaveFront - Model')
         return raw_vertices
 
 @dataclass

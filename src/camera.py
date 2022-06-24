@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import accumulate
 import math
 from turtle import shape
@@ -12,9 +12,14 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from objects.world import World
 from transform import Transform
 
+@dataclass
 class Camera(Element):
-    @metsig(Element.__init__)
-    def __init__(self, world: World):
+
+    shape_specs: list[ShapeSpec] = field(default_factory=list)
+
+    def __post_init__(self):
+        super().__post_init__()
+
         # self.cameraPos   = glm.vec3(0.0,  0.0,  1.0)
         self.cameraFront = glm.vec3(0.0,  0.0, -1.0)
         self.cameraUp    = glm.vec3(0.0,  1.0,  0.0)
@@ -25,16 +30,8 @@ class Camera(Element):
 
         self._keyboardMovementInput = glm.vec3(0, 0, 0)
         
-        specification = ElementSpecification(
-            shape_specs=[] # Camera has no Shape
-        )
-
         self._fall_speed = 0
         self._ground_y = 1.8
-
-        super().__init__(world=world, specs=specification)
-
-        print(f'Camera._transform: {self._transform}')
 
     @property
     def cameraRight(self):
@@ -45,7 +42,7 @@ class Camera(Element):
         return self.transform.translation.y <= self._ground_y * 1.01
 
     def reset(self):
-        new_camera = Camera(self.world)
+        new_camera = Camera(self.name)
         for attr in self.__dict__.keys():
             setattr(self, attr, getattr(new_camera, attr))
 

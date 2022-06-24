@@ -33,32 +33,34 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        wall = Cube(world)
-        wall.transform.scale = Vec3(0.1, 3, 3)
-        wall.transform.translation.xyz = Vec3(4, 0, 0)
-        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
-        
-        box = Cube(world)
+        # wall = Cube('Wall')
+        # wall.transform.scale = Vec3(0.1, 3, 3)
+        # wall.transform.translation.xyz = Vec3(4, 0, 0)
+        # wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        # self.spawn(wall)
+
+        box = Cube('Box')
         box.transform.translation.xyz = Vec3(1,0.5,1)
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
+        self.spawn(box)
 
-        ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
-        ground.transform.scale = Vec3(10, 0, 10)
+        # ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
+        # ground.transform.scale = Vec3(10, 0, 10)
 
-        sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
-        sky.transform.scale = Vec3(-300, 300, 300)
+        # sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
+        # sky.transform.scale = Vec3(-300, 300, 300)
 
-        diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
-        self.diamond_blocks = []
-        for i in range(10):
-            for j in range(10):
-                # for k in range(10):
-                    diamond_block = Cube(world, custom_texture=diamond_block_texture)
-                    diamond_block.transform.translation.xyz = Vec3(-4 - i, 0.5 - 0, 0 - j)
-                    diamond_block.transform.scale = Vec3(1,1,1) * 0.5
-                    self.diamond_blocks.append(diamond_block)
+        # diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
+        # self.diamond_blocks = []
+        # for i in range(10):
+        #     for j in range(10):
+        #         # for k in range(10):
+        #             diamond_block = Cube(world, custom_texture=diamond_block_texture)
+        #             diamond_block.transform.translation.xyz = Vec3(-4 - i, 0.5 - 0, 0 - j)
+        #             diamond_block.transform.scale = Vec3(1,1,1) * 0.5
+        #             self.diamond_blocks.append(diamond_block)
 
-        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+        # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
         self.elements.append(element)
@@ -89,7 +91,6 @@ class World:
 
         from camera import Camera
         assert isinstance(self.elements[0], Camera), "0th element is not a camera!"
-        camera_xyz = self.elements[0].transform.translation.xyz
 
         # for element in self.elements[1:]:
         #     center = element.transform.translation.xyz
