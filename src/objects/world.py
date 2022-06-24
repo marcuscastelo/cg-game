@@ -83,6 +83,7 @@ class World:
         from app_vars import APP_VARS
         light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
+        light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
         # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
@@ -102,7 +103,9 @@ class World:
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 
-
+        gun = Cube('gun', model=load_model('./src/objects/alvo1.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun.transform.translation.xyz = Vec3(4,0,-8)
+        self.spawn(gun)
         
     def spawn(self, element: Element):
         self.elements.append(element)

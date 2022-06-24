@@ -119,6 +119,10 @@ class MainWindow(gui.Window):
             el.SliderFloat(APP_VARS.lighting_config, 'Ka').add(el.SliderFloatParams(min_value=0, max_value=1))
             el.Text().add(el.TextParams('Kd'))
             el.SliderFloat(APP_VARS.lighting_config, 'Kd').add(el.SliderFloatParams(min_value=0, max_value=1))
+            el.Text().add(el.TextParams('Ks'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ks').add(el.SliderFloatParams(min_value=0, max_value=1))
+            el.Text().add(el.TextParams('Ns'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000))
 
             el.Text().add(el.TextParams('Do daylight cycle?'))
             el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
