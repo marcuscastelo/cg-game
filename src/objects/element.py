@@ -75,7 +75,6 @@ class ShapeRenderer:
 
     def render(self):
         from app_vars import APP_VARS
-
         # Bind the shader and VAO (VBO is bound in the VAO)
         self.vao.bind()
 
@@ -187,13 +186,14 @@ class Element: # TODO: rename to Object
     def __post_init__(self):
         assert isinstance(self.shape_specs, list), f"Expected 'shape_specs' to be a 'list[ShapeSpec]', but got {type(self.shape_specs)} instead"
         assert isinstance(self.transform, Transform), f"Expected 'transform' to be a 'Transform', but got {type(self.transform)} instead"
-
+        
         self._state = ObjectState()
         self._shape_renderers = [
             ShapeRenderer(
                 shape_spec=shape_spec,
                 transform=self.transform
             ) for shape_spec in self.shape_specs]
+
         pass
 
     @property

@@ -121,7 +121,6 @@ def glfw_thread():
         render()
 
         APP_VARS.game_fps.update_calc_fps(time.time())
-        print(f'Game FPS: {APP_VARS.game_fps.fps}')
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
 
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')

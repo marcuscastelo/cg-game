@@ -44,12 +44,14 @@ class World:
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
         self.spawn(box)
 
-        # ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
-        # ground.transform.scale = Vec3(10, 0, 10)
+        ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
+        ground.transform.scale = Vec3(10, 0, 10)
+        self.spawn(ground)
 
-        # sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
-        # sky.transform.scale = Vec3(-300, 300, 300)
-
+        sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
+        sky.transform.scale = Vec3(-300, 300, 300)
+        self.spawn(sky)
+        
         # diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
         # self.diamond_blocks = []
         # for i in range(10):

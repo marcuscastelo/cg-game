@@ -14,7 +14,6 @@ from transform import Transform
 
 @dataclass
 class Camera(Element):
-
     shape_specs: list[ShapeSpec] = field(default_factory=list)
 
     def __post_init__(self):
@@ -73,7 +72,7 @@ class Camera(Element):
             'back':     glm.vec3(-1, 0, 0),
             'right':    glm.vec3(0, 0, +1),
             'left':     glm.vec3(0, 0, -1),
-            # 'up':       glm.vec3(0, +1, 0),
+            'up':       glm.vec3(0, +1, 0),
             'down':     glm.vec3(0, -1, 0),
         }
 
@@ -82,7 +81,7 @@ class Camera(Element):
             glfw.KEY_S: 'back',
             glfw.KEY_A: 'left',
             glfw.KEY_D: 'right',
-            # glfw.KEY_SPACE: 'up',
+            glfw.KEY_SPACE: 'up',
             glfw.KEY_LEFT_SHIFT: 'down'
         }
 
@@ -95,12 +94,12 @@ class Camera(Element):
                     self._keyboardMovementInput -= direction_vec 
 
 
-        if key == glfw.KEY_SPACE and action == glfw.PRESS:
-            if self.grounded:
-                self._keyboardMovementInput += glm.vec3(0, 1, 0)
-        if key == glfw.KEY_SPACE and action in [glfw.REPEAT, glfw.RELEASE]:
-            if not self.grounded:
-                self._keyboardMovementInput.y = 0
+        # if key == glfw.KEY_SPACE and action == glfw.PRESS:
+        #     if self.grounded:
+        #         self._keyboardMovementInput += glm.vec3(0, 1, 0)
+        # if key == glfw.KEY_SPACE and action in [glfw.REPEAT, glfw.RELEASE]:
+        #     if not self.grounded:
+        #         self._keyboardMovementInput.y = 0
 
 
     def _rotate_vec_to_face_front(self, vec: glm.vec3) -> glm.vec3:
@@ -145,10 +144,10 @@ class Camera(Element):
         self.cameraFront = glm.normalize(front)
 
     def _physics_update(self, delta_time: float):
-        self._fall_speed += 30 * delta_time**2
-        self.transform.translation.y -= 0.3 * delta_time * self._fall_speed
-        if self.transform.translation.y < self._ground_y:
-            self.transform.translation.y = self._ground_y
-            self._fall_speed = 0
+        # self._fall_speed += 30 * delta_time**2
+        # self.transform.translation.y -= 0.3 * delta_time * self._fall_speed
+        # if self.transform.translation.y < self._ground_y:
+        #     self.transform.translation.y = self._ground_y
+        #     self._fall_speed = 0
 
         return super()._physics_update(delta_time)

@@ -15,15 +15,15 @@ from objects.wavefront import WaveFrontReader
 cube_model = WaveFrontReader().load_model_from_file('./src/objects/pto.obj')
 cube_vertices = cube_model.to_unindexed_vertices() # TODO: instead of unindexed, use indices
 
-DEFAULT_TEXTURE = Texture2D.from_image_path('textures/end_game_loss.png')
-
 @dataclass
 class Cube(Element):
     shape_specs: list[ShapeSpec] = None  # Initialized in __post_init__
-    texture: Texture = field(default=DEFAULT_TEXTURE)
+
+    # TODO: Keep texture loaded instead of loading every time
+    texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/end_game_loss.png'))
 
     def _init_shape_specs(self):
-        # TODO: rename this variable to something less confusing
+        # # TODO: rename this variable to something less confusing
         cube_vertices_array = np.array([
             # Example Vertex: (posX, posY, posZ, texU, texV)
             (*vertex.position, *vertex.texture_coords) for vertex in cube_vertices
