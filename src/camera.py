@@ -206,14 +206,14 @@ class Camera(Element):
         # self.transform.translation.xyz += Vec3(*(cameraStep * delta_time * self.cameraSpeed))
 
 
-        if self.transform.translation.x > 5:
-            self.transform.translation.x = 5
-        elif self.transform.translation.x < -5:
-            self.transform.translation.x = -5
-        if self.transform.translation.z > 5:
-            self.transform.translation.z = 5
-        elif self.transform.translation.z < -5:
-            self.transform.translation.z = -5
+        if self.transform.translation.x > constants.WORLD_SIZE//2:
+            self.transform.translation.x = constants.WORLD_SIZE//2
+        elif self.transform.translation.x < -constants.WORLD_SIZE//2:
+            self.transform.translation.x = -constants.WORLD_SIZE//2
+        if self.transform.translation.z > constants.WORLD_SIZE//2:
+            self.transform.translation.z = constants.WORLD_SIZE//2
+        elif self.transform.translation.z < -constants.WORLD_SIZE//2:
+            self.transform.translation.z = -constants.WORLD_SIZE//2
 
         if self.transform.translation.y < self._ground_y:
             self.transform.translation.y = self._ground_y

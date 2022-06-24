@@ -8,6 +8,8 @@ from utils.logger import LOGGER
 from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
+import constants
+
 class World:
     '''
     Class responsible for describing the world.
@@ -45,7 +47,7 @@ class World:
         self.spawn(box)
 
         ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
-        ground.transform.scale = Vec3(10, 0.1, 10)
+        ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground.transform.translation = Vec3(0, -0.1, 0)
 
         self.spawn(ground)
