@@ -151,7 +151,7 @@ class ShaderDB:
             layout=Layout([
                 ('a_Position', 3),
                 ('a_TexCoord', 2),
-                ('a_Normals', 3)
+                ('a_Normal', 3)
             ])
         )
 

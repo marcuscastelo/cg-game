@@ -101,11 +101,11 @@ class MainWindow(gui.Window):
             ## Buttons ##
 
             def tp_to_element():
-                camera.transform.translation.xyz = cube.transform.translation.xyz
+                camera.transform.translation.xyz = self.target_element.transform.translation.xyz
 
             el.Button().add(el.ButtonParams(label='Teleport to', callback=tp_to_element))
-            el.Button().add(el.ButtonParams(label='Select', callback=cube.select))
-            el.Button().add(el.ButtonParams(label='Unselect', callback=cube.unselect))
+            el.Button().add(el.ButtonParams(label='Select', callback=lambda: self.target_element.select()))
+            el.Button().add(el.ButtonParams(label='Unselect', callback=lambda: self.target_element.unselect()))
 
             #############
 
@@ -120,6 +120,8 @@ class MainWindow(gui.Window):
             el.Text().add(el.TextParams('Kd'))
             el.SliderFloat(APP_VARS.lighting_config, 'Kd').add(el.SliderFloatParams(min_value=0, max_value=1))
 
+            el.Text().add(el.TextParams('Do daylight cycle?'))
+            el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
             el.Text().add(el.TextParams('Light position'))
             el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10))
             el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10))

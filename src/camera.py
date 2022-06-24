@@ -9,31 +9,13 @@ import constants
 import glfw
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
+from objects.physics.momentum import Momentum
 from objects.world import World
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
 
-@dataclass
-class Momentum:
-    velocity: Vec3 = field(default_factory=lambda: Vec3(0,0,0))
-    accel = 0.01
-    max_speed = 0.1
 
-    def apply_force(self, force: Vec3, delta_time: float):
-        y_vel = self.velocity.y + force.y * delta_time * PHYSICS_TPS * 0.01
-
-        self.velocity += force * delta_time * PHYSICS_TPS * self.accel
-        self.velocity.y = 0
-
-        if self.velocity.magnitude() > self.max_speed:
-            self.velocity = self.velocity.normalized() * self.max_speed
-
-        self.velocity.y = y_vel
-        pass
-
-    def apply_friction(self, percentage: float, delta_time: float):
-        self.velocity.xz *= percentage
 
 @dataclass
 class Camera(Element):
@@ -80,6 +62,11 @@ class Camera(Element):
             self._sprinting = False
             self._momentum.max_speed = 0.1
             self._momentum.accel = 0.01
+
+        if IS.just_pressed('shift') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+            self._ground_y = 1.6
+        if IS.just_released('shift') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+            self._ground_y = 1.8
 
         fov_delta_sig = +1 if self._sprinting else -1
         self.fov += fov_delta_sig * delta_time * 60 * 1.5
@@ -196,10 +183,10 @@ class Camera(Element):
             input_force.y = 0
             self._momentum.velocity.y = 0.2
 
-        self._momentum.apply_force(input_force, delta_time=delta_time)
+        self._momentum.apply_force_walk(input_force, delta_time=delta_time)
         self._momentum.apply_friction(percentage= 0.99 if not self.grounded else 0.84, delta_time=delta_time)
         if not self.grounded:
-            self._momentum.apply_force(Vec3(0, -0.3 * self.transform.translation.y, 0), delta_time=delta_time)
+            self._momentum.apply_force_walk(Vec3(0, -0.3 * self.transform.translation.y, 0), delta_time=delta_time)
 
         self.transform.translation.xyz += self._momentum.velocity * delta_time * PHYSICS_TPS
         # self.transform.translation.xyz += Vec3(*(cameraStep * delta_time * self.cameraSpeed))

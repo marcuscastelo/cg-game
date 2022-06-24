@@ -5,10 +5,14 @@ import time
 from typing import Text
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+# from app_vars import APP_VARS
+from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
 import constants
+from objects.light_cube import LightCube
+from objects.wavefront import Model, WaveFrontReader
 
 class World:
     '''
@@ -35,10 +39,10 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        wall = Cube('Wall')
+        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
         wall.transform.scale = Vec3(0.1, 3, 3)
         wall.transform.translation.xyz = Vec3(4, 0, 0)
-        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        wall.transform.rotation.xyz = Vec3(0, 0, 0)
         self.spawn(wall)
 
         box = Cube('Box')
@@ -69,13 +73,36 @@ class World:
                     self.diamond_blocks.append(diamond_block)
                     self.spawn(diamond_block)
 
+        # monkey_model = WaveFrontReader().load_model_from_file('./src/objects/monkey.obj')
+        # monkey = Cube('monkey', model=monkey_model)
+        # monkey.transform.scale *= 20
+        # monkey.transform.translation = Vec3(0, 1, 0)
+        # self.spawn(monkey)
+
         
         from app_vars import APP_VARS
-        light_cube = Cube('light_cube', hack_is_light=True)
+        light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
         # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+
+        def load_model(filename: str) -> Model:
+            return WaveFrontReader().load_model_from_file(filename)
+
+        tree = Cube('tree', model=load_model('./src/objects/tree.obj'))
+        tree.transform.translation.xyz = Vec3(4,0,4)
+        self.spawn(tree)
+
+        bot = Cube('bot', model=load_model('./src/objects/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        bot.transform.translation.xyz = Vec3(-4,0,4)
+        self.spawn(bot)
+
+        gun = Cube('gun', model=load_model('./src/objects/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun.transform.translation.xyz = Vec3(4,0,-14)
+        self.spawn(gun)
+
+
         
     def spawn(self, element: Element):
         self.elements.append(element)
@@ -91,6 +118,10 @@ class World:
         t = time.time()
         delta_time = t - self._last_update_time
 
+        from app_vars import APP_VARS
+        if APP_VARS.lighting_config.do_daylight_cycle:
+            APP_VARS.lighting_config.Ka *= 0.999
+        
         # Update elements
         for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating
