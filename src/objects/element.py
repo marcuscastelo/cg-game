@@ -109,7 +109,10 @@ class ShapeRenderer:
 
         self.shader.upload_uniform_float('u_Ka', APP_VARS.lighting_config.Ka)
         self.shader.upload_uniform_float('u_Kd', APP_VARS.lighting_config.Kd)
+        self.shader.upload_uniform_float('u_Ks', APP_VARS.lighting_config.Ks)
+        self.shader.upload_uniform_float('u_Ns', APP_VARS.lighting_config.Ns)
         self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
+        self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
 
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self.shape_spec.render_mode, 0,
