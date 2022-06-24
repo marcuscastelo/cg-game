@@ -21,7 +21,7 @@ DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
 class LightCube(Cube):
     def __post_init__(self):
         from objects.physics.momentum import Momentum
-        self._momentum = Momentum(accel=0.5, max_speed=4)
+        self._momentum = Momentum(accel=0.5, max_speed=3.5)
         return super().__post_init__()
 
     def _physics_update(self, delta_time: float):

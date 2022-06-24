@@ -101,11 +101,11 @@ class MainWindow(gui.Window):
             ## Buttons ##
 
             def tp_to_element():
-                camera.transform.translation.xyz = cube.transform.translation.xyz
+                camera.transform.translation.xyz = self.target_element.transform.translation.xyz
 
             el.Button().add(el.ButtonParams(label='Teleport to', callback=tp_to_element))
-            el.Button().add(el.ButtonParams(label='Select', callback=cube.select))
-            el.Button().add(el.ButtonParams(label='Unselect', callback=cube.unselect))
+            el.Button().add(el.ButtonParams(label='Select', callback=lambda: self.target_element.select()))
+            el.Button().add(el.ButtonParams(label='Unselect', callback=lambda: self.target_element.unselect()))
 
             #############
 

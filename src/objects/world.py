@@ -5,6 +5,7 @@ import time
 from typing import Text
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+# from app_vars import APP_VARS
 from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
@@ -100,6 +101,9 @@ class World:
         t = time.time()
         delta_time = t - self._last_update_time
 
+        from app_vars import APP_VARS
+        APP_VARS.lighting_config.Ka *= 0.999
+        
         # Update elements
         for element in self.elements[::-1]:
             if not element.destroyed: # In case the element was destroyed while updating

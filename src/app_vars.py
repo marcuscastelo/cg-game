@@ -45,7 +45,7 @@ class FpsTracker:
 class LightingConfig:
     Ka: float = 0.3
     Kd: float = 0.5
-    light_position: Vec3 = field(default_factory=lambda: Vec3(2,2,0))
+    light_position: Vec3 = field(default_factory=lambda: Vec3(2,0.72,0))
 
 @dataclass
 class AppVars:
