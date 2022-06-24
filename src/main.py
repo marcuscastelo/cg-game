@@ -56,9 +56,9 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
 
 
-    gl.glEnable(gl.GL_CULL_FACE);  
-    gl.glCullFace(gl.GL_FRONT);  
-    gl.glFrontFace(gl.GL_CW);  
+    # gl.glEnable(gl.GL_CULL_FACE);  
+    # gl.glCullFace(gl.GL_FRONT);  
+    # gl.glFrontFace(gl.GL_CW);  
 
     return window
 

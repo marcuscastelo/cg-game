@@ -10,13 +10,14 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from objects.wavefront import Model, WaveFrontReader
+from objects.wavefront import Model, RawVertex, WaveFrontReader
 
 DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
 
 @dataclass
 class Cube(Element):
     model: Model = field(default_factory=lambda: DEFAULT_MODEL)
+    hack_is_light: bool = False
 
     # TODO: Keep texture loaded instead of loading every time
     texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/end_game_loss.png'))
@@ -29,21 +30,27 @@ class Cube(Element):
         triangulated_list = []
         for i in range(0, len(vertices_list)//4):
             triangulated_list += [q1s[i], q2s[i], q3s[i], q3s[i], q4s[i], q1s[i]]
-        vertices_list = triangulated_list
+        vertices_list: list[RawVertex] = triangulated_list
 
         # vertices_list = vertices_list[:6]
 
 
         # # TODO: rename this variable to something less confusing
-        vertices_array = np.array([
-            # Example Vertex: (posX, posY, posZ, texU, texV)
-            (*vertex.position, *vertex.texture_coords) for vertex in vertices_list
-        ], dtype=np.float32)
+        if self.hack_is_light:
+            vertices_array = np.array([
+                # Example Vertex: (posX, posY, posZ)
+                vertex.position for vertex in vertices_list
+            ], dtype=np.float32)
+        else:
+            vertices_array = np.array([
+                # Example Vertex: (posX, posY, posZ, texU, texV, normX, normY, normZ)
+                (*vertex.position, *vertex.texture_coords, *vertex.normals) for vertex in vertices_list
+            ], dtype=np.float32)
 
         cube_shape = ShapeSpec(
             vertices=vertices_array,
             # indices= TODO: use indices,
-            shader=ShaderDB.get_instance().get_shader('textured'),
+            shader= ShaderDB.get_instance().get_shader('simple_red') if self.hack_is_light else ShaderDB.get_instance().get_shader('light_texture'),
             render_mode=gl.GL_TRIANGLES,
             name=f'{self.name} - Cube',
             texture=self.texture

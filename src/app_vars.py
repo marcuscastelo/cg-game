@@ -42,6 +42,12 @@ class FpsTracker:
         self.last_delta = delta
 
 @dataclass
+class LightingConfig:
+    Ka: float = 0.3
+    Kd: float = 0.5
+    light_position: Vec3 = field(default_factory=lambda: Vec3(2,2,0))
+
+@dataclass
 class AppVars:
     closing: bool = False
     # scene: OpenGLScene = None
@@ -49,6 +55,7 @@ class AppVars:
     debug: DebugOptions = field(default_factory=DebugOptions)
     cursor: Cursor = field(default_factory=Cursor)
     camera: Camera = None
+    lighting_config: LightingConfig = field(default_factory=LightingConfig)
 
     game_fps: FpsTracker = field(default_factory=FpsTracker)
     gui_fps: FpsTracker = field(default_factory=FpsTracker)

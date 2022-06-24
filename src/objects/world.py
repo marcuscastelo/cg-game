@@ -54,7 +54,7 @@ class World:
 
         sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
         sky.transform.translation = Vec3(0, -150, 0)
-        sky.transform.scale = Vec3(-300, 300, 300)
+        sky.transform.scale = Vec3(300, 300, 300)
         self.spawn(sky)
 
         diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
@@ -69,6 +69,12 @@ class World:
                     self.diamond_blocks.append(diamond_block)
                     self.spawn(diamond_block)
 
+        
+        from app_vars import APP_VARS
+        light_cube = Cube('light_cube', hack_is_light=True)
+        light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
+        light_cube.transform.scale = Vec3(1,1,1) * 0.1
+        self.spawn(light_cube)
         # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
