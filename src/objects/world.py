@@ -39,7 +39,7 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        wall = Cube('Wall')
+        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
         wall.transform.scale = Vec3(0.1, 3, 3)
         wall.transform.translation.xyz = Vec3(4, 0, 0)
         wall.transform.rotation.xyz = Vec3(0, 0, 0)
@@ -94,11 +94,11 @@ class World:
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        bot = Cube('bot', model=load_model('./src/objects/bot.obj'))
+        bot = Cube('bot', model=load_model('./src/objects/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
-        gun = Cube('gun', model=load_model('./src/objects/gun.obj'))
+        gun = Cube('gun', model=load_model('./src/objects/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 

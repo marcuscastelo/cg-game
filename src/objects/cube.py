@@ -25,14 +25,6 @@ class Cube(Element):
 
     def _init_shape_specs(self):
         vertices_list = self.model.to_unindexed_vertices() # TODO: instead of unindexed, use indices
-        q1s, q2s, q3s, q4s = [ vertices_list[i::4] for i in range(0,4) ]
-
-        triangulated_list = []
-        for i in range(0, len(vertices_list)//4):
-            triangulated_list += [q1s[i], q2s[i], q3s[i], q3s[i], q4s[i], q1s[i]]
-        vertices_list: list[RawVertex] = triangulated_list
-
-        # vertices_list = vertices_list[:6]
 
         has_position = 'a_Position' in [ attr[0] for attr in self.shader.layout.attributes]
         has_texcoord = 'a_TexCoord' in [ attr[0] for attr in self.shader.layout.attributes]
