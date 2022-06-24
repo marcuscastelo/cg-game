@@ -10,6 +10,7 @@ from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
 import constants
+from objects.light_cube import LightCube
 from objects.wavefront import WaveFrontReader
 
 class World:
@@ -40,7 +41,7 @@ class World:
         wall = Cube('Wall')
         wall.transform.scale = Vec3(0.1, 3, 3)
         wall.transform.translation.xyz = Vec3(4, 0, 0)
-        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        wall.transform.rotation.xyz = Vec3(0, 0, 0)
         self.spawn(wall)
 
         box = Cube('Box')
@@ -71,14 +72,15 @@ class World:
                     self.diamond_blocks.append(diamond_block)
                     self.spawn(diamond_block)
 
-        monkey_model = WaveFrontReader().load_model_from_file('./src/objects/monkey.obj')
-        monkey = Cube('monkey', model=monkey_model)
-        monkey.transform.scale *= 20
-        self.spawn(monkey)
+        # monkey_model = WaveFrontReader().load_model_from_file('./src/objects/monkey.obj')
+        # monkey = Cube('monkey', model=monkey_model)
+        # monkey.transform.scale *= 20
+        # monkey.transform.translation = Vec3(0, 1, 0)
+        # self.spawn(monkey)
 
         
         from app_vars import APP_VARS
-        light_cube = Cube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
+        light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
