@@ -9,6 +9,7 @@ from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
 import constants
+from objects.wavefront import WaveFrontReader
 
 class World:
     '''
@@ -68,6 +69,11 @@ class World:
                     diamond_block.transform.scale = Vec3(1,1,1) * SCALE
                     self.diamond_blocks.append(diamond_block)
                     self.spawn(diamond_block)
+
+        monkey_model = WaveFrontReader().load_model_from_file('./src/objects/monkey.obj')
+        monkey = Cube('monkey', model=monkey_model)
+        monkey.transform.scale *= 20
+        self.spawn(monkey)
 
         
         from app_vars import APP_VARS

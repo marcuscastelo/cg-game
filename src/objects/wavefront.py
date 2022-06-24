@@ -126,7 +126,7 @@ class WaveFrontReader:
             for item in arguments:
                 # Determine type of line
                 values = item.split('/')
-                values = [int(v) for v in values]
+                values = [int(v) for v in values if v != '']
 
                 if len(values) > 2:
                     decl_type = FaceDeclType.POS_TEX_NORMAL
