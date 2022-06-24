@@ -12,7 +12,7 @@ from objects.cube import Cube
 from objects.element import Element
 import constants
 from objects.light_cube import LightCube
-from objects.wavefront import WaveFrontReader
+from objects.wavefront import Model, WaveFrontReader
 
 class World:
     '''
@@ -86,6 +86,23 @@ class World:
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
         # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+
+        def load_model(filename: str) -> Model:
+            return WaveFrontReader().load_model_from_file(filename)
+
+        tree = Cube('tree', model=load_model('./src/objects/tree.obj'))
+        tree.transform.translation.xyz = Vec3(4,0,4)
+        self.spawn(tree)
+
+        bot = Cube('bot', model=load_model('./src/objects/bot.obj'))
+        bot.transform.translation.xyz = Vec3(-4,0,4)
+        self.spawn(bot)
+
+        gun = Cube('gun', model=load_model('./src/objects/gun.obj'))
+        gun.transform.translation.xyz = Vec3(4,0,-14)
+        self.spawn(gun)
+
+
         
     def spawn(self, element: Element):
         self.elements.append(element)
@@ -102,7 +119,8 @@ class World:
         delta_time = t - self._last_update_time
 
         from app_vars import APP_VARS
-        APP_VARS.lighting_config.Ka *= 0.999
+        if APP_VARS.lighting_config.do_daylight_cycle:
+            APP_VARS.lighting_config.Ka *= 0.999
         
         # Update elements
         for element in self.elements[::-1]:
