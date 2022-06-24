@@ -17,7 +17,7 @@ DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
 @dataclass
 class Cube(Element):
     model: Model = field(default_factory=lambda: DEFAULT_MODEL)
-    hack_is_light: bool = False
+    shader: Shader = field(default_factory=lambda: ShaderDB.get_instance().get_shader('light_texture'))
 
     # TODO: Keep texture loaded instead of loading every time
     texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/end_game_loss.png'))
@@ -34,23 +34,20 @@ class Cube(Element):
 
         # vertices_list = vertices_list[:6]
 
+        has_position = 'a_Position' in [ attr[0] for attr in self.shader.layout.attributes]
+        has_texcoord = 'a_TexCoord' in [ attr[0] for attr in self.shader.layout.attributes]
+        has_normal = 'a_Normal' in [ attr[0] for attr in self.shader.layout.attributes]
 
         # # TODO: rename this variable to something less confusing
-        if self.hack_is_light:
-            vertices_array = np.array([
-                # Example Vertex: (posX, posY, posZ)
-                vertex.position for vertex in vertices_list
-            ], dtype=np.float32)
-        else:
-            vertices_array = np.array([
-                # Example Vertex: (posX, posY, posZ, texU, texV, normX, normY, normZ)
-                (*vertex.position, *vertex.texture_coords, *vertex.normals) for vertex in vertices_list
-            ], dtype=np.float32)
+        vertices_array = np.array([
+            # Example Vertex: (posX, posY, posZ, texU, texV, normX, normY, normZ)
+            vertex.to_tuple(has_position, has_texcoord, has_normal) for vertex in vertices_list
+        ], dtype=np.float32)
 
         cube_shape = ShapeSpec(
             vertices=vertices_array,
             # indices= TODO: use indices,
-            shader= ShaderDB.get_instance().get_shader('simple_red') if self.hack_is_light else ShaderDB.get_instance().get_shader('light_texture'),
+            shader=self.shader,
             render_mode=gl.GL_TRIANGLES,
             name=f'{self.name} - Cube',
             texture=self.texture

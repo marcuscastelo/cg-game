@@ -5,6 +5,7 @@ import time
 from typing import Text
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
+from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
@@ -77,7 +78,7 @@ class World:
 
         
         from app_vars import APP_VARS
-        light_cube = Cube('light_cube', hack_is_light=True)
+        light_cube = Cube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)

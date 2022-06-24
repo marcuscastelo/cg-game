@@ -1,13 +1,6 @@
-from ast import arguments
-from cgitb import text
 from dataclasses import dataclass, field
 from enum import Enum, auto
-from multiprocessing.dummy import current_process
-from operator import le
-import os
-from xml.etree.ElementTree import Comment
-from glm import pos
-
+import numpy as np
 from utils.logger import LOGGER
 
 
@@ -23,10 +16,17 @@ class Face:
 class RawVertex:
     position: list[float]
     texture_coords: list[float]
-    normals: list[float]
+    normal: list[float]
 
     def __repr__(self) -> str:
-        return f'RawVertex <pos=({self.position}), tex={self.texture_coords}, normals={self.normals}>'
+        return f'RawVertex <pos=({self.position}), tex={self.texture_coords}, normals={self.normal}>'
+
+    def to_tuple(self, with_position: bool, with_texture_coords: bool, with_normals: bool) -> tuple:
+        return (
+            * (self.position if with_position else []),
+            * (self.texture_coords if with_texture_coords else []),
+            * (self.normal if with_normals else []),
+        )
 
 @dataclass
 class Model:
@@ -36,7 +36,7 @@ class Model:
     faces: list[Face] = field(default_factory=list)
 
     def to_unindexed_vertices(self) -> list[RawVertex]:
-        LOGGER.log_trace('Converting model to raw vertices list', 'WaveFront - Model')
+        # LOGGER.log_trace('Converting model to raw vertices list', 'WaveFront - Model')
         raw_vertices: list[RawVertex] = []
         # f = 1
         for face in self.faces:
@@ -51,7 +51,7 @@ class Model:
                 vertex = RawVertex(
                     position=self.positions[face.position_indices[vertex_index]-1],
                     texture_coords=self.texture_coords[face.texture_indices[vertex_index]-1],
-                    normals=self.normals[face.normal_indices[vertex_index]-1]
+                    normal=self.normals[face.normal_indices[vertex_index]-1]
                 )
                 raw_vertices.append(vertex)
                 face_vertices.append(vertex) # Debug purposes TODO: remove
@@ -59,7 +59,7 @@ class Model:
             # for vertex in face_vertices:
             #     print(f'\t{vertex}')
 
-        LOGGER.log_trace('Model convetted to raw vertices list!', 'WaveFront - Model')
+        # LOGGER.log_trace('Model convetted to raw vertices list!', 'WaveFront - Model')
         return raw_vertices
 
 @dataclass
@@ -67,20 +67,15 @@ class WaveFrontReader:
     model: Model = field(default_factory=Model)
     current_material: int = None
 
-    # objects: dict = field(default_factory=dict)
-    # positions: list = field(default_factory=list)
-    # normals: list = field(default_factory=list)
-    # texture_coords: list = field(default_factory=list)
-    # faces: list[Face] = field(default_factory=list)
-    # material = None
-
     def load_model_from_file(self, filename: str) -> Model:
+        LOGGER.log_trace(f'Loading model {filename}...')
         self.model = Model()
 
         with open(filename, 'r') as file:
             for line in file.readlines():
                 self._process_line(line)
 
+        LOGGER.log_trace(f'Model {filename} Loaded!')
         return self.model
 
     def _process_line(self, line: str) -> None:
