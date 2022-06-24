@@ -228,13 +228,13 @@ class Element: # TODO: rename to Object
         if self._state.selected:
             return
         self._state.selected = True
-        self.transform.translation += 10
+        self.transform.scale *= 2
 
     def unselect(self) -> None:
         if not self._state.selected:
             return
         self._state.selected = False
-        self.transform.translation -= 10
+        self.transform.scale *= 1/2
 
     def _try_update_physics(self):
         if (delta_time := time.time() - self._state.physics_state.last_tick_time) > 1/PHYSICS_TPS:

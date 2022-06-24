@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from gl_abstractions.shader import ShaderDB
+from gl_abstractions.texture import Texture2D
 from objects.element import Element, ShapeSpec
 
 from OpenGL import GL as gl
@@ -13,12 +14,12 @@ class Line(Element):
         self.shape_specs = [
             ShapeSpec(
                 vertices=np.array([
-                    [*(0.0,0.0,0.0)],
-                    [*(0.0,0.0,1.0)],
+                    [*(0.0,0.0,0.0), ],#*(0.0, 0.0), *(0.0, 1.0, 0.0)],
+                    [*(0.0,0.0,1.0), ],#*(1.0, 1.0), *(0.0, 1.0, 0.0)],
                 ], dtype=np.float32),
                 name='Line',
                 render_mode=gl.GL_LINES,
-                shader=ShaderDB.get_instance().get_shader('simple_red')
+                shader=ShaderDB.get_instance().get_shader('simple_red'),
             )
         ]
 

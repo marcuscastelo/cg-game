@@ -63,7 +63,7 @@ class Camera(Element):
             setattr(self, attr, getattr(new_camera, attr))
 
     def update(self, delta_time: float):
-        self.raycast_line.transform.translation.xz = self.transform.translation.xz
+        # self.raycast_line.transform.translation.xz = self.transform.translation.xz
         self.raycast_line.transform.translation.y = self._ground_y - 0.05
         self.raycast_line.transform.rotation.xyz = self.transform.rotation.xyz
 
