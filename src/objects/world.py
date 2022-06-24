@@ -33,11 +33,11 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        # wall = Cube('Wall')
-        # wall.transform.scale = Vec3(0.1, 3, 3)
-        # wall.transform.translation.xyz = Vec3(4, 0, 0)
-        # wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
-        # self.spawn(wall)
+        wall = Cube('Wall')
+        wall.transform.scale = Vec3(0.1, 3, 3)
+        wall.transform.translation.xyz = Vec3(4, 0, 0)
+        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        self.spawn(wall)
 
         box = Cube('Box')
         box.transform.translation.xyz = Vec3(1,0.5,1)
@@ -45,22 +45,27 @@ class World:
         self.spawn(box)
 
         ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
-        ground.transform.scale = Vec3(10, 0, 10)
+        ground.transform.scale = Vec3(10, 0.1, 10)
+        ground.transform.translation = Vec3(0, -0.1, 0)
+
         self.spawn(ground)
 
         sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
+        sky.transform.translation = Vec3(0, -150, 0)
         sky.transform.scale = Vec3(-300, 300, 300)
         self.spawn(sky)
-        
-        # diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
-        # self.diamond_blocks = []
-        # for i in range(10):
-        #     for j in range(10):
-        #         # for k in range(10):
-        #             diamond_block = Cube(world, custom_texture=diamond_block_texture)
-        #             diamond_block.transform.translation.xyz = Vec3(-4 - i, 0.5 - 0, 0 - j)
-        #             diamond_block.transform.scale = Vec3(1,1,1) * 0.5
-        #             self.diamond_blocks.append(diamond_block)
+
+        diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
+        self.diamond_blocks = []
+        for i in range(10):
+            for j in range(10):
+                # for k in range(10):
+                    SCALE = 0.8
+                    diamond_block = Cube(f'diamond{i}{j}', texture=diamond_block_texture)
+                    diamond_block.transform.translation.xyz = Vec3(-4 - i * SCALE, 0, 0 - j * SCALE)
+                    diamond_block.transform.scale = Vec3(1,1,1) * SCALE
+                    self.diamond_blocks.append(diamond_block)
+                    self.spawn(diamond_block)
 
         # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

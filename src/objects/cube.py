@@ -10,27 +10,38 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from objects.wavefront import WaveFrontReader
+from objects.wavefront import Model, WaveFrontReader
 
-cube_model = WaveFrontReader().load_model_from_file('./src/objects/pto.obj')
-cube_vertices = cube_model.to_unindexed_vertices() # TODO: instead of unindexed, use indices
+DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
 
 @dataclass
 class Cube(Element):
-    shape_specs: list[ShapeSpec] = None  # Initialized in __post_init__
+    model: Model = field(default_factory=lambda: DEFAULT_MODEL)
 
     # TODO: Keep texture loaded instead of loading every time
     texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/end_game_loss.png'))
+    shape_specs: list[ShapeSpec] = None
 
     def _init_shape_specs(self):
+        vertices_list = self.model.to_unindexed_vertices() # TODO: instead of unindexed, use indices
+        q1s, q2s, q3s, q4s = [ vertices_list[i::4] for i in range(0,4) ]
+
+        triangulated_list = []
+        for i in range(0, len(vertices_list)//4):
+            triangulated_list += [q1s[i], q2s[i], q3s[i], q3s[i], q4s[i], q1s[i]]
+        vertices_list = triangulated_list
+
+        # vertices_list = vertices_list[:6]
+
+
         # # TODO: rename this variable to something less confusing
-        cube_vertices_array = np.array([
+        vertices_array = np.array([
             # Example Vertex: (posX, posY, posZ, texU, texV)
-            (*vertex.position, *vertex.texture_coords) for vertex in cube_vertices
+            (*vertex.position, *vertex.texture_coords) for vertex in vertices_list
         ], dtype=np.float32)
 
         cube_shape = ShapeSpec(
-            vertices=cube_vertices_array,
+            vertices=vertices_array,
             # indices= TODO: use indices,
             shader=ShaderDB.get_instance().get_shader('textured'),
             render_mode=gl.GL_TRIANGLES,

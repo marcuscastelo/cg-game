@@ -150,4 +150,19 @@ class Camera(Element):
         #     self.transform.translation.y = self._ground_y
         #     self._fall_speed = 0
 
+
+        if self.transform.translation.x > 5:
+            self.transform.translation.x = 5
+        elif self.transform.translation.x < -5:
+            self.transform.translation.x = -5
+        if self.transform.translation.z > 5:
+            self.transform.translation.z = 5
+        elif self.transform.translation.z < -5:
+            self.transform.translation.z = -5
+
+        if self.transform.translation.y < 1.8:
+            self.transform.translation.y = 1.8
+        
+
+
         return super()._physics_update(delta_time)

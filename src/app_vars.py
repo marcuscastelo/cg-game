@@ -2,7 +2,10 @@ from dataclasses import dataclass, field
 import time
 from typing import TYPE_CHECKING
 
+from utils.geometry import Vec3
+
 from camera import Camera
+from transform import Transform
 
 
 def _create_world():
@@ -52,6 +55,6 @@ class AppVars:
 
     def __post_init__(self):
         if self.camera is None:
-            self.camera = Camera('Main Camera')
+            self.camera = Camera('Main Camera', transform=Transform(translation=Vec3(0, 1.7, 0)))
             self.world.spawn(self.camera)
 APP_VARS = AppVars()
