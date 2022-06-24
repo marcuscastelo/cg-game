@@ -8,6 +8,8 @@ Membros:
     Vitor Souza Amim
 '''
 
+from asyncore import read
+from cgi import test
 from threading import Thread
 import time
 
@@ -54,9 +56,9 @@ def create_window():
     LOGGER.log_info("Window created", 'create_window')
 
 
-    gl.glEnable(gl.GL_CULL_FACE);  
-    gl.glCullFace(gl.GL_FRONT);  
-    gl.glFrontFace(gl.GL_CW);  
+    # gl.glEnable(gl.GL_CULL_FACE);  
+    # gl.glCullFace(gl.GL_FRONT);  
+    # gl.glFrontFace(gl.GL_CW);  
 
     return window
 
@@ -119,7 +121,6 @@ def glfw_thread():
         render()
 
         APP_VARS.game_fps.update_calc_fps(time.time())
-        print(f'Game FPS: {APP_VARS.game_fps.fps}')
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
 
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
@@ -174,5 +175,15 @@ def main():
     glfw.terminate()
     LOGGER.log_info("App has been closed gracefully", 'main')
 
+def test_wavefront():
+    from objects.wavefront import WaveFrontReader, Model
+
+    reader = WaveFrontReader()
+    model = reader.load_model_from_file('./src/objects/caixa2.obj')
+    print(model)
+
+    pass
+
 if __name__ == "__main__":
+    # test_wavefront()
     main()

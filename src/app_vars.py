@@ -2,7 +2,10 @@ from dataclasses import dataclass, field
 import time
 from typing import TYPE_CHECKING
 
+from utils.geometry import Vec3
+
 from camera import Camera
+from transform import Transform
 
 
 def _create_world():
@@ -39,6 +42,12 @@ class FpsTracker:
         self.last_delta = delta
 
 @dataclass
+class LightingConfig:
+    Ka: float = 0.3
+    Kd: float = 0.5
+    light_position: Vec3 = field(default_factory=lambda: Vec3(2,2,0))
+
+@dataclass
 class AppVars:
     closing: bool = False
     # scene: OpenGLScene = None
@@ -46,11 +55,13 @@ class AppVars:
     debug: DebugOptions = field(default_factory=DebugOptions)
     cursor: Cursor = field(default_factory=Cursor)
     camera: Camera = None
+    lighting_config: LightingConfig = field(default_factory=LightingConfig)
 
     game_fps: FpsTracker = field(default_factory=FpsTracker)
     gui_fps: FpsTracker = field(default_factory=FpsTracker)
 
     def __post_init__(self):
         if self.camera is None:
-            self.camera = Camera(self.world)
+            self.camera = Camera('Main Camera', transform=Transform(translation=Vec3(0, 1.7, 0)))
+            self.world.spawn(self.camera)
 APP_VARS = AppVars()

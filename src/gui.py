@@ -68,6 +68,8 @@ class MainWindow(gui.Window):
 
             dpg.add_listbox(list(self.available_elements.keys()), tag='element-list', callback=self._update_by_list_selection)
 
+            dpg.add_separator()
+
             self.target_element = cube
             self.translation_obj = cube.transform.translation
             self.scale_obj = cube.transform.scale
@@ -108,6 +110,22 @@ class MainWindow(gui.Window):
             #############
 
             self.game_fps_label.add(el.TextParams('Game FPS: ?'))
+
+            dpg.add_separator()
+            dpg.add_spacer(height=10)
+
+            el.Text().add(el.TextParams('Lighting Config:'))
+            el.Text().add(el.TextParams('Ka'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ka').add(el.SliderFloatParams(min_value=0, max_value=1))
+            el.Text().add(el.TextParams('Kd'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Kd').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Light position'))
+            el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10))
+            el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10))
+            el.SliderFloat(APP_VARS.lighting_config.light_position, 'z').add(el.SliderFloatParams(min_value=-10, max_value=10))
+
+
 
     def update(self):
         self._update_available_elements()

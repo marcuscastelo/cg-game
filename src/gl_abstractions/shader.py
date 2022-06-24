@@ -1,5 +1,6 @@
 from OpenGL import GL as gl
 import numpy as np
+from utils.geometry import Vec3
 from utils.logger import LOGGER
 
 from gl_abstractions.layout import Layout
@@ -104,6 +105,17 @@ class Shader:
         uniform_loc = gl.glGetUniformLocation(self.program, name)
         gl.glUniform1i(uniform_loc, value)
 
+    def upload_uniform_float(self, name: str, value: float):
+        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        gl.glUniform1f(uniform_loc, value)
+
+    def upload_uniform_vec3(self, name: str, value: np.ndarray):
+        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        gl.glUniform3f(uniform_loc, *value)
+
+
+        pass
+
     def __repr__(self) -> str:
         return f'<Shader v={self.vert_path} f={self.frag_path}>'
     
@@ -131,6 +143,15 @@ class ShaderDB:
             layout=Layout([
                 ('a_Position', 3),
                 ('a_TexCoord', 2),
+            ])
+        )
+
+        self.shaders['light_texture'] = Shader(
+            'shaders/light_texture.vert','shaders/light_texture.frag',
+            layout=Layout([
+                ('a_Position', 3),
+                ('a_TexCoord', 2),
+                ('a_Normals', 3)
             ])
         )
 

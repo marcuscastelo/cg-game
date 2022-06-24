@@ -1,3 +1,4 @@
+import math
 from pickle import APPEND
 import random
 import time
@@ -7,6 +8,8 @@ from utils.logger import LOGGER
 from gl_abstractions.texture import Texture2D
 from objects.cube import Cube
 from objects.element import Element
+import constants
+
 class World:
     '''
     Class responsible for describing the world.
@@ -32,30 +35,47 @@ class World:
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
 
-        cube1 = Cube(world)
-        cube1.transform.scale = Vec3(0.2, 0.2, 0.2)
-        cube1.transform.translation.xyz = Vec3(10, 10, 10)
-        cube2 = Cube(world)
-        cube2.transform.translation.xyz = Vec3(1,1,1)
-        cube2.transform.scale = Vec3(0.2, 0.2, 0.2)
+        wall = Cube('Wall')
+        wall.transform.scale = Vec3(0.1, 3, 3)
+        wall.transform.translation.xyz = Vec3(4, 0, 0)
+        wall.transform.rotation.xyz = Vec3(0, math.pi, 0)
+        self.spawn(wall)
 
-        ground = Cube(world, custom_texture=Texture2D.from_image_path('textures/ground.png'))
-        ground.transform.scale = Vec3(10, 0, 10)
+        box = Cube('Box')
+        box.transform.translation.xyz = Vec3(1,0.5,1)
+        box.transform.scale = Vec3(0.4, 0.4, 0.4)
+        self.spawn(box)
 
-        sky = Cube(world, custom_texture=Texture2D.from_image_path('textures/sky.jpg'))
-        sky.transform.scale = Vec3(-300, 300, 300)
+        ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
+        ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
+        ground.transform.translation = Vec3(0, -0.1, 0)
+
+        self.spawn(ground)
+
+        sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
+        sky.transform.translation = Vec3(0, -150, 0)
+        sky.transform.scale = Vec3(300, 300, 300)
+        self.spawn(sky)
 
         diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
         self.diamond_blocks = []
         for i in range(10):
             for j in range(10):
                 # for k in range(10):
-                    diamond_block = Cube(world, custom_texture=diamond_block_texture)
-                    diamond_block.transform.translation.xyz = Vec3(2 + i, 0.5 + 0, 0 + j)
-                    diamond_block.transform.scale = Vec3(1,1,1) * 0.5
+                    SCALE = 1.2
+                    diamond_block = Cube(f'diamond{i}{j}', texture=diamond_block_texture)
+                    diamond_block.transform.translation.xyz = Vec3(-4 - i * SCALE, 0, 0 - j * SCALE)
+                    diamond_block.transform.scale = Vec3(1,1,1) * SCALE
                     self.diamond_blocks.append(diamond_block)
+                    self.spawn(diamond_block)
 
-        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+        
+        from app_vars import APP_VARS
+        light_cube = Cube('light_cube', hack_is_light=True)
+        light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
+        light_cube.transform.scale = Vec3(1,1,1) * 0.1
+        self.spawn(light_cube)
+        # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
         self.elements.append(element)
@@ -86,7 +106,6 @@ class World:
 
         from camera import Camera
         assert isinstance(self.elements[0], Camera), "0th element is not a camera!"
-        camera_xyz = self.elements[0].transform.translation.xyz
 
         # for element in self.elements[1:]:
         #     center = element.transform.translation.xyz

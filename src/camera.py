@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from itertools import accumulate
 import math
 from turtle import shape
@@ -8,13 +8,43 @@ from utils.sig import metsig
 import constants
 import glfw
 
-from objects.element import Element, ElementSpecification, ShapeSpec
+from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.world import World
 from transform import Transform
 
+from input.input_system import INPUT_SYSTEM as IS
+
+@dataclass
+class Momentum:
+    velocity: Vec3 = field(default_factory=lambda: Vec3(0,0,0))
+    accel = 0.01
+    max_speed = 0.1
+
+    def apply_force(self, force: Vec3, delta_time: float):
+        y_vel = self.velocity.y + force.y * delta_time * PHYSICS_TPS * 0.01
+
+        self.velocity += force * delta_time * PHYSICS_TPS * self.accel
+        self.velocity.y = 0
+
+        if self.velocity.magnitude() > self.max_speed:
+            self.velocity = self.velocity.normalized() * self.max_speed
+
+        self.velocity.y = y_vel
+        pass
+
+    def apply_friction(self, percentage: float, delta_time: float):
+        self.velocity.xz *= percentage
+
+@dataclass
 class Camera(Element):
-    @metsig(Element.__init__)
-    def __init__(self, world: World):
+    shape_specs: list[ShapeSpec] = field(default_factory=list)
+    fov = 70
+    _sprinting = False
+
+    def __post_init__(self):
+        super().__post_init__()
+        self._momentum = Momentum()
+
         # self.cameraPos   = glm.vec3(0.0,  0.0,  1.0)
         self.cameraFront = glm.vec3(0.0,  0.0, -1.0)
         self.cameraUp    = glm.vec3(0.0,  1.0,  0.0)
@@ -25,16 +55,8 @@ class Camera(Element):
 
         self._keyboardMovementInput = glm.vec3(0, 0, 0)
         
-        specification = ElementSpecification(
-            shape_specs=[] # Camera has no Shape
-        )
-
         self._fall_speed = 0
         self._ground_y = 1.8
-
-        super().__init__(world=world, specs=specification)
-
-        print(f'Camera._transform: {self._transform}')
 
     @property
     def cameraRight(self):
@@ -45,18 +67,27 @@ class Camera(Element):
         return self.transform.translation.y <= self._ground_y * 1.01
 
     def reset(self):
-        new_camera = Camera(self.world)
+        new_camera = Camera(self.name)
         for attr in self.__dict__.keys():
             setattr(self, attr, getattr(new_camera, attr))
 
-    def set_movement(self, movement_input: glm.vec3):
-        self._keyboardMovementInput = movement_input
-        pass
-    
     def update(self, delta_time: float):
-        cameraStep = self._rotate_vec_to_face_front(self._keyboardMovementInput)
-        self.transform.translation.xyz += Vec3(*(cameraStep * delta_time * self.cameraSpeed))
+        if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+            self._sprinting = True
+            self._momentum.max_speed = 0.2
+            self._momentum.accel = 0.1
+        if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+            self._sprinting = False
+            self._momentum.max_speed = 0.1
+            self._momentum.accel = 0.01
+
+        fov_delta_sig = +1 if self._sprinting else -1
+        self.fov += fov_delta_sig * delta_time * 60 * 1.5
+        if self.fov < 70: self.fov = 70
+        elif self.fov > 90: self.fov = 90
+
         super().update(delta_time)
+        pass
 
     def on_key(self, window, key: int, scancode, action: int, mods):
         # TODO: refactor to use forces
@@ -76,7 +107,7 @@ class Camera(Element):
             'back':     glm.vec3(-1, 0, 0),
             'right':    glm.vec3(0, 0, +1),
             'left':     glm.vec3(0, 0, -1),
-            # 'up':       glm.vec3(0, +1, 0),
+            'up':       glm.vec3(0, +10, 0),
             'down':     glm.vec3(0, -1, 0),
         }
 
@@ -85,7 +116,7 @@ class Camera(Element):
             glfw.KEY_S: 'back',
             glfw.KEY_A: 'left',
             glfw.KEY_D: 'right',
-            # glfw.KEY_SPACE: 'up',
+            glfw.KEY_SPACE: 'up',
             glfw.KEY_LEFT_SHIFT: 'down'
         }
 
@@ -98,12 +129,12 @@ class Camera(Element):
                     self._keyboardMovementInput -= direction_vec 
 
 
-        if key == glfw.KEY_SPACE and action == glfw.PRESS:
-            if self.grounded:
-                self._keyboardMovementInput += glm.vec3(0, 1, 0)
-        if key == glfw.KEY_SPACE and action in [glfw.REPEAT, glfw.RELEASE]:
-            if not self.grounded:
-                self._keyboardMovementInput.y = 0
+        # if key == glfw.KEY_SPACE and action == glfw.PRESS:
+        #     if self.grounded:
+        #         self._keyboardMovementInput += glm.vec3(0, 1, 0)
+        # if key == glfw.KEY_SPACE and action in [glfw.REPEAT, glfw.RELEASE]:
+        #     if not self.grounded:
+        #         self._keyboardMovementInput.y = 0
 
 
     def _rotate_vec_to_face_front(self, vec: glm.vec3) -> glm.vec3:
@@ -148,10 +179,44 @@ class Camera(Element):
         self.cameraFront = glm.normalize(front)
 
     def _physics_update(self, delta_time: float):
-        self._fall_speed += 30 * delta_time**2
-        self.transform.translation.y -= 0.3 * delta_time * self._fall_speed
+        # self._fall_speed += 30 * delta_time**2
+        # self.transform.translation.y -= 0.3 * delta_time * self._fall_speed
+        # if self.transform.translation.y < self._ground_y:
+        #     self.transform.translation.y = self._ground_y
+        #     self._fall_speed = 0
+
+
+    
+        input_force = Vec3(*self._rotate_vec_to_face_front(self._keyboardMovementInput))
+
+        if not self.grounded:
+            input_force = Vec3(0,0,0)
+
+        if input_force.y > 0:
+            input_force.y = 0
+            self._momentum.velocity.y = 0.2
+
+        self._momentum.apply_force(input_force, delta_time=delta_time)
+        self._momentum.apply_friction(percentage= 0.99 if not self.grounded else 0.84, delta_time=delta_time)
+        if not self.grounded:
+            self._momentum.apply_force(Vec3(0, -0.3 * self.transform.translation.y, 0), delta_time=delta_time)
+
+        self.transform.translation.xyz += self._momentum.velocity * delta_time * PHYSICS_TPS
+        # self.transform.translation.xyz += Vec3(*(cameraStep * delta_time * self.cameraSpeed))
+
+
+        if self.transform.translation.x > constants.WORLD_SIZE//2:
+            self.transform.translation.x = constants.WORLD_SIZE//2
+        elif self.transform.translation.x < -constants.WORLD_SIZE//2:
+            self.transform.translation.x = -constants.WORLD_SIZE//2
+        if self.transform.translation.z > constants.WORLD_SIZE//2:
+            self.transform.translation.z = constants.WORLD_SIZE//2
+        elif self.transform.translation.z < -constants.WORLD_SIZE//2:
+            self.transform.translation.z = -constants.WORLD_SIZE//2
+
         if self.transform.translation.y < self._ground_y:
             self.transform.translation.y = self._ground_y
-            self._fall_speed = 0
+        
+
 
         return super()._physics_update(delta_time)

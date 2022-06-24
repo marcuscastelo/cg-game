@@ -1,4 +1,4 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import numpy as np
 
 from utils.geometry import Vec3, VecN
@@ -16,9 +16,9 @@ class MatrixCache:
 
 @dataclass
 class Transform:
-    translation: Vec3 = Vec3(0, 0, 0)
-    rotation: Vec3 = Vec3(0, 0, 0)
-    scale: Vec3 = Vec3(1, 1, 1)
+    translation: Vec3 = field(default_factory=lambda: Vec3(0, 0, 0))
+    rotation: Vec3 = field(default_factory=lambda: Vec3(0, 0, 0))
+    scale: Vec3 = field(default_factory=lambda: Vec3(1, 1, 1))
 
     ### Enforce Types ###
 
