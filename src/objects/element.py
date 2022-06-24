@@ -98,7 +98,7 @@ class ShapeRenderer:
         # def projection():
         # perspective parameters: fovy, aspect, near, far
         mat_projection = glm.perspective(glm.radians(
-            70.0), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
+            camera.fov), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
         mat_projection = np.array(mat_projection)
         # return mat_projection
 
@@ -229,8 +229,8 @@ class Element: # TODO: rename to Object
         self.transform.translation -= 10
 
     def _try_update_physics(self):
-        if (delta_time := time.time() - self._state.physics_state.last_tick_time) > 1/50:
-            self._last_physics_update = time.time()
+        if (delta_time := time.time() - self._state.physics_state.last_tick_time) > 1/PHYSICS_TPS:
+            self._state.physics_state.last_tick_time = time.time()
             self._physics_update(delta_time)
 
     def _physics_update(self, delta_time: float):
