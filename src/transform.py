@@ -70,7 +70,9 @@ class Transform:
                 [0, 0, 0, 1]
             ])
 
-            rotation_matrix = x_rotation_matrix @ y_rotation_matrix @ z_rotation_matrix
+
+
+            rotation_matrix = x_rotation_matrix @ z_rotation_matrix @ y_rotation_matrix
             self._matrix_cache.rotation_matrix = rotation_matrix
             self._matrix_cache.last_rotation = Vec3(self.rotation)
             

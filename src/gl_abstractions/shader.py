@@ -5,8 +5,13 @@ from utils.logger import LOGGER
 
 from gl_abstractions.layout import Layout
 
+import glfw
+
 class Shader:
     def __init__(self, vert_path: str, frag_path: str, layout: Layout):
+        assert glfw.get_current_context(), f'Trying to create a shader with no OpenGL Context'
+
+
         self.frag_path = frag_path
         self.vert_path = vert_path
         self.layout = layout

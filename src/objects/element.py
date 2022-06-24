@@ -199,6 +199,10 @@ class Element: # TODO: rename to Object
             ) for shape_spec in self.shape_specs]
 
         pass
+    
+    def on_spawned(self, world: 'World'):
+        '''Please override'''
+        pass
 
     @property
     def destroyed(self):

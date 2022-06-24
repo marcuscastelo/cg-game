@@ -8,6 +8,7 @@ from utils.logger import LOGGER
 # from app_vars import APP_VARS
 from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
+from line import Line
 from objects.cube import Cube
 from objects.element import Element
 import constants
@@ -34,10 +35,11 @@ class World:
         Objects declared at the "bottom" of the code (last line) as rendered behind the upper ones.
         '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
-        world = self
 
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
+        from app_vars import APP_VARS
+        self.spawn(APP_VARS.camera)
 
         wall = Cube('Wall')
         wall.transform.scale = Vec3(0.1, 3, 3)
@@ -79,16 +81,22 @@ class World:
         # monkey.transform.translation = Vec3(0, 1, 0)
         # self.spawn(monkey)
 
+        # line = Line('test_line')
+        # line.transform.scale.xyz = Vec3(0.01, 0.01, 5)
+        # line.transform.translation.y = 1.2
+        # line.transform.rotation = APP_VARS.camera.transform.rotation
+        # self.spawn(line)
+
         
-        from app_vars import APP_VARS
         light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
-        # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
         self.elements.append(element)
+        element.on_spawned(world=self)
 
     def destroy(self, element: Element):
         element.destroy()
@@ -102,7 +110,8 @@ class World:
         delta_time = t - self._last_update_time
 
         from app_vars import APP_VARS
-        APP_VARS.lighting_config.Ka *= 0.999
+        # TODO: reenable darkening (night) (low light)
+        # APP_VARS.lighting_config.Ka *= 0.999
         
         # Update elements
         for element in self.elements[::-1]:
