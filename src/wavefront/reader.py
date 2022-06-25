@@ -15,7 +15,7 @@ class ModelReader:
         self.object: Object = None
         self.model = Model()
         self.materials: dict[str, Material] = {}
-        self.current_material: Union[Material, None] = None
+        self.current_material: Union[Material, None] = Material('default') # TODO: change all occurences of Material(something) to a global default
 
     def load_model_from_file(self, filename: str) -> Model:
         LOGGER.log_trace(f'Loading model {filename}...')
@@ -117,9 +117,12 @@ class ModelReader:
                 arguments) >= 1, f'Command {command} should be followed with material, but found arguments = {arguments}'
 
             material_name = arguments[0]
-            if material_name == 'none':
+            if material_name.lower() == 'none':
                 return
+
+            LOGGER.log_warning(f'{line=}')
             material = self.materials[material_name]
+                
             self.current_material = material
             self.object.material = material
             return
