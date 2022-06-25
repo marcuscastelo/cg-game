@@ -56,7 +56,8 @@ class Ray(Element):
                 if element is APP_VARS.selected_element:
                     pass
                 else:
-                    APP_VARS.selected_element.unselect()
+                    if APP_VARS.selected_element:
+                        APP_VARS.selected_element.unselect()
                     APP_VARS.selected_element = element
                     APP_VARS.selected_element.select()
 

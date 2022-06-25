@@ -119,10 +119,9 @@ class ModelReader:
 
             material_name = arguments[0]
             if material_name.lower() == 'none':
-                return
-
-            LOGGER.log_warning(f'{line=}')
-            material = self.materials[material_name]
+                material = Material(f'default-{random.random()}')
+            else:
+                material = self.materials[material_name]
                 
             self.current_material = material
             self.object.material = material

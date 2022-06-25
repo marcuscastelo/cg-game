@@ -46,7 +46,7 @@ void main() {
     vec3 cameraDiretion = normalize(u_CameraPos - v_Position);
     vec3 reflectDirection = normalize(reflect(-lightDirection, fragNormal));
     float dotProduct = max(dot(cameraDiretion, reflectDirection), 0.0);
-    float specMultiplier = pow(dotProduct, u_Ns * u_GNs); //TODO: check if this multiplication makes sense (u_Ns * u_GKs)
+    float specMultiplier = pow(dotProduct, u_GNs * u_Ns); //TODO: check if this multiplication makes sense (u_Ns * u_GKs)
     vec3 specularLight = u_GKs * u_Ks * specMultiplier * lightColor * 1/distToLight;
 
     vec4 fragTextureColor = texture2D(u_Texture, v_TexCoord);

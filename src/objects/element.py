@@ -1,3 +1,5 @@
+from copy import copy, deepcopy
+import dataclasses
 import random
 from turtle import Shape
 import constants
@@ -248,7 +250,12 @@ class Element: # TODO: rename to Object
         self._state.selected = True
         self.transform.scale *= 2
 
-        self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
+        self._old_material = self.shape_specs[0].material
+        curr_mat = deepcopy(self.shape_specs[0].material)
+        self.shape_specs[0].material = curr_mat
+        curr_mat.Kd[0] = 3
+        curr_mat.Ka[0] = 3
+        curr_mat.Ks[0] = 3
 
         return # TODO: make a proper selection shader
         self._old_shaders = []
@@ -261,6 +268,8 @@ class Element: # TODO: rename to Object
             return
         self._state.selected = False
         self.transform.scale /= 2
+
+        self.shape_specs[0].material = self._old_material
 
         return # TODO: make a proper selection shader
         for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):

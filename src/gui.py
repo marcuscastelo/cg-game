@@ -9,6 +9,7 @@ from utils.logger import LOGGER
 from app_vars import APP_VARS
 from camera import Camera
 from constants import GUI_WIDTH
+from objects.cube import Cube
 from objects.element import Element
 
 class MainWindow(gui.Window):
@@ -72,7 +73,6 @@ class MainWindow(gui.Window):
     def describe(self):
         with self:
             el.Text("Hello World!").add()
-            element = APP_VARS.world.elements[1] # TODO: find another way
             camera = APP_VARS.camera
             COORDS = ['x', 'y', 'z']
 
@@ -80,12 +80,12 @@ class MainWindow(gui.Window):
 
             dpg.add_separator()
 
-            APP_VARS.selected_element = element
-            APP_VARS.selected_element.select()
-
-            self.translation_obj = element.transform.translation
-            self.scale_obj = element.transform.scale
-            self.rotation_obj = element.transform.rotation
+            # APP_VARS.selected_element = element
+            # APP_VARS.selected_element.select()
+            mock_obj = Cube('mock_cube')
+            self.translation_obj = mock_obj.transform.translation
+            self.scale_obj = mock_obj.transform.scale
+            self.rotation_obj = mock_obj.transform.rotation
 
             ## Translation ##
 
