@@ -248,7 +248,7 @@ class Element: # TODO: rename to Object
         if self._state.selected:
             return
         self._state.selected = True
-        self.transform.scale *= 2
+        # self.transform.scale *= 2
 
         self._old_materials = []
         for shape in self.shape_specs:
@@ -269,7 +269,7 @@ class Element: # TODO: rename to Object
         if not self._state.selected:
             return
         self._state.selected = False
-        self.transform.scale /= 2
+        # self.transform.scale /= 2
 
         for idx, shape in enumerate(self.shape_specs):
             shape.material = self._old_materials[idx]

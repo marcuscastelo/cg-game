@@ -29,6 +29,7 @@ class MainWindow(gui.Window):
 
         self.game_fps_label = el.Text()
         self._last_selected_element = None
+        self.mock_obj = Cube('mock_cube')
 
     def _update_available_elements(self):
         id = 0
@@ -46,11 +47,16 @@ class MainWindow(gui.Window):
         element_name = dpg.get_value('element-list')
         element = self.available_elements[element_name]
         assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
-        self._last_selected_element = element
+        if self._last_selected_element == element:
+            element = None
         self._update_selection(element)
+        self._last_selected_element = element
 
     def _update_selection(self, element: Element):
+        if not element:
+            element = self.mock_obj
         assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
+
         if APP_VARS.selected_element:
             APP_VARS.selected_element.unselect()
 
@@ -80,12 +86,9 @@ class MainWindow(gui.Window):
 
             dpg.add_separator()
 
-            # APP_VARS.selected_element = element
-            # APP_VARS.selected_element.select()
-            mock_obj = Cube('mock_cube')
-            self.translation_obj = mock_obj.transform.translation
-            self.scale_obj = mock_obj.transform.scale
-            self.rotation_obj = mock_obj.transform.rotation
+            self.translation_obj = self.mock_obj.transform.translation
+            self.scale_obj = self.mock_obj.transform.scale
+            self.rotation_obj = self.mock_obj.transform.rotation
 
             ## Translation ##
 
