@@ -1,5 +1,5 @@
-from dataclasses import dataclass
-from gl_abstractions.shader import ShaderDB
+from dataclasses import dataclass, field
+from gl_abstractions.shader import Shader, ShaderDB
 from gl_abstractions.texture import Texture2D
 from objects.element import Element, ShapeSpec
 
@@ -9,6 +9,7 @@ import numpy as np
 @dataclass
 class Line(Element):
     shape_specs: list[ShapeSpec] = None
+    shader: Shader = field(default_factory=lambda: ShaderDB.get_instance().get_shader('simple_red'))
 
     def __post_init__(self):
         self.shape_specs = [
@@ -19,7 +20,7 @@ class Line(Element):
                 ], dtype=np.float32),
                 name='Line',
                 render_mode=gl.GL_LINES,
-                shader=ShaderDB.get_instance().get_shader('simple_red'),
+                shader=self.shader,
             )
         ]
 

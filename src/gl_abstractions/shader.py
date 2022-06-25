@@ -136,6 +136,13 @@ class ShaderDB:
             ])
         )
 
+        self.shaders['simple_blue'] = Shader(
+            'shaders/simple_blue.vert', 'shaders/simple_blue.frag',
+            layout=Layout([
+                ('a_Position', 3),
+            ])
+        )
+
         self.shaders['colored'] = Shader(
             'shaders/colored.vert', 'shaders/colored.frag',
             layout=Layout([

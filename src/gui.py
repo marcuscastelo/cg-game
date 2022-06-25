@@ -81,7 +81,7 @@ class MainWindow(gui.Window):
 
             self.translation_clients = [ el.SliderFloat(self.translation_obj, coord) for coord in COORDS]
             for client in self.translation_clients:
-                client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10) )
+                client.add(params=el.SliderFloatParams(min_value=-10, max_value=10) )
                 
             #################
             dpg.add_separator()
@@ -92,7 +92,7 @@ class MainWindow(gui.Window):
 
             self.rotation_clients = [ el.SliderFloat(self.rotation_obj, coord) for coord in  COORDS]
             for client in self.rotation_clients:
-                client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10))
+                client.add(params=el.SliderFloatParams(min_value=-10, max_value=10))
 
             ###########
 
@@ -105,7 +105,7 @@ class MainWindow(gui.Window):
 
             self.scale_clients = [ el.SliderFloat(self.scale_obj, coord) for coord in  COORDS]
             for client in self.scale_clients:
-                client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10))
+                client.add(params=el.SliderFloatParams(min_value=0.01, max_value=10))
 
             ###########
 

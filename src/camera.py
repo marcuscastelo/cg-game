@@ -7,11 +7,13 @@ from utils.geometry import Vec3
 from utils.sig import metsig
 import constants
 import glfw
+from gl_abstractions.shader import ShaderDB
 from line import Line
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.physics.momentum import Momentum
 from objects.world import World
+from ray import Ray
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -41,12 +43,13 @@ class Camera(Element):
         self._fall_speed = 0
         self._ground_y = 1.8
 
-        self.raycast_line: Line = None
+        self.raycast_line_dbg: Line = None
+        self.ray: Line = None
 
     def on_spawned(self, world: 'World'):
-        self.raycast_line = Line('test_line')
-        self.raycast_line.transform.scale.z = 10
-        world.spawn(self.raycast_line)
+        self.raycast_line_dbg = Line('test_line', shader=ShaderDB.get_instance().get_shader('simple_blue'))
+        self.raycast_line_dbg.transform.scale.z = 10
+        world.spawn(self.raycast_line_dbg)
         return super().on_spawned(world)
 
     @property
@@ -64,8 +67,8 @@ class Camera(Element):
 
     def update(self, delta_time: float):
         # self.raycast_line.transform.translation.xz = self.transform.translation.xz
-        self.raycast_line.transform.translation.y = self._ground_y - 0.05
-        self.raycast_line.transform.rotation.xyz = self.transform.rotation.xyz
+        self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
+        self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
 
         if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
             self._sprinting = True
@@ -90,6 +93,14 @@ class Camera(Element):
         pass
 
     def on_key(self, window, key: int, scancode, action: int, mods):
+        # TODO: remove debug
+        from app_vars import APP_VARS
+        ray: Ray = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))[0]
+        if IS.just_pressed('r'):
+            ray.transform.translation.xyz = Vec3(0,self._ground_y,0)
+            ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+
+
         # TODO: refactor to use forces
         positive_actions = [ glfw.PRESS ]
         negative_actions = [ glfw.RELEASE ]

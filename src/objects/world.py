@@ -14,6 +14,7 @@ from objects.element import Element
 import constants
 from objects.light_cube import LightCube
 from objects.wavefront import Model, WaveFrontReader
+from ray import Ray
 
 class World:
     '''
@@ -48,7 +49,7 @@ class World:
         self.spawn(wall)
 
         box = Cube('Box')
-        box.transform.translation.xyz = Vec3(1,0.5,1)
+        box.transform.translation.xyz = Vec3(4,0.5,8)
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
         self.spawn(box)
 
@@ -107,6 +108,12 @@ class World:
         gun = Cube('gun', model=load_model('./src/objects/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
+
+
+        ray = Ray('test_ray')
+        ray.transform.translation.y = 0.8
+        ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        self.spawn(ray)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
