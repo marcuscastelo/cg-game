@@ -35,17 +35,22 @@ class MainWindow(gui.Window):
         for element in APP_VARS.world.elements:
             if hasattr(element, 'shape_renderers'):
                 element_shape_names = [ renderer.shape_spec.name for renderer in element.shape_renderers ]
-                element_name = f"{id}: {type(element)}[{'-'.join(element_shape_names)}]"
+                element_name = f"{id}: {element.name}({type(element)})[{'-'.join(element_shape_names)}]"
             else:
-                element_name = f'{id}: {type(element)}[MISSING RENDERER]'
+                element_name = f'{id}: {element.name}({type(element)})[MISSING RENDERER]'
             self.available_elements[element_name] = element
             id += 1
 
     def _update_by_list_selection(self, *args, **kwargs):
+        self.target_element.unselect()
+
         element_name = dpg.get_value('element-list')
         element = self.available_elements[element_name]
 
         self.target_element = element
+
+        self.target_element.select()
+
         tranform = self.target_element.transform
         self.translation_obj = tranform.translation
         self.scale_obj = tranform.scale
