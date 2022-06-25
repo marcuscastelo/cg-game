@@ -43,9 +43,18 @@ class ShapeSpec:
 
     def __post_init__(self):
         # TODO: add shader.needs_texture() (or something)
-        needs_texture = self.shader is ShaderDB.get_instance()['textured']
+        # FIXME: this does not work anymore!!!
+        # needs_texture = self.shader is ShaderDB.get_instance()['textured']
+        LOGGER.log_warning(f'Ignoring texture, please rewrite the code')
+        needs_texture = False
+
         if needs_texture:
             assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
+
+
+        # TODO: remove texture debug
+        self.texture = Texture2D.from_image_path('textures/white.jpg')
+        ##
 
         self.shader.layout.assert_data_ok(self.vertices)
 
@@ -242,8 +251,9 @@ class Element: # TODO: rename to Object
         if self._state.selected:
             return
         self._state.selected = True
-        # self.transform.scale *= 2
-        
+        self.transform.scale *= 2
+
+        return # TODO: make a proper selection shader
         self._old_shaders = []
         for renderer in self._shape_renderers:
             self._old_shaders.append(renderer.shader)
@@ -253,7 +263,9 @@ class Element: # TODO: rename to Object
         if not self._state.selected:
             return
         self._state.selected = False
+        self.transform.scale /= 2
 
+        return # TODO: make a proper selection shader
         for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):
             renderer.shader = old_shader
             

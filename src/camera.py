@@ -47,8 +47,11 @@ class Camera(Element):
         self.ray: Line = None
 
     def on_spawned(self, world: 'World'):
-        self.raycast_line_dbg = Line('test_line', shader=ShaderDB.get_instance().get_shader('simple_blue'))
-        self.raycast_line_dbg.transform.scale.z = 10
+        # TODO: fix shader
+        # self.raycast_line_dbg = Line('test_line', shader=ShaderDB.get_instance().get_shader('simple_blue'))
+        self.raycast_line_dbg = Line('test_line')
+        
+        # self.raycast_line_dbg.transform.scale.z = 10
         # world.spawn(self.raycast_line_dbg)
         return super().on_spawned(world)
 
