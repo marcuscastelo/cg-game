@@ -44,9 +44,9 @@ class FpsTracker:
 
 @dataclass
 class LightingConfig:
-    Ka_x: float = 1
-    Ka_y: float = 1
-    Ka_z: float = 1
+    Ka_x: float = 1/6
+    Ka_y: float = 1/6
+    Ka_z: float = 1/6
 
     Kd_x: float = 1
     Kd_y: float = 1
