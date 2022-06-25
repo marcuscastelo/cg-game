@@ -86,6 +86,18 @@ class MainWindow(gui.Window):
             #################
 
             dpg.add_separator()
+            
+            ## Rotation ##
+
+            el.Text().add(el.TextParams('Rotation'))
+
+            self.rotation_clients = [ el.SliderFloat(self.rotation_obj, coord) for coord in  COORDS]
+            for client in self.rotation_clients:
+                client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10))
+
+            ###########
+
+            dpg.add_separator()
 
             ## Scale ##
 
