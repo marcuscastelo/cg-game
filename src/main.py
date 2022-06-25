@@ -183,11 +183,16 @@ def test_wavefront():
     model = reader.load_model_from_file('models/tree.obj')
     # print(reader.materials)
 
-    reader = MtlReader('models/tree.mtl')
-    print(reader.read_materials())
+    # reader = MtlReader('models/tree.mtl')
+    # print(reader.read_materials())
 
     # face1 = model.faces[0]
     # print(face1)
+
+    print(f'{model.name=} has {len(model.objects)} objects')
+    for object in model.objects:
+        print(f'\t{object.name=}')
+        print(f'\t\t{object.material.name=}')
 
     pass
 

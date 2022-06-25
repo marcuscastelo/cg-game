@@ -1,17 +1,19 @@
 from dataclasses import dataclass, field
 
 from wavefront.face import Face
+from wavefront.material import Material
 from wavefront.vertex import RawVertex
 
 @dataclass
-class Model:
-    name: str = 'Unnamed Model'
-    positions: list[tuple] = field(default_factory=list)
-    texture_coords: list[tuple] = field(default_factory=list)
-    normals: list[tuple] = field(default_factory=list)
+class Object:
+    name: str
+    positions_ref: list[tuple]
+    texture_coords_ref: list[tuple]
+    normals_ref: list[tuple]
+    material: Material = field(default_factory=lambda: Material('default'))
     faces: list[Face] = field(default_factory=list)
 
-    def to_unindexed_vertices(self) -> list[RawVertex]:
+    def expand_faces_to_unindexed_vertices(self) -> list[RawVertex]:
         all_vertices: list[RawVertex] = []
 
         FACE_PENTA = 5
@@ -24,12 +26,12 @@ class Model:
             vertice_count = len(face.position_indices)
  
             indices = face.position_indices 
-            # print(f'Face {face_i} indices: \n {indices=}')
+            print(f'Face {face_i} indices: \n {indices=}')
             face_vertices = [
                 RawVertex(
-                    position=self.positions[face.position_indices[i]-1],
-                    texture_coords=self.texture_coords[face.texture_indices[i]-1],
-                    normal=self.normals[face.normal_indices[i]-1]
+                    position=self.positions_ref[face.position_indices[i]-1],
+                    texture_coords=self.texture_coords_ref[face.texture_indices[i]-1],
+                    normal=self.normals_ref[face.normal_indices[i]-1]
                 ) for i in range(len(indices))
             ]
 
@@ -64,3 +66,11 @@ class Model:
         assert face_vertices
         # print(f'All vertices:\n {face_vertices=}')
         return all_vertices
+
+@dataclass
+class Model:
+    name: str = 'Unnamed Model'
+    objects: list[Object] = field(default_factory=list)
+    positions: list[tuple] = field(default_factory=list)
+    texture_coords: list[tuple] = field(default_factory=list)
+    normals: list[tuple] = field(default_factory=list)

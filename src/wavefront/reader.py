@@ -1,21 +1,25 @@
 from ast import arg
 from dataclasses import dataclass, field
 from enum import Enum, auto
+from typing import Union
+from unittest import mock
 import numpy as np
 from utils.logger import LOGGER
 from wavefront.face import Face
-from wavefront.model import Model
+from wavefront.model import Model, Object
 from wavefront.material import Material, MtlReader
 
 @dataclass
 class ModelReader:
-    model: Model = field(default_factory=Model)
-    materials: dict[str, Material] = field(default_factory=dict)
-    current_material_name: int = None
+    def __post_init__(self):
+        self.object: Object = None
+        self.model = Model()
+        self.materials: dict[str, Material] = {}
+        self.current_material: Union[Material, None] = None
 
     def load_model_from_file(self, filename: str) -> Model:
         LOGGER.log_trace(f'Loading model {filename}...')
-        self.model = Model()
+        self.model = Model(filename.split('/')[-1])
 
         with open(filename, 'r') as file:
             for line in file.readlines():
@@ -39,15 +43,15 @@ class ModelReader:
 
         command, *arguments = values
 
-        VERTEX_COMMANDS = {
-            'v': self.model.positions,
-            'vn': self.model.normals,
-            'vt': self.model.texture_coords
+        VERTEX_COMMAND_RETRIEVER = {
+            'v': lambda: self.model.positions,
+            'vn': lambda: self.model.normals,
+            'vt': lambda: self.model.texture_coords
         }
 
         # Process vertex data commands (positions, normals and texture coords)
-        if command in VERTEX_COMMANDS:
-            vertex_data_list = VERTEX_COMMANDS[command]
+        if command in VERTEX_COMMAND_RETRIEVER:
+            vertex_data_list = VERTEX_COMMAND_RETRIEVER[command]()
             vertex_data_list.append(tuple(arguments))
             return
 
@@ -56,8 +60,15 @@ class ModelReader:
             POS_NORMAL = auto()
 
         if command == 'o':
-            self.model.name = ' '.join(arguments)
+            self.object = Object(
+                name=' '.join(arguments),
+                positions_ref=self.model.positions,
+                texture_coords_ref=self.model.texture_coords,
+                normals_ref=self.model.normals,
+            )
+            self.object.material = self.current_material
             LOGGER.log_trace(f'Object name: {self.model.name}', 'Wavefront')
+            self.model.objects.append(self.object)
 
         # Process face declarations
         if command == 'f':
@@ -96,21 +107,22 @@ class ModelReader:
                 face.position_indices.append(position)
                 face.normal_indices.append(normal)
                 face.texture_indices.append(texture)
-                if self.current_material_name == 'none':
-                    LOGGER.log_warning(f'Assigning "None" as material for line {line}, since no material is bound')
-                    face.material = None
-                else:
-                    face.material = self.materials[self.current_material_name]
 
-
-                self.model.faces.append(face)
+                self.object.faces.append(face)
 
             return
 
         if command in ('usemtl', 'usemat'):
             assert len(
                 arguments) >= 1, f'Command {command} should be followed with material, but found arguments = {arguments}'
-            self.current_material_name = arguments[0]
+
+            material_name = arguments[0]
+            if material_name == 'none':
+                return
+            material = self.materials[material_name]
+            self.current_material = material
+            self.object.material = material
+            return
 
         if command == 'mtllib':
             filename = arguments[0]
@@ -124,3 +136,4 @@ class ModelReader:
                 for material_name, material in materials.items():
                     assert material_name not in self.materials, f'Trying to redeclare a material'
                     self.materials[material_name] = material
+            return
