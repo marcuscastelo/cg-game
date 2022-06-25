@@ -110,7 +110,7 @@ class World:
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 
-        gun = Cube('gun', model=load_model('./src/objects/alvo1.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun = Cube('alvo', model=load_model('./src/objects/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-8)
         self.spawn(gun)
 
