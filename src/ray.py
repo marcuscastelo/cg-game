@@ -46,12 +46,16 @@ class Ray(Element):
                 stop_raycast()
 
             if distance < DST:
-                element.select()
+                if element._state.selected:
+                    element.unselect()
+                else:
+                    element.select()
                 stop_raycast()
             else:
-                if element._state.selected :
-                    element.destroy()
-                    element.unselect()
+                if element._state.selected:
+                    # element.destroy()
+                    # element.unselect()
+                    pass
 
             if not keep_iterating:
                 break
