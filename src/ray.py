@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from dis import dis
+from time import sleep
 
 from utils.geometry import Vec3
 from utils.logger import LOGGER
@@ -51,10 +52,17 @@ class Ray(Element):
 
 
             if distance < 1:
-                if element._state.selected:
-                    element.unselect()
+                if element is APP_VARS.selected_element:
+                    pass
                 else:
-                    element.select()
+                    APP_VARS.selected_element.unselect()
+                    APP_VARS.selected_element = element
+                    APP_VARS.selected_element.select()
+
+                # if element._state.selected:
+                #     element.unselect()
+                # else:
+                #     element.select()
                 
                 stop_raycast()
 

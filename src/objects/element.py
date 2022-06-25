@@ -103,7 +103,12 @@ class ShapeRenderer:
         # return mat_projection
 
         # Set the transformation matrix
-        self.shader.upload_uniform_matrix4f('u_Model', mat_model)
+        try:
+            self.shader.upload_uniform_matrix4f('u_Model', mat_model)
+        except Exception as e:
+            print(f'**********EXCEPTION WITH u_Model********')
+            print(f'{mat_model=}')
+            raise e
         self.shader.upload_uniform_matrix4f('u_View', mat_view)
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 

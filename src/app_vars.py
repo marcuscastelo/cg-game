@@ -1,10 +1,11 @@
 from dataclasses import dataclass, field
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from utils.geometry import Vec3
 
 from camera import Camera
+from objects.element import Element
 from transform import Transform
 
 
@@ -59,6 +60,7 @@ class AppVars:
     cursor: Cursor = field(default_factory=Cursor)
     camera: Camera = None
     lighting_config: LightingConfig = field(default_factory=LightingConfig)
+    selected_element: Union[Element, None] = None
 
     game_fps: FpsTracker = field(default_factory=FpsTracker)
     gui_fps: FpsTracker = field(default_factory=FpsTracker)

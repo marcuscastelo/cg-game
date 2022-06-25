@@ -17,7 +17,6 @@ class MainWindow(gui.Window):
         self.available_elements: dict[str, Element] = {}
         self.test_list = [1,2,3,4]
 
-        self.target_element = None
         self.translation_obj = None
         self.rotation_obj = None
         self.scale_obj = None
@@ -27,7 +26,7 @@ class MainWindow(gui.Window):
         self.scale_clients = []
 
         self.game_fps_label = el.Text()
-
+        self._last_selected_element = None
 
     def _update_available_elements(self):
         id = 0
@@ -41,17 +40,22 @@ class MainWindow(gui.Window):
             self.available_elements[element_name] = element
             id += 1
 
-    def _update_by_list_selection(self, *args, **kwargs):
-        self.target_element.unselect()
-
+    def _on_list_click(self, *args, **kwargs):
         element_name = dpg.get_value('element-list')
         element = self.available_elements[element_name]
+        assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
+        self._last_selected_element = element
+        self._update_selection(element)
 
-        self.target_element = element
+    def _update_selection(self, element: Element):
+        assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
+        if APP_VARS.selected_element:
+            APP_VARS.selected_element.unselect()
 
-        self.target_element.select()
+        APP_VARS.selected_element = element
+        APP_VARS.selected_element.select()
 
-        tranform = self.target_element.transform
+        tranform = APP_VARS.selected_element.transform
         self.translation_obj = tranform.translation
         self.scale_obj = tranform.scale
         self.rotation_obj = tranform.rotation
@@ -67,18 +71,20 @@ class MainWindow(gui.Window):
     def describe(self):
         with self:
             el.Text("Hello World!").add()
-            cube = APP_VARS.world.elements[1]
+            element = APP_VARS.world.elements[1] # TODO: find another way
             camera = APP_VARS.camera
             COORDS = ['x', 'y', 'z']
 
-            dpg.add_listbox(list(self.available_elements.keys()), tag='element-list', callback=self._update_by_list_selection)
+            dpg.add_listbox(list(self.available_elements.keys()), tag='element-list', callback=self._on_list_click)
 
             dpg.add_separator()
 
-            self.target_element = cube
-            self.translation_obj = cube.transform.translation
-            self.scale_obj = cube.transform.scale
-            self.rotation_obj = cube.transform.rotation
+            APP_VARS.selected_element = element
+            APP_VARS.selected_element.select()
+
+            self.translation_obj = element.transform.translation
+            self.scale_obj = element.transform.scale
+            self.rotation_obj = element.transform.rotation
 
             ## Translation ##
 
@@ -154,6 +160,10 @@ class MainWindow(gui.Window):
         dpg.configure_item('element-list', items=list(self.available_elements.keys()))
 
         dpg.set_value(self.game_fps_label.tag, APP_VARS.game_fps.fps)
+
+        if self._last_selected_element is not APP_VARS.selected_element:
+            self._update_selection(APP_VARS.selected_element)
+            self._last_selected_element = APP_VARS.selected_element
 
         return super().update()
 
