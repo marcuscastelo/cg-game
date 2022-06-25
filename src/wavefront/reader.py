@@ -5,10 +5,12 @@ import numpy as np
 from utils.logger import LOGGER
 from wavefront.face import Face
 from wavefront.model import Model
+from wavefront.material import Material
 
 @dataclass
 class WaveFrontReader:
     model: Model = field(default_factory=Model)
+    materials: list[Material] = field(default_factory=list)
     current_material: int = None
 
     def load_model_from_file(self, filename: str) -> Model:

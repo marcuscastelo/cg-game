@@ -25,6 +25,7 @@ from constants import GUI_WIDTH, WINDOW_SIZE
 from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 
 from gui import AppGui
+from wavefront.material import MtlReader
 
 def create_window():
     '''
@@ -178,12 +179,15 @@ def main():
 def test_wavefront():
     from wavefront.reader import WaveFrontReader
 
-    reader = WaveFrontReader()
-    model = reader.load_model_from_file('models/tree.obj')
-    print(model)
+    # reader = WaveFrontReader()
+    # model = reader.load_model_from_file('models/tree.obj')
+    # print(model)
+
+    reader = MtlReader('models/tree.mtl')
+    print(reader.read_materials())
 
     pass
 
 if __name__ == "__main__":
-    # test_wavefront()
-    main()
+    test_wavefront()
+    # main()
