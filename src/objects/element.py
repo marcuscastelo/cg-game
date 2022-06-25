@@ -17,11 +17,9 @@ from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
 from gl_abstractions.shader import Shader, ShaderDB
-from wavefront.model import Model
+from wavefront.material import Material
 
 from transform import Transform
-
-from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from objects._2d._2dworld import World
@@ -39,6 +37,7 @@ class ShapeSpec:
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
     texture: Union[Texture, None] = None
+    material: Material = field(default_factory=lambda: Material('default_material'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
@@ -127,9 +126,11 @@ class ShapeRenderer:
 
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 
-        self.shader.upload_uniform_vec3('u_Ka', Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z).values.astype(np.float32))
-        self.shader.upload_uniform_vec3('u_Kd', Vec3(APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z).values.astype(np.float32))
-        self.shader.upload_uniform_vec3('u_Ks', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z).values.astype(np.float32))
+        material = self.shape_spec.material
+
+        self.shader.upload_uniform_vec3('u_Ka', material.Ka.values.astype(np.float32))
+        self.shader.upload_uniform_vec3('u_Kd', material.Kd.values.astype(np.float32))
+        self.shader.upload_uniform_vec3('u_Ks', material.Ks.values.astype(np.float32))
         self.shader.upload_uniform_float('u_Ns', APP_VARS.lighting_config.Ns)
         self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )

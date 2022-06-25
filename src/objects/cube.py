@@ -1,9 +1,12 @@
 from cgitb import text
 from dataclasses import dataclass, field
 import os
+from re import M
+import time
 import numpy as np
 from OpenGL import GL as gl
 from utils.geometry import Vec3
+from utils.logger import LOGGER
 from gl_abstractions.shader import Shader, ShaderDB
 from gl_abstractions.texture import Texture, Texture2D
 from objects.element import Element, ElementSpecification, ShapeSpec
@@ -26,6 +29,8 @@ class Cube(Element):
 
     def _init_shape_specs(self):
         vertices_list = self.model.to_unindexed_vertices() # TODO: instead of unindexed, use indices
+        material = self.model.faces[0].material # TODO: make it make any sense
+        assert material.name in ['Tree', 'Leaves'], f'{material.name}'
 
         has_position = 'a_Position' in [ attr[0] for attr in self.shader.layout.attributes]
         has_texcoord = 'a_TexCoord' in [ attr[0] for attr in self.shader.layout.attributes]
@@ -43,7 +48,8 @@ class Cube(Element):
             shader=self.shader,
             render_mode=gl.GL_TRIANGLES,
             name=f'{self.name} - Cube',
-            texture=self.texture
+            texture=self.texture,
+            material=material
         )
         self.shape_specs = [ cube_shape ]
 
