@@ -8,11 +8,13 @@ from utils.logger import LOGGER
 # from app_vars import APP_VARS
 from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
+from line import Line
 from objects.cube import Cube
 from objects.element import Element
 import constants
 from objects.light_cube import LightCube
 from objects.wavefront import Model, WaveFrontReader
+from ray import Ray
 
 class World:
     '''
@@ -34,10 +36,11 @@ class World:
         Objects declared at the "bottom" of the code (last line) as rendered behind the upper ones.
         '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
-        world = self
 
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
+        from app_vars import APP_VARS
+        self.spawn(APP_VARS.camera)
 
         wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
         wall.transform.scale = Vec3(0.1, 3, 3)
@@ -46,7 +49,7 @@ class World:
         self.spawn(wall)
 
         box = Cube('Box')
-        box.transform.translation.xyz = Vec3(1,0.5,1)
+        box.transform.translation.xyz = Vec3(4,0.5,8)
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
         self.spawn(box)
 
@@ -79,14 +82,18 @@ class World:
         # monkey.transform.translation = Vec3(0, 1, 0)
         # self.spawn(monkey)
 
+        # line = Line('test_line')
+        # line.transform.scale.xyz = Vec3(0.01, 0.01, 5)
+        # line.transform.translation.y = 1.2
+        # line.transform.rotation = APP_VARS.camera.transform.rotation
+        # self.spawn(line)
+
         
-        from app_vars import APP_VARS
         light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
-        # LOGGER.log_info('Done setting up scene', 'world:setup_scene')
 
         def load_model(filename: str) -> Model:
             return WaveFrontReader().load_model_from_file(filename)
@@ -106,9 +113,17 @@ class World:
         gun = Cube('gun', model=load_model('./src/objects/alvo1.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-8)
         self.spawn(gun)
+
+        ray = Ray('test_ray')
+        ray.transform.translation.y = 100
+        ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        self.spawn(ray)
+
+        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
     def spawn(self, element: Element):
         self.elements.append(element)
+        element.on_spawned(world=self)
 
     def destroy(self, element: Element):
         element.destroy()

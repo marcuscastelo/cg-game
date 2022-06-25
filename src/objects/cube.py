@@ -50,3 +50,6 @@ class Cube(Element):
     def __post_init__(self):
         self._init_shape_specs()
         super().__post_init__()
+
+    def _physics_update(self, delta_time: float):
+        return super()._physics_update(delta_time)

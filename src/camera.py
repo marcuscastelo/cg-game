@@ -7,10 +7,13 @@ from utils.geometry import Vec3
 from utils.sig import metsig
 import constants
 import glfw
+from gl_abstractions.shader import ShaderDB
+from line import Line
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.physics.momentum import Momentum
 from objects.world import World
+from ray import Ray
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -32,13 +35,22 @@ class Camera(Element):
         self.cameraUp    = glm.vec3(0.0,  1.0,  0.0)
         self.cameraSpeed = 2
 
-        self.yaw = -75
+        self.yaw = 0.0
         self.pitch = 0.0
 
         self._keyboardMovementInput = glm.vec3(0, 0, 0)
         
         self._fall_speed = 0
         self._ground_y = 1.8
+
+        self.raycast_line_dbg: Line = None
+        self.ray: Line = None
+
+    def on_spawned(self, world: 'World'):
+        self.raycast_line_dbg = Line('test_line', shader=ShaderDB.get_instance().get_shader('simple_blue'))
+        self.raycast_line_dbg.transform.scale.z = 10
+        world.spawn(self.raycast_line_dbg)
+        return super().on_spawned(world)
 
     @property
     def cameraRight(self):
@@ -54,6 +66,10 @@ class Camera(Element):
             setattr(self, attr, getattr(new_camera, attr))
 
     def update(self, delta_time: float):
+        self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
+        self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
+        self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
+
         if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
             self._sprinting = True
             self._momentum.max_speed = 0.2
@@ -77,6 +93,14 @@ class Camera(Element):
         pass
 
     def on_key(self, window, key: int, scancode, action: int, mods):
+        # TODO: remove debug
+        from app_vars import APP_VARS
+        ray: Ray = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))[0]
+        if IS.just_pressed('r'):
+            ray.transform.translation.xyz = self.transform.translation.xyz
+            ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+
+
         # TODO: refactor to use forces
         positive_actions = [ glfw.PRESS ]
         negative_actions = [ glfw.RELEASE ]
@@ -155,15 +179,22 @@ class Camera(Element):
         self.yaw += xoffset;
         self.pitch += yoffset;
 
-        
         if self.pitch >= 90.0: self.pitch = 90.0
         if self.pitch <= -90.0: self.pitch = -90.0
 
+        yaw = glm.radians(self.yaw)
+        pitch = glm.radians(self.pitch)
+
         front = glm.vec3()
-        front.x = math.cos(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
-        front.y = math.sin(glm.radians(self.pitch))
-        front.z = math.sin(glm.radians(self.yaw)) * math.cos(glm.radians(self.pitch))
+        front.x = math.cos(yaw) * math.cos(pitch)
+        front.y = math.sin(pitch)
+        front.z = math.sin(yaw) * math.cos(pitch)
         self.cameraFront = glm.normalize(front)
+        
+        pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
+        pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
+
+        self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
 
     def _physics_update(self, delta_time: float):
         # self._fall_speed += 30 * delta_time**2

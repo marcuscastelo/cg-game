@@ -5,8 +5,13 @@ from utils.logger import LOGGER
 
 from gl_abstractions.layout import Layout
 
+import glfw
+
 class Shader:
     def __init__(self, vert_path: str, frag_path: str, layout: Layout):
+        assert glfw.get_current_context(), f'Trying to create a shader with no OpenGL Context'
+
+
         self.frag_path = frag_path
         self.vert_path = vert_path
         self.layout = layout
@@ -126,6 +131,13 @@ class ShaderDB:
         self.shaders: dict[str, Shader] = {}
         self.shaders['simple_red'] = Shader(
             'shaders/simple_red.vert', 'shaders/simple_red.frag',
+            layout=Layout([
+                ('a_Position', 3),
+            ])
+        )
+
+        self.shaders['simple_blue'] = Shader(
+            'shaders/simple_blue.vert', 'shaders/simple_blue.frag',
             layout=Layout([
                 ('a_Position', 3),
             ])

@@ -202,6 +202,10 @@ class Element: # TODO: rename to Object
             ) for shape_spec in self.shape_specs]
 
         pass
+    
+    def on_spawned(self, world: 'World'):
+        '''Please override'''
+        pass
 
     @property
     def destroyed(self):
@@ -227,14 +231,22 @@ class Element: # TODO: rename to Object
         if self._state.selected:
             return
         self._state.selected = True
-        self.transform.translation += 10
+        # self.transform.scale *= 2
+        
+        self._old_shaders = []
+        for renderer in self._shape_renderers:
+            self._old_shaders.append(renderer.shader)
+            renderer.shader = ShaderDB.get_instance().get_shader('simple_red')
 
     def unselect(self) -> None:
         if not self._state.selected:
             return
         self._state.selected = False
-        self.transform.translation -= 10
 
+        for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):
+            renderer.shader = old_shader
+            
+        self._old_shaders = []
     def _try_update_physics(self):
         if (delta_time := time.time() - self._state.physics_state.last_tick_time) > 1/PHYSICS_TPS:
             self._state.physics_state.last_tick_time = time.time()

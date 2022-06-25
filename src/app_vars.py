@@ -66,5 +66,4 @@ class AppVars:
     def __post_init__(self):
         if self.camera is None:
             self.camera = Camera('Main Camera', transform=Transform(translation=Vec3(0, 1.7, 0)))
-            self.world.spawn(self.camera)
 APP_VARS = AppVars()

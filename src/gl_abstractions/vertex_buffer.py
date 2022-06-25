@@ -15,6 +15,8 @@ class VertexBuffer:
         # Data is a 2D array of floats.
         # The first dimension is the attribute, the second dimension is the attribute's values.
 
+        
+        # TODO: SUPPORTED_DTYPES = [np.float32, np.float64] (layout.py): make them share behaviour
         assert data.dtype == np.float32, f'Only float32 data is supported, got {data.dtype}'
         flattened_data = data.flatten()
 
