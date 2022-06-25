@@ -18,7 +18,7 @@ class Ray(Element):
         super().__post_init__()
 
     def _physics_update(self, delta_time: float):
-        self.transform.translation.xyz += self.direction * delta_time * PHYSICS_TPS
+        self.transform.translation.xyz += self.direction * delta_time * PHYSICS_TPS * 0.3
 
         from app_vars import APP_VARS
         for element in APP_VARS.world.elements:
@@ -35,17 +35,24 @@ class Ray(Element):
 
             distance = scaled_difference.magnitude()
 
-
-            if distance < 1:
-                LOGGER.log_debug(f'Selecting {element=}')
-                element.select()
-                # TODO: change behaviour VV
+            DST = 1
+            keep_iterating = True
+            def stop_raycast():
                 self.direction = Vec3(0,0,0)
-                self.transform.translation.xyz = Vec3(0,2,0)
-                ## 
-                break
+                self.transform.translation.xyz = Vec3(0,100,0)
+                keep_iterating = False
+
+            if self.transform.translation.xyz.magnitude() > 30:
+                stop_raycast()
+
+            if distance < DST:
+                element.select()
+                stop_raycast()
             else:
-                if element._state.selected:
+                if element._state.selected :
                     element.destroy()
                     element.unselect()
+
+            if not keep_iterating:
+                break
         return super()._physics_update(delta_time)

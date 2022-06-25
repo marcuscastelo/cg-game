@@ -66,7 +66,7 @@ class Camera(Element):
             setattr(self, attr, getattr(new_camera, attr))
 
     def update(self, delta_time: float):
-        # self.raycast_line.transform.translation.xz = self.transform.translation.xz
+        self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
         self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
         self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
 
@@ -97,7 +97,7 @@ class Camera(Element):
         from app_vars import APP_VARS
         ray: Ray = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))[0]
         if IS.just_pressed('r'):
-            ray.transform.translation.xyz = Vec3(0,self._ground_y,0)
+            ray.transform.translation.xyz = self.transform.translation.xyz
             ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
 
 
@@ -190,9 +190,6 @@ class Camera(Element):
         front.y = math.sin(pitch)
         front.z = math.sin(yaw) * math.cos(pitch)
         self.cameraFront = glm.normalize(front)
-        
-        print(f'{yaw=}, {pitch=}')
-        print(f'{glm.cos(yaw)=}, {glm.sin(yaw)=}')
         
         pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
         pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))

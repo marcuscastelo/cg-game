@@ -111,7 +111,7 @@ class World:
 
 
         ray = Ray('test_ray')
-        ray.transform.translation.y = 0.8
+        ray.transform.translation.y = 100
         ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
         self.spawn(ray)
 
