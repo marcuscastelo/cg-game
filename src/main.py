@@ -176,14 +176,14 @@ def main():
     LOGGER.log_info("App has been closed gracefully", 'main')
 
 def test_wavefront():
-    from objects.wavefront import WaveFrontReader, Model
+    from wavefront.reader import WaveFrontReader
 
     reader = WaveFrontReader()
-    model = reader.load_model_from_file('./src/objects/caixa2.obj')
+    model = reader.load_model_from_file('models/tree.obj')
     print(model)
 
     pass
 
 if __name__ == "__main__":
-    # test_wavefront()
-    main()
+    test_wavefront()
+    # main()

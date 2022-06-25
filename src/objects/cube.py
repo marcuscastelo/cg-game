@@ -10,9 +10,10 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from objects.wavefront import Model, RawVertex, WaveFrontReader
+from wavefront.reader import WaveFrontReader
+from wavefront.model import Model
 
-DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
+DEFAULT_MODEL = WaveFrontReader().load_model_from_file('models/cube.obj')
 
 @dataclass
 class Cube(Element):

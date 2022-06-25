@@ -17,7 +17,7 @@ from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
 from gl_abstractions.shader import Shader, ShaderDB
-from objects.wavefront import Model
+from wavefront.model import Model
 
 from transform import Transform
 
