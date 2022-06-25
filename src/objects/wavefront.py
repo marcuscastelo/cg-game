@@ -149,7 +149,7 @@ class WaveFrontReader:
             face = Face()
 
             vertex_count = len(arguments)
-            if vertex_count > 4:
+            if vertex_count > 5:
                 LOGGER.log_warning(f'Face has {vertex_count} vertices')
                 LOGGER.log_trace(f'Face vertices: {arguments}')
 
