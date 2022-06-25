@@ -49,14 +49,14 @@ class Material:
 
 class MtlReader:
     def __init__(self, filename: str) -> None:
-        self.materials: list[Material] = []
+        self.last_declared_material_name = None
+        self.materials: dict[str, Material] = {}
         self.filename = filename
-
     @property
     def current_material(self):
-        return self.materials[-1]
+        return self.materials[self.last_declared_material_name]
 
-    def read_materials(self) -> list[Material]:
+    def read_materials(self) -> dict[str, Material]:
         with open(self.filename, 'r') as f:
             for line in f.readlines():
                 self._process_line(line)
@@ -79,7 +79,8 @@ class MtlReader:
         if command == 'newmtl':
             material_name = ' '.join(arguments)
             newmtl = Material(name=material_name)
-            self.materials.append(newmtl)
+            self.materials[material_name] = newmtl
+            self.last_declared_material_name = material_name
             return
 
 

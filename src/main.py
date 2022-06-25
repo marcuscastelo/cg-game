@@ -192,5 +192,5 @@ def test_wavefront():
     pass
 
 if __name__ == "__main__":
-    test_wavefront()
-    # main()
+    # test_wavefront()
+    main()

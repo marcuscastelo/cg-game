@@ -10,8 +10,8 @@ from wavefront.material import Material, MtlReader
 @dataclass
 class ModelReader:
     model: Model = field(default_factory=Model)
-    materials: list[Material] = field(default_factory=list)
-    current_material: int = None
+    materials: dict[str, Material] = field(default_factory=dict)
+    current_material_name: int = None
 
     def load_model_from_file(self, filename: str) -> Model:
         LOGGER.log_trace(f'Loading model {filename}...')
@@ -96,10 +96,12 @@ class ModelReader:
                 face.position_indices.append(position)
                 face.normal_indices.append(normal)
                 face.texture_indices.append(texture)
-                face.material_index = self.current_material
-
-                if self.current_material is None:
+                if self.current_material_name == 'none':
                     LOGGER.log_warning(f'Assigning "None" as material for line {line}, since no material is bound')
+                    face.material = None
+                else:
+                    face.material = self.materials[self.current_material_name]
+
 
                 self.model.faces.append(face)
 
@@ -108,7 +110,7 @@ class ModelReader:
         if command in ('usemtl', 'usemat'):
             assert len(
                 arguments) >= 1, f'Command {command} should be followed with material, but found arguments = {arguments}'
-            self.current_material = arguments[0]
+            self.current_material_name = arguments[0]
 
         if command == 'mtllib':
             filename = arguments[0]
@@ -118,4 +120,7 @@ class ModelReader:
             except Exception as e:
                 LOGGER.log_error(f'Failed to import {filename}!\nline: {line}')
                 raise e
-            self.materials += materials
+            else:
+                for material_name, material in materials.items():
+                    assert material_name not in self.materials, f'Trying to redeclare a material'
+                    self.materials[material_name] = material
