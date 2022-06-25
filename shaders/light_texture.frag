@@ -9,9 +9,9 @@ in vec3 v_Normal;
 // Uniforms
 uniform sampler2D u_Texture;
 
-uniform float u_Ka; // Ambient Coeff.
-uniform float u_Kd; // Diffuse Coeff.
-uniform float u_Ks; // Specular Coeff.
+uniform vec3 u_Ka; // Ambient Coeff.
+uniform vec3 u_Kd; // Diffuse Coeff.
+uniform vec3 u_Ks; // Specular Coeff.
 uniform float u_Ns; // Specular Exponent.
 
 uniform vec3 u_LightPos;

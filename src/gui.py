@@ -140,12 +140,33 @@ class MainWindow(gui.Window):
             dpg.add_spacer(height=10)
 
             el.Text().add(el.TextParams('Lighting Config:'))
-            el.Text().add(el.TextParams('Ka'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ka').add(el.SliderFloatParams(min_value=0, max_value=1))
-            el.Text().add(el.TextParams('Kd'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Kd').add(el.SliderFloatParams(min_value=0, max_value=1))
-            el.Text().add(el.TextParams('Ks'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ks').add(el.SliderFloatParams(min_value=0, max_value=1))
+            el.Text().add(el.TextParams('Ka_x'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ka_x').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Ka_y'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ka_y').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Ka_z'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ka_z').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Kd_x'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Kd_x').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Kd_y'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Kd_y').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Kd_z'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Kd_z').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Ks_x'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ks_x').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Ks_y'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ks_y').add(el.SliderFloatParams(min_value=0, max_value=1))
+
+            el.Text().add(el.TextParams('Ks_z'))
+            el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=0, max_value=1))
+
             el.Text().add(el.TextParams('Ns'))
             el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000))
 
