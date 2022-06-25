@@ -126,6 +126,8 @@ class MainWindow(gui.Window):
 
             ###########
 
+            dpg.add_separator()
+            dpg.add_separator()
 
             ## Buttons ##
 
@@ -145,7 +147,7 @@ class MainWindow(gui.Window):
             dpg.add_separator()
             dpg.add_spacer(height=10)
 
-            el.Text().add(el.TextParams('Lighting Config:'))
+            el.Text().add(el.TextParams('Global Lighting Config:'))
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ka_x'))
@@ -177,15 +179,19 @@ class MainWindow(gui.Window):
                 el.Text().add(el.TextParams('Ks_z'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
 
-            el.Text().add(el.TextParams('Ns'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000, width=100))
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Ns'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000, width=100))
 
-            el.Text().add(el.TextParams('Do daylight cycle?'))
-            el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
-            el.Text().add(el.TextParams('Light position'))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'z').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Do daylight cycle?'))
+                el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Light position'))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'z').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
 
 
 
