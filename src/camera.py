@@ -51,7 +51,7 @@ class Camera(Element):
         self.raycast_line_dbg = Line('test_line')
         self.raycast_line_dbg.shape_specs[0].material.Ka.z = 10
         self.raycast_line_dbg.transform.scale.z = 10
-        world.spawn(self.raycast_line_dbg)
+        # world.spawn(self.raycast_line_dbg)
         return super().on_spawned(world)
 
     @property
