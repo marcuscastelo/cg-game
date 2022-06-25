@@ -26,7 +26,7 @@ class Object:
             vertice_count = len(face.position_indices)
  
             indices = face.position_indices 
-            print(f'Face {face_i} indices: \n {indices=}')
+            # print(f'Face {face_i} indices: \n {indices=}')
             face_vertices = [
                 RawVertex(
                     position=self.positions_ref[face.position_indices[i]-1],

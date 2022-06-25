@@ -60,10 +60,10 @@ class World:
         ground.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground)
 
-        # sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
-        # sky.transform.translation = Vec3(0, -150, 0)
-        # sky.transform.scale = Vec3(300, 300, 300)
-        # self.spawn(sky)
+        sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
+        sky.transform.translation = Vec3(0, -150, 0)
+        sky.transform.scale = Vec3(300, 300, 300)
+        self.spawn(sky)
 
         # diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
         # self.diamond_blocks = []
@@ -90,11 +90,11 @@ class World:
         # self.spawn(line)
 
         
-        # light_cube = LightCube('light_cube')
-        # light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
-        # light_cube.transform.translation.y = 2
-        # light_cube.transform.scale = Vec3(1,1,1) * 0.1
-        # self.spawn(light_cube)
+        light_cube = LightCube('light_cube')
+        light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
+        light_cube.transform.translation.y = 2
+        light_cube.transform.scale = Vec3(1,1,1) * 0.1
+        self.spawn(light_cube)
 
         def load_model(filename: str) -> Model:
             return ModelReader().load_model_from_file(filename)
@@ -139,7 +139,9 @@ class World:
 
         from app_vars import APP_VARS
         if APP_VARS.lighting_config.do_daylight_cycle:
-            APP_VARS.lighting_config.Ka *= 0.999
+            APP_VARS.lighting_config.Ka_x *= 0.999
+            APP_VARS.lighting_config.Ka_y *= 0.999
+            APP_VARS.lighting_config.Ka_z *= 0.999
         
         # Update elements
         for element in self.elements[::-1]:
