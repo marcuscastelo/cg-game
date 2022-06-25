@@ -109,7 +109,13 @@ class ShapeRenderer:
             print(f'**********EXCEPTION WITH u_Model********')
             print(f'{mat_model=}')
             raise e
-        self.shader.upload_uniform_matrix4f('u_View', mat_view)
+        try:
+            self.shader.upload_uniform_matrix4f('u_View', mat_view) 
+        except Exception as e:
+            print(f'**********EXCEPTION WITH u_View********')
+            print(f'{mat_view=}')
+            raise e
+
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 
         self.shader.upload_uniform_float('u_Ka', APP_VARS.lighting_config.Ka)

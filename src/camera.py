@@ -49,7 +49,7 @@ class Camera(Element):
     def on_spawned(self, world: 'World'):
         self.raycast_line_dbg = Line('test_line', shader=ShaderDB.get_instance().get_shader('simple_blue'))
         self.raycast_line_dbg.transform.scale.z = 10
-        world.spawn(self.raycast_line_dbg)
+        # world.spawn(self.raycast_line_dbg)
         return super().on_spawned(world)
 
     @property
@@ -95,10 +95,11 @@ class Camera(Element):
     def on_key(self, window, key: int, scancode, action: int, mods):
         # TODO: remove debug
         from app_vars import APP_VARS
-        ray: Ray = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))[0]
-        if IS.just_pressed('r'):
-            ray.transform.translation.xyz = self.transform.translation.xyz
-            ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        rays: list[Ray] = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))
+        if rays:
+            if IS.just_pressed('r'):
+                rays[0].transform.translation.xyz = self.transform.translation.xyz
+                rays[0].direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
 
 
         # TODO: refactor to use forces
