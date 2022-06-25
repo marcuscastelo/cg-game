@@ -24,7 +24,7 @@ class Cube(Element):
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance().get_shader('light_texture'))
 
     # TODO: Keep texture loaded instead of loading every time
-    texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/end_game_loss.png'))
+    texture: Texture = field(default_factory=lambda: Texture2D.from_image_path('textures/white.jpg'))
     shape_specs: list[ShapeSpec] = None
 
     def _init_shape_specs(self):

@@ -36,25 +36,12 @@ class ShapeSpec:
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
-    texture: Union[Texture, None] = None
+    texture: Union[Texture, None] = field(default_factory=lambda: Texture2D.from_image_path('textures/white.jpg'))
     material: Material = field(default_factory=lambda: Material('default_material'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
-        # TODO: add shader.needs_texture() (or something)
-        # FIXME: this does not work anymore!!!
-        # needs_texture = self.shader is ShaderDB.get_instance()['textured']
-        LOGGER.log_warning(f'Ignoring texture, please rewrite the code')
-        needs_texture = False
-
-        if needs_texture:
-            assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
-
-
-        # TODO: remove texture debug
-        self.texture = Texture2D.from_image_path('textures/white.jpg')
-        ##
-
+        assert self.texture is not None, f"Shape '{self.name}' has no texture"
         self.shader.layout.assert_data_ok(self.vertices)
 
 
@@ -259,6 +246,8 @@ class Element: # TODO: rename to Object
             return
         self._state.selected = True
         self.transform.scale *= 2
+
+        # self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
 
         return # TODO: make a proper selection shader
         self._old_shaders = []
