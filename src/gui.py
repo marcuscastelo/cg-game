@@ -7,6 +7,7 @@ from utils.sig import metsig
 from utils.logger import LOGGER
 
 from app_vars import APP_VARS
+from camera import Camera
 from constants import GUI_WIDTH
 from objects.element import Element
 
@@ -123,11 +124,13 @@ class MainWindow(gui.Window):
             ## Buttons ##
 
             def tp_to_element():
-                camera.transform.translation.xyz = self.target_element.transform.translation.xyz
+                camera.transform.translation.xyz = APP_VARS.selected_element.transform.translation.xyz
+            def tp_element_to_me():
+                APP_VARS.selected_element.transform.translation.xyz = camera.transform.translation.xyz
+                APP_VARS.selected_element.transform.translation.y -= camera._ground_y
 
             el.Button().add(el.ButtonParams(label='Teleport to', callback=tp_to_element))
-            el.Button().add(el.ButtonParams(label='Select', callback=lambda: self.target_element.select()))
-            el.Button().add(el.ButtonParams(label='Unselect', callback=lambda: self.target_element.unselect()))
+            el.Button().add(el.ButtonParams(label='Teleport to me', callback=tp_element_to_me))
 
             #############
 
