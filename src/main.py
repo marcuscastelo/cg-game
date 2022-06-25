@@ -180,7 +180,7 @@ def test_wavefront():
     from wavefront.reader import ModelReader
 
     reader = ModelReader()
-    model = reader.load_model_from_file('models/tree.obj')
+    model = reader.load_model_from_file('models/bot.obj')
     # print(reader.materials)
 
     # reader = MtlReader('models/tree.mtl')

@@ -44,22 +44,21 @@ class World:
         from app_vars import APP_VARS
         self.spawn(APP_VARS.camera)
 
-        # wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
-        # wall.transform.scale = Vec3(0.1, 3, 3)
-        # wall.transform.translation.xyz = Vec3(4, 0, 0)
-        # wall.transform.rotation.xyz = Vec3(0, 0, 0)
-        # self.spawn(wall)
+        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
+        wall.transform.scale = Vec3(0.1, 3, 3)
+        wall.transform.translation.xyz = Vec3(4, 0, 0)
+        wall.transform.rotation.xyz = Vec3(0, 0, 0)
+        self.spawn(wall)
 
-        # box = Cube('Box')
-        # box.transform.translation.xyz = Vec3(4,0.5,8)
-        # box.transform.scale = Vec3(0.4, 0.4, 0.4)
-        # self.spawn(box)
+        box = Cube('Box')
+        box.transform.translation.xyz = Vec3(4,0.5,8)
+        box.transform.scale = Vec3(0.4, 0.4, 0.4)
+        self.spawn(box)
 
-        # ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
-        # ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
-        # ground.transform.translation = Vec3(0, -0.1, 0)
-
-        # self.spawn(ground)
+        ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
+        ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
+        ground.transform.translation = Vec3(0, -0.1, 0)
+        self.spawn(ground)
 
         # sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
         # sky.transform.translation = Vec3(0, -150, 0)
@@ -91,7 +90,7 @@ class World:
         # self.spawn(line)
 
         
-        # light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
+        # light_cube = LightCube('light_cube')
         # light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         # light_cube.transform.translation.y = 2
         # light_cube.transform.scale = Vec3(1,1,1) * 0.1
@@ -104,22 +103,22 @@ class World:
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        # bot = Cube('bot', model=load_model('models/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
-        # bot.transform.translation.xyz = Vec3(-4,0,4)
-        # self.spawn(bot)
+        bot = Cube('bot', model=load_model('models/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        bot.transform.translation.xyz = Vec3(-4,0,4)
+        self.spawn(bot)
 
-        # gun = Cube('gun', model=load_model('models/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
-        # gun.transform.translation.xyz = Vec3(4,0,-14)
-        # self.spawn(gun)
+        gun = Cube('gun', model=load_model('models/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun.transform.translation.xyz = Vec3(4,0,-14)
+        self.spawn(gun)
 
-        # gun = Cube('alvo', model=load_model('models/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
-        # gun.transform.translation.xyz = Vec3(4,0,-8)
-        # self.spawn(gun)
+        gun = Cube('alvo', model=load_model('models/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
+        gun.transform.translation.xyz = Vec3(4,0,-8)
+        self.spawn(gun)
 
-        # ray = Ray('test_ray')
-        # ray.transform.translation.y = 100
-        # ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
-        # self.spawn(ray)
+        ray = Ray('test_ray')
+        ray.transform.translation.y = 100
+        ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        self.spawn(ray)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
