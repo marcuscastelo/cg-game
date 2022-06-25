@@ -1,3 +1,4 @@
+import random
 from turtle import Shape
 import constants
 from dataclasses import dataclass, field
@@ -37,7 +38,7 @@ class ShapeSpec:
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
     texture: Union[Texture, None] = field(default_factory=lambda: Texture2D.from_image_path('textures/white.jpg'))
-    material: Material = field(default_factory=lambda: Material('default_material'))
+    material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
@@ -247,7 +248,7 @@ class Element: # TODO: rename to Object
         self._state.selected = True
         self.transform.scale *= 2
 
-        # self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
+        self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
 
         return # TODO: make a proper selection shader
         self._old_shaders = []

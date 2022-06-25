@@ -1,4 +1,5 @@
 from dataclasses import dataclass, field
+import random
 
 from wavefront.face import Face
 from wavefront.material import Material
@@ -10,7 +11,7 @@ class Object:
     positions_ref: list[tuple]
     texture_coords_ref: list[tuple]
     normals_ref: list[tuple]
-    material: Material = field(default_factory=lambda: Material('default'))
+    material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
     faces: list[Face] = field(default_factory=list)
 
     def expand_faces_to_unindexed_vertices(self) -> list[RawVertex]:

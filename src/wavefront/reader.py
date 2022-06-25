@@ -1,6 +1,7 @@
 from ast import arg
 from dataclasses import dataclass, field
 from enum import Enum, auto
+import random
 from typing import Union
 from unittest import mock
 import numpy as np
@@ -15,7 +16,7 @@ class ModelReader:
         self.object: Object = None
         self.model = Model()
         self.materials: dict[str, Material] = {}
-        self.current_material: Union[Material, None] = Material('default') # TODO: change all occurences of Material(something) to a global default
+        self.current_material: Union[Material, None] = Material(f'default-{random.random()}') # TODO: change all occurences of Material(something) to a global default
 
     def load_model_from_file(self, filename: str) -> Model:
         LOGGER.log_trace(f'Loading model {filename}...')
