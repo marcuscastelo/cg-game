@@ -25,6 +25,7 @@ from constants import GUI_WIDTH, WINDOW_SIZE
 from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 
 from gui import AppGui
+from wavefront.material import MtlReader
 
 def create_window():
     '''
@@ -176,11 +177,22 @@ def main():
     LOGGER.log_info("App has been closed gracefully", 'main')
 
 def test_wavefront():
-    from objects.wavefront import WaveFrontReader, Model
+    from wavefront.reader import ModelReader
 
-    reader = WaveFrontReader()
-    model = reader.load_model_from_file('./src/objects/caixa2.obj')
-    print(model)
+    reader = ModelReader()
+    model = reader.load_model_from_file('models/bot.obj')
+    # print(reader.materials)
+
+    # reader = MtlReader('models/tree.mtl')
+    # print(reader.read_materials())
+
+    # face1 = model.faces[0]
+    # print(face1)
+
+    print(f'{model.name=} has {len(model.objects)} objects')
+    for object in model.objects:
+        print(f'\t{object.name=}')
+        print(f'\t\t{object.material.name=}')
 
     pass
 

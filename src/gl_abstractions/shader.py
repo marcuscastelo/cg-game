@@ -129,34 +129,6 @@ class ShaderDB:
     _instance: 'ShaderDB' = None
     def __init__(self):
         self.shaders: dict[str, Shader] = {}
-        self.shaders['simple_red'] = Shader(
-            'shaders/simple_red.vert', 'shaders/simple_red.frag',
-            layout=Layout([
-                ('a_Position', 3),
-            ])
-        )
-
-        self.shaders['simple_blue'] = Shader(
-            'shaders/simple_blue.vert', 'shaders/simple_blue.frag',
-            layout=Layout([
-                ('a_Position', 3),
-            ])
-        )
-
-        self.shaders['colored'] = Shader(
-            'shaders/colored.vert', 'shaders/colored.frag',
-            layout=Layout([
-                ('a_Position', 3), ('a_Color', 3),
-            ])
-        )
-
-        self.shaders['textured'] = Shader(
-            'shaders/textured.vert', 'shaders/textured.frag',
-            layout=Layout([
-                ('a_Position', 3),
-                ('a_TexCoord', 2),
-            ])
-        )
 
         self.shaders['light_texture'] = Shader(
             'shaders/light_texture.vert','shaders/light_texture.frag',

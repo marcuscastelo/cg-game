@@ -1,3 +1,6 @@
+from copy import copy, deepcopy
+import dataclasses
+import random
 from turtle import Shape
 import constants
 from dataclasses import dataclass, field
@@ -17,11 +20,9 @@ from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
 from gl_abstractions.shader import Shader, ShaderDB
-from objects.wavefront import Model
+from wavefront.material import Material
 
 from transform import Transform
-
-from input.input_system import INPUT_SYSTEM as IS
 
 if TYPE_CHECKING:
     from objects._2d._2dworld import World
@@ -38,15 +39,12 @@ class ShapeSpec:
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
-    texture: Union[Texture, None] = None
+    texture: Union[Texture, None] = field(default_factory=lambda: Texture2D.from_image_path('textures/white.jpg'))
+    material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
-        # TODO: add shader.needs_texture() (or something)
-        needs_texture = self.shader is ShaderDB.get_instance()['textured']
-        if needs_texture:
-            assert self.texture is not None, f"Shape '{self.name}' has no texture, but specified shader requires one {self.shader=}"
-
+        assert self.texture is not None, f"Shape '{self.name}' has no texture"
         self.shader.layout.assert_data_ok(self.vertices)
 
 
@@ -109,13 +107,27 @@ class ShapeRenderer:
             print(f'**********EXCEPTION WITH u_Model********')
             print(f'{mat_model=}')
             raise e
-        self.shader.upload_uniform_matrix4f('u_View', mat_view)
+        try:
+            self.shader.upload_uniform_matrix4f('u_View', mat_view) 
+        except Exception as e:
+            print(f'**********EXCEPTION WITH u_View********')
+            print(f'{mat_view=}')
+            raise e
+
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 
-        self.shader.upload_uniform_float('u_Ka', APP_VARS.lighting_config.Ka)
-        self.shader.upload_uniform_float('u_Kd', APP_VARS.lighting_config.Kd)
-        self.shader.upload_uniform_float('u_Ks', APP_VARS.lighting_config.Ks)
-        self.shader.upload_uniform_float('u_Ns', APP_VARS.lighting_config.Ns)
+        material = self.shape_spec.material
+
+        self.shader.upload_uniform_vec3('u_Ka', material.Ka.values.astype(np.float32))
+        self.shader.upload_uniform_vec3('u_Kd', material.Kd.values.astype(np.float32))
+        self.shader.upload_uniform_vec3('u_Ks', material.Ks.values.astype(np.float32))
+        self.shader.upload_uniform_float('u_Ns', material.Ns)
+
+        self.shader.upload_uniform_vec3('u_GKa', Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
+        self.shader.upload_uniform_vec3('u_GKd', Vec3(APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z))
+        self.shader.upload_uniform_vec3('u_GKs', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
+        self.shader.upload_uniform_float('u_GNs', APP_VARS.lighting_config.Ns)
+        
         self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
 
@@ -237,7 +249,17 @@ class Element: # TODO: rename to Object
             return
         self._state.selected = True
         # self.transform.scale *= 2
-        
+
+        self._old_materials = []
+        for shape in self.shape_specs:
+            self._old_materials.append(shape.material)
+            curr_mat = deepcopy(shape.material)
+            shape.material = curr_mat
+            curr_mat.Kd[0] = 3
+            curr_mat.Ka[0] = 3
+            curr_mat.Ks[0] = 3
+
+        return # TODO: make a proper selection shader
         self._old_shaders = []
         for renderer in self._shape_renderers:
             self._old_shaders.append(renderer.shader)
@@ -247,7 +269,12 @@ class Element: # TODO: rename to Object
         if not self._state.selected:
             return
         self._state.selected = False
+        # self.transform.scale /= 2
 
+        for idx, shape in enumerate(self.shape_specs):
+            shape.material = self._old_materials[idx]
+
+        return # TODO: make a proper selection shader
         for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):
             renderer.shader = old_shader
             

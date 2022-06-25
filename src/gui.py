@@ -9,6 +9,7 @@ from utils.logger import LOGGER
 from app_vars import APP_VARS
 from camera import Camera
 from constants import GUI_WIDTH
+from objects.cube import Cube
 from objects.element import Element
 
 class MainWindow(gui.Window):
@@ -28,6 +29,7 @@ class MainWindow(gui.Window):
 
         self.game_fps_label = el.Text()
         self._last_selected_element = None
+        self.mock_obj = Cube('mock_cube')
 
     def _update_available_elements(self):
         id = 0
@@ -45,11 +47,16 @@ class MainWindow(gui.Window):
         element_name = dpg.get_value('element-list')
         element = self.available_elements[element_name]
         assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
-        self._last_selected_element = element
+        if self._last_selected_element == element:
+            element = None
         self._update_selection(element)
+        self._last_selected_element = element
 
     def _update_selection(self, element: Element):
+        if not element:
+            element = self.mock_obj
         assert isinstance(element, Element), f"Expected 'Element', found {type(element)=}"
+
         if APP_VARS.selected_element:
             APP_VARS.selected_element.unselect()
 
@@ -72,7 +79,6 @@ class MainWindow(gui.Window):
     def describe(self):
         with self:
             el.Text("Hello World!").add()
-            element = APP_VARS.world.elements[1] # TODO: find another way
             camera = APP_VARS.camera
             COORDS = ['x', 'y', 'z']
 
@@ -80,21 +86,19 @@ class MainWindow(gui.Window):
 
             dpg.add_separator()
 
-            APP_VARS.selected_element = element
-            APP_VARS.selected_element.select()
-
-            self.translation_obj = element.transform.translation
-            self.scale_obj = element.transform.scale
-            self.rotation_obj = element.transform.rotation
+            self.translation_obj = self.mock_obj.transform.translation
+            self.scale_obj = self.mock_obj.transform.scale
+            self.rotation_obj = self.mock_obj.transform.rotation
 
             ## Translation ##
 
             el.Text().add(el.TextParams('Translation'))
 
-            self.translation_clients = [ el.SliderFloat(self.translation_obj, coord) for coord in COORDS]
-            for client in self.translation_clients:
-                client.add(params=el.SliderFloatParams(min_value=-10, max_value=10) )
-                
+            with dpg.group(horizontal=True):
+                self.translation_clients = [ el.SliderFloat(self.translation_obj, coord) for coord in COORDS]
+                for client in self.translation_clients:
+                    client.add(params=el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+                    
             #################
             dpg.add_separator()
             
@@ -102,9 +106,10 @@ class MainWindow(gui.Window):
 
             el.Text().add(el.TextParams('Rotation'))
 
-            self.rotation_clients = [ el.SliderFloat(self.rotation_obj, coord) for coord in  COORDS]
-            for client in self.rotation_clients:
-                client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10))
+            with dpg.group(horizontal=True):
+                self.rotation_clients = [ el.SliderFloat(self.rotation_obj, coord) for coord in  COORDS]
+                for client in self.rotation_clients:
+                    client.add(params=el.SliderFloatParams(min_value=0.0, max_value=10, width=100))
 
             ###########
 
@@ -114,12 +119,15 @@ class MainWindow(gui.Window):
 
             el.Text().add(el.TextParams('Scale'))
 
-            self.scale_clients = [ el.SliderFloat(self.scale_obj, coord) for coord in  COORDS]
-            for client in self.scale_clients:
-                client.add(params=el.SliderFloatParams(min_value=0.01, max_value=10))
+            with dpg.group(horizontal=True):
+                self.scale_clients = [ el.SliderFloat(self.scale_obj, coord) for coord in  COORDS]
+                for client in self.scale_clients:
+                    client.add(params=el.SliderFloatParams(min_value=0.01, max_value=10, width=100))
 
             ###########
 
+            dpg.add_separator()
+            dpg.add_separator()
 
             ## Buttons ##
 
@@ -139,22 +147,51 @@ class MainWindow(gui.Window):
             dpg.add_separator()
             dpg.add_spacer(height=10)
 
-            el.Text().add(el.TextParams('Lighting Config:'))
-            el.Text().add(el.TextParams('Ka'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ka').add(el.SliderFloatParams(min_value=0, max_value=1))
-            el.Text().add(el.TextParams('Kd'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Kd').add(el.SliderFloatParams(min_value=0, max_value=1))
-            el.Text().add(el.TextParams('Ks'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ks').add(el.SliderFloatParams(min_value=0, max_value=1))
-            el.Text().add(el.TextParams('Ns'))
-            el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000))
+            el.Text().add(el.TextParams('Global Lighting Config:'))
 
-            el.Text().add(el.TextParams('Do daylight cycle?'))
-            el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
-            el.Text().add(el.TextParams('Light position'))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10))
-            el.SliderFloat(APP_VARS.lighting_config.light_position, 'z').add(el.SliderFloatParams(min_value=-10, max_value=10))
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Ka_x'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ka_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Ka_y'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ka_y').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Ka_z'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ka_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Kd_x'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Kd_y'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_y').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Kd_z'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Ks_x'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Ks_y'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_y').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.Text().add(el.TextParams('Ks_z'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Ns'))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000, width=100))
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Do daylight cycle?'))
+                el.CheckBox(APP_VARS.lighting_config, 'do_daylight_cycle').add(el.CheckboxParams())
+
+            with dpg.group(horizontal=True):
+                el.Text().add(el.TextParams('Light position'))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'x').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'y').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
+                el.SliderFloat(APP_VARS.lighting_config.light_position, 'z').add(el.SliderFloatParams(min_value=-10, max_value=10, width=100))
 
 
 

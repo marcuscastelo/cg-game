@@ -13,7 +13,9 @@ from objects.cube import Cube
 from objects.element import Element
 import constants
 from objects.light_cube import LightCube
-from objects.wavefront import Model, WaveFrontReader
+from wavefront.model import Model
+from wavefront.reader import ModelReader
+
 from ray import Ray
 
 class World:
@@ -56,7 +58,6 @@ class World:
         ground = Cube('Ground', texture=Texture2D.from_image_path('textures/ground.png'))
         ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground.transform.translation = Vec3(0, -0.1, 0)
-
         self.spawn(ground)
 
         sky = Cube('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'))
@@ -64,19 +65,19 @@ class World:
         sky.transform.scale = Vec3(300, 300, 300)
         self.spawn(sky)
 
-        diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
-        self.diamond_blocks = []
-        for i in range(10):
-            for j in range(10):
-                # for k in range(10):
-                    SCALE = 1.2
-                    diamond_block = Cube(f'diamond{i}{j}', texture=diamond_block_texture)
-                    diamond_block.transform.translation.xyz = Vec3(-4 - i * SCALE, 0, 0 - j * SCALE)
-                    diamond_block.transform.scale = Vec3(1,1,1) * SCALE
-                    self.diamond_blocks.append(diamond_block)
-                    self.spawn(diamond_block)
+        # diamond_block_texture = Texture2D.from_image_path('textures/diamond_block.png')
+        # self.diamond_blocks = []
+        # for i in range(10):
+        #     for j in range(10):
+        #         # for k in range(10):
+        #             SCALE = 1.2
+        #             diamond_block = Cube(f'diamond{i}{j}', texture=diamond_block_texture)
+        #             diamond_block.transform.translation.xyz = Vec3(-4 - i * SCALE, 0, 0 - j * SCALE)
+        #             diamond_block.transform.scale = Vec3(1,1,1) * SCALE
+        #             self.diamond_blocks.append(diamond_block)
+        #             self.spawn(diamond_block)
 
-        # monkey_model = WaveFrontReader().load_model_from_file('./src/objects/monkey.obj')
+        # monkey_model = WaveFrontReader().load_model_from_file('models/monkey.obj')
         # monkey = Cube('monkey', model=monkey_model)
         # monkey.transform.scale *= 20
         # monkey.transform.translation = Vec3(0, 1, 0)
@@ -89,28 +90,28 @@ class World:
         # self.spawn(line)
 
         
-        light_cube = LightCube('light_cube', shader=ShaderDB.get_instance().get_shader('simple_red'))
+        light_cube = LightCube('light_cube')
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
 
         def load_model(filename: str) -> Model:
-            return WaveFrontReader().load_model_from_file(filename)
+            return ModelReader().load_model_from_file(filename)
 
-        tree = Cube('tree', model=load_model('./src/objects/tree.obj'))
+        tree = Cube('tree', model=load_model('models/tree.obj'))
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        bot = Cube('bot', model=load_model('./src/objects/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        bot = Cube('bot', model=load_model('models/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
-        gun = Cube('gun', model=load_model('./src/objects/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun = Cube('gun', model=load_model('models/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 
-        gun = Cube('alvo', model=load_model('./src/objects/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
+        gun = Cube('alvo', model=load_model('models/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
         gun.transform.translation.xyz = Vec3(4,0,-8)
         self.spawn(gun)
 
@@ -138,7 +139,9 @@ class World:
 
         from app_vars import APP_VARS
         if APP_VARS.lighting_config.do_daylight_cycle:
-            APP_VARS.lighting_config.Ka *= 0.999
+            APP_VARS.lighting_config.Ka_x *= 0.999
+            APP_VARS.lighting_config.Ka_y *= 0.999
+            APP_VARS.lighting_config.Ka_z *= 0.999
         
         # Update elements
         for element in self.elements[::-1]:

@@ -13,16 +13,20 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from objects.wavefront import Model, RawVertex, WaveFrontReader
+from wavefront.material import Material
+from wavefront.reader import ModelReader
 
-DEFAULT_MODEL = WaveFrontReader().load_model_from_file('./src/objects/cube.obj')
+DEFAULT_MODEL = ModelReader().load_model_from_file('models/cube.obj')
 
 @dataclass
 class LightCube(Cube):
     def __post_init__(self):
         from objects.physics.momentum import Momentum
         self._momentum = Momentum(accel=0.5, max_speed=3.5)
-        return super().__post_init__()
+        super().__post_init__()
+        self.shape_specs[0].material = Material('lc')
+        self.shape_specs[0].material.Ka.xyz = Vec3(1000,1000,1000)
+        self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
 
     def _physics_update(self, delta_time: float):
         from app_vars import APP_VARS
