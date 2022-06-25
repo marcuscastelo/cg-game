@@ -177,14 +177,17 @@ def main():
     LOGGER.log_info("App has been closed gracefully", 'main')
 
 def test_wavefront():
-    from wavefront.reader import WaveFrontReader
+    from wavefront.reader import ModelReader
 
-    # reader = WaveFrontReader()
-    # model = reader.load_model_from_file('models/tree.obj')
-    # print(model)
+    reader = ModelReader()
+    model = reader.load_model_from_file('models/tree.obj')
+    # print(reader.materials)
 
     reader = MtlReader('models/tree.mtl')
     print(reader.read_materials())
+
+    # face1 = model.faces[0]
+    # print(face1)
 
     pass
 

@@ -5,10 +5,10 @@ import numpy as np
 from utils.logger import LOGGER
 from wavefront.face import Face
 from wavefront.model import Model
-from wavefront.material import Material
+from wavefront.material import Material, MtlReader
 
 @dataclass
-class WaveFrontReader:
+class ModelReader:
     model: Model = field(default_factory=Model)
     materials: list[Material] = field(default_factory=list)
     current_material: int = None
@@ -109,3 +109,13 @@ class WaveFrontReader:
             assert len(
                 arguments) >= 1, f'Command {command} should be followed with material, but found arguments = {arguments}'
             self.current_material = arguments[0]
+
+        if command == 'mtllib':
+            filename = arguments[0]
+            # TODO: append this files' folder before filename programatically
+            try:
+                materials = MtlReader(filename=f'models/{filename}').read_materials()
+            except Exception as e:
+                LOGGER.log_error(f'Failed to import {filename}!\nline: {line}')
+                raise e
+            self.materials += materials

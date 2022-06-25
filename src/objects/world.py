@@ -14,7 +14,7 @@ from objects.element import Element
 import constants
 from objects.light_cube import LightCube
 from wavefront.model import Model
-from wavefront.reader import WaveFrontReader
+from wavefront.reader import ModelReader
 
 from ray import Ray
 
@@ -98,7 +98,7 @@ class World:
         # self.spawn(light_cube)
 
         def load_model(filename: str) -> Model:
-            return WaveFrontReader().load_model_from_file(filename)
+            return ModelReader().load_model_from_file(filename)
 
         tree = Cube('tree', model=load_model('models/tree.obj'))
         tree.transform.translation.xyz = Vec3(4,0,4)

@@ -13,9 +13,9 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from wavefront.reader import WaveFrontReader
+from wavefront.reader import ModelReader
 
-DEFAULT_MODEL = WaveFrontReader().load_model_from_file('models/cube.obj')
+DEFAULT_MODEL = ModelReader().load_model_from_file('models/cube.obj')
 
 @dataclass
 class LightCube(Cube):
