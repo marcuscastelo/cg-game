@@ -44,19 +44,19 @@ class FpsTracker:
 
 @dataclass
 class LightingConfig:
-    Ka_x: float = 1/6
-    Ka_y: float = 1/6
-    Ka_z: float = 1/6
+    Ka_x: float = 1
+    Ka_y: float = 1
+    Ka_z: float = 1
 
-    Kd_x: float = 1
-    Kd_y: float = 1
-    Kd_z: float = 1
+    Kd_x: float = 10
+    Kd_y: float = 10
+    Kd_z: float = 10
 
     Ks_x: float = 1
     Ks_y: float = 1
     Ks_z: float = 1
     
-    Ns: float = 1000.0
+    Ns: float = 1
     
     light_position: Vec3 = field(default_factory=lambda: Vec3(2,0.72,0))
     do_daylight_cycle: bool = False

@@ -1,8 +1,10 @@
 from cgitb import text
 from dataclasses import dataclass, field
 from dis import dis
+import math
 import os
 import random
+import glm
 import numpy as np
 from OpenGL import GL as gl
 from utils.geometry import Vec3
@@ -46,6 +48,7 @@ class LightCube(Cube):
         self._momentum.apply_friction(0.9, delta_time=delta_time)
         self.transform.translation += self._momentum.velocity * delta_time
         # self.transform.translation += force * delta_time
+        
         
 
 

@@ -89,15 +89,15 @@ class World:
         # line.transform.rotation = APP_VARS.camera.transform.rotation
         # self.spawn(line)
 
-        
-        light_cube = LightCube('light_cube')
+
+        def load_model(filename: str) -> Model:
+            return ModelReader().load_model_from_file(filename)
+
+        light_cube = LightCube('light_cube', model=load_model('models/aux_robot.obj'))
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
-
-        def load_model(filename: str) -> Model:
-            return ModelReader().load_model_from_file(filename)
 
         tree = Cube('tree', model=load_model('models/tree.obj'))
         tree.transform.translation.xyz = Vec3(4,0,4)
@@ -125,9 +125,7 @@ class World:
         house.transform.scale.xyz = Vec3(3,3,3)
         self.spawn(house)
         
-        aux_robot = Cube('aux_robot', model=load_model('models/aux_robot.obj'))
-        aux_robot.transform.translation.xyz = Vec3(-15, 0, 15)
-        self.spawn(aux_robot)
+        
 
         # alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'))
         alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'))
