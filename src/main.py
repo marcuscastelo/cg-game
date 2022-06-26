@@ -10,6 +10,7 @@ Membros:
 
 from asyncore import read
 from cgi import test
+import math
 from threading import Thread
 import time
 
@@ -17,6 +18,8 @@ import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
+import glm
+from utils.geometry import Vec3
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
@@ -199,3 +202,13 @@ def test_wavefront():
 if __name__ == "__main__":
     # test_wavefront()
     main()
+    # x, z = 1, 0
+    # la = glm.lookAt(glm.vec3(0,0,0), glm.vec3(x,0,z), glm.vec3(0,1,0))
+    # print(la)
+    
+    # a = math.acos(la[0][0])
+    # if x < 0:
+    #     print(math.degrees(a))
+    # else:
+    #     print(180 - math.degrees(a))
+
