@@ -10,7 +10,7 @@ from OpenGL import GL as gl
 from utils.geometry import Vec3
 from gl_abstractions.shader import Shader, ShaderDB
 from gl_abstractions.texture import Texture, Texture2D
-from objects.cube import Cube
+from objects.model_element import ModelElement
 from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
@@ -21,7 +21,7 @@ from wavefront.reader import ModelReader
 DEFAULT_MODEL = ModelReader().load_model_from_file('models/cube.obj')
 
 @dataclass
-class LightCube(Cube):
+class AuxRobot(ModelElement):
     def __post_init__(self):
         from objects.physics.momentum import Momentum
         self._momentum = Momentum(accel=0.5, max_speed=3.5)

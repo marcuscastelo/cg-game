@@ -23,6 +23,7 @@ from gl_abstractions.shader import Shader, ShaderDB
 from wavefront.material import Material
 
 from transform import Transform
+from wavefront.model import Model
 
 if TYPE_CHECKING:
     from objects._2d._2dworld import World
@@ -46,7 +47,6 @@ class ShapeSpec:
     def __post_init__(self):
         assert self.texture is not None, f"Shape '{self.name}' has no texture"
         self.shader.layout.assert_data_ok(self.vertices)
-
 
 @dataclass
 class ShapeRenderer:
@@ -152,6 +152,44 @@ class ElementSpecification:
         assert isinstance(self.initial_transform,
                           Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
 
+    @staticmethod
+    def from_model(model: Model, shader: Shader = None, texture = None) -> 'ElementSpecification':
+        elspec = ElementSpecification()
+
+        if shader is None:
+            shader = ShaderDB.get_instance().get_shader('light_texture') # TODO: make shader part of the material
+
+        if texture is None:
+            texture = Texture2D.from_image_path('textures/white.jpg') # TODO: make texture part of something
+
+        for object in model.objects:
+            vertices_list = object.expand_faces_to_unindexed_vertices() # TODO: instead of unindexed, use indices
+            material = object.material
+
+            # assert material.name in ['Tree', 'Leaves'], f'{material.name}'
+
+            has_position = 'a_Position' in [ attr[0] for attr in shader.layout.attributes]
+            has_texcoord = 'a_TexCoord' in [ attr[0] for attr in shader.layout.attributes]
+            has_normal = 'a_Normal' in [ attr[0] for attr in shader.layout.attributes]
+
+            # # TODO: rename this variable to something less confusing
+            vertices_array = np.array([
+                # Example Vertex: (posX, posY, posZ, texU, texV, normX, normY, normZ)
+                vertex.to_tuple(has_position, has_texcoord, has_normal) for vertex in vertices_list
+            ], dtype=np.float32)
+
+            object_shape = ShapeSpec(
+                vertices=vertices_array,
+                # indices= TODO: use indices,
+                shader=shader,
+                render_mode=gl.GL_TRIANGLES,
+                name=f'{object.name}',
+                texture=texture,
+                material=material
+            )
+            elspec.shape_specs.append(object_shape)
+
+        return elspec
 
 @dataclass
 class BoundingBox2DCache:

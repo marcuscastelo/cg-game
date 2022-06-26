@@ -10,6 +10,7 @@ from app_vars import APP_VARS
 from camera import Camera
 from constants import GUI_WIDTH
 from objects.cube import Cube
+from objects.model_element import ModelElement
 from objects.element import Element
 
 class MainWindow(gui.Window):
