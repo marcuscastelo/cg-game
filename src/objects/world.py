@@ -103,15 +103,15 @@ class World:
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        bot = Cube('bot', model=load_model('models/bot.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        bot = Cube('bot', model=load_model('models/bot.obj'))
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
-        gun = Cube('gun', model=load_model('models/gun.obj'), texture=Texture2D.from_image_path('textures/metal.jpg'))
+        gun = Cube('gun', model=load_model('models/gun.obj'))
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 
-        gun = Cube('alvo', model=load_model('models/alvo1.obj'), texture=Texture2D.from_image_path('textures/baloon.jpg'))
+        gun = Cube('alvo', model=load_model('models/alvo1.obj'))
         gun.transform.translation.xyz = Vec3(4,0,-8)
         self.spawn(gun)
 
@@ -119,6 +119,20 @@ class World:
         ray.transform.translation.y = 100
         ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
         self.spawn(ray)
+
+        house = Cube('house', model=load_model('models/house.obj'))
+        house.transform.translation.xyz = Vec3(15, 0, -15)
+        house.transform.scale.xyz = Vec3(3,3,3)
+        self.spawn(house)
+        
+        aux_robot = Cube('aux_robot', model=load_model('models/aux_robot.obj'))
+        aux_robot.transform.translation.xyz = Vec3(-15, 0, 15)
+        self.spawn(aux_robot)
+
+        # alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'))
+        alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'))
+        alvo2.transform.translation.xyz = Vec3(15, 1.8, 15)
+        self.spawn(alvo2)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

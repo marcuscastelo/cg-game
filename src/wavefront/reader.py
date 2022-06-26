@@ -68,7 +68,7 @@ class ModelReader:
                 normals_ref=self.model.normals,
             )
             self.object.material = self.current_material
-            LOGGER.log_trace(f'Object name: {self.model.name}', 'Wavefront')
+            LOGGER.log_trace(f'Object name: {self.object.name}', 'Wavefront')
             self.model.objects.append(self.object)
 
         # Process face declarations

@@ -56,7 +56,7 @@ class Object:
             elif vertice_count == FACE_TRIANGLE:
                 pass
             else:
-                raise RuntimeError(f'Face has a weird number of vertices: {vertice_count}, expected {FACE_TRIANGLE} or {FACE_QUAD}\n\t{face=}')
+                raise RuntimeError(f'Face has a weird number of vertices: {vertice_count}, expected {FACE_TRIANGLE} or {FACE_QUAD} or {FACE_PENTA} \n\t{face=}')
             
 
             # print(f'Face {face_i} vertices: \n {face_vertices=}')

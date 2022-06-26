@@ -37,20 +37,20 @@ void main() {
 
     // Calc diffuse light
     float diffuseAngularCoeff = max(dot(fragNormal, lightDirection), 0.1);
-    vec3 diffuseLight = u_GKd * u_Kd * lightColor * diffuseAngularCoeff * 1/sqrt((distToLight * diffuseAngularCoeff));
+    vec3 diffuseLight = (u_GKd) * u_Kd * lightColor * diffuseAngularCoeff * 1/sqrt((distToLight * diffuseAngularCoeff));
 
     // Calc ambient light
-    vec3 ambientLight = u_GKa * u_Ka * lightColor;
+    vec3 ambientLight = (u_GKa) * u_Ka * lightColor;
 
     // Calc specular light
     vec3 cameraDiretion = normalize(u_CameraPos - v_Position);
     vec3 reflectDirection = normalize(reflect(-lightDirection, fragNormal));
     float dotProduct = max(dot(cameraDiretion, reflectDirection), 0.0);
-    float specMultiplier = pow(dotProduct, u_GNs * u_Ns); //TODO: check if this multiplication makes sense (u_Ns * u_GKs)
-    vec3 specularLight = u_GKs * u_Ks * specMultiplier * lightColor * 1/distToLight;
+    float specMultiplier = pow(dotProduct, (u_GNs) * u_Ns); //TODO: check if this multiplication makes sense (u_Ns * (u_GKs))
+    vec3 specularLight = (u_GKs) * u_Ks * specMultiplier * lightColor * 1/distToLight;
 
     vec4 fragTextureColor = texture2D(u_Texture, v_TexCoord);
-    vec3 combinedLight = ambientLight + diffuseLight + specularLight;
+    vec3 combinedLight = (ambientLight + diffuseLight + specularLight)/3;
 
     color = vec4(combinedLight * fragTextureColor.xyz, 1.0);
 }
