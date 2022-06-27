@@ -19,6 +19,8 @@ uniform vec3 u_GKd; // Diffuse Coeff.
 uniform vec3 u_GKs; // Specular Coeff.
 uniform float u_GNs; // Specular Exponent.
 
+uniform float u_d;
+
 uniform vec3 u_LightPos;
 uniform vec3 u_CameraPos;
 
@@ -52,5 +54,5 @@ void main() {
     vec4 fragTextureColor = texture2D(u_Texture, v_TexCoord);
     vec3 combinedLight = (ambientLight + diffuseLight + specularLight)/3;
 
-    color = vec4(combinedLight * fragTextureColor.xyz, 1.0);
+    color = vec4(combinedLight * fragTextureColor.xyz, u_d);
 }

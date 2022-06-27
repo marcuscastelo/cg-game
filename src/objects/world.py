@@ -15,10 +15,11 @@ from objects.model_element import ModelElement
 from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
+from objects.spawner import Spawner, SpawnerRegion
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
-from ray import Ray
+from objects.selection_ray import SelectionRay
 
 class World:
     '''
@@ -46,13 +47,13 @@ class World:
         from app_vars import APP_VARS
         self.spawn(APP_VARS.camera)
 
-        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'))
+        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'), ray_destroyable=False)
         wall.transform.scale = Vec3(0.1, 3, 3)
         wall.transform.translation.xyz = Vec3(4, 0, 0)
         wall.transform.rotation.xyz = Vec3(0, 0, 0)
         self.spawn(wall)
 
-        box = Cube('Box')
+        box = Cube('Box', ray_destroyable=False)
         box.transform.translation.xyz = Vec3(4,0.5,8)
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
         self.spawn(box)
@@ -60,52 +61,62 @@ class World:
         def load_model(filename: str) -> Model:
             return ModelReader().load_model_from_file(filename)
 
-        ground = ModelElement('Ground', texture=Texture2D.from_image_path('textures/ground.png'), model=load_model('models/cube.obj'))
+        ground = ModelElement('Ground', texture=Texture2D.from_image_path('textures/ground.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground)
 
-        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'), model=load_model('models/cube.obj'))
+        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         sky.transform.translation = Vec3(0, -150, 0)
         sky.transform.scale = Vec3(300, 300, 300)
         self.spawn(sky)
 
 
-        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'))
+        # TODO: rename 
+        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False, ray_destroyable=False)
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
         self.spawn(light_cube)
 
-        tree = ModelElement('tree', model=load_model('models/tree.obj'))
+        tree = ModelElement('tree', model=load_model('models/tree.obj'), ray_destroyable=False)
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        bot = ModelElement('bot', model=load_model('models/bot.obj'))
+
+        BOT_MODEL = load_model('models/bot.obj')
+        bot = ModelElement('bot', model=BOT_MODEL)
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
-        gun = ModelElement('gun', model=load_model('models/gun.obj'))
+        gun = ModelElement('gun', model=load_model('models/gun.obj'), ray_destroyable=False)
         gun.transform.translation.xyz = Vec3(4,0,-14)
         self.spawn(gun)
 
-        gun = ModelElement('alvo', model=load_model('models/alvo1.obj'))
-        gun.transform.translation.xyz = Vec3(4,0,-8)
-        self.spawn(gun)
+        alvo = ModelElement('alvo', model=load_model('models/alvo1.obj'), ray_destroyable=True)
+        alvo.transform.translation.xyz = Vec3(4,0,-8)
+        self.spawn(alvo)
 
-        ray = Ray('test_ray')
-        ray.transform.translation.y = 100
-        ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
-        self.spawn(ray)
+        # ray = SelectionRay('test_ray')
+        # ray.transform.translation.y = 100
+        # ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        # self.spawn(ray)
 
-        house = ModelElement('house', model=load_model('models/house.obj'))
+        house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
         house.transform.translation.xyz = Vec3(15, 0, -15)
         house.transform.scale.xyz = Vec3(3,3,3)
         self.spawn(house)
 
-        alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'))
+        alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'), ray_destroyable=True)
         alvo2.transform.translation.xyz = Vec3(15, 2.326, 15)
         self.spawn(alvo2)
+
+        spawner = Spawner(
+            name='BotSpawner',
+            region=SpawnerRegion(Vec3(-10,0.01,-10), Vec3(-10,0.01,10)),
+            element_factory=lambda: ModelElement('Spawned Bot!', model = BOT_MODEL)
+        )
+        self.spawn(spawner)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

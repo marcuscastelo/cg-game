@@ -9,11 +9,13 @@ import constants
 import glfw
 from gl_abstractions.shader import ShaderDB
 from line import Line
+from objects.bullet_ray import BulletRay
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.physics.momentum import Momentum
+from objects.selection_ray import SelectionRay
 from objects.world import World
-from ray import Ray
+from objects.selection_ray import SelectionRay
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
@@ -44,11 +46,11 @@ class Camera(Element):
         self._ground_y = 1.8
 
         self.raycast_line_dbg: Line = None
-        self.ray: Line = None
+        # self.ray: Line = None
 
     def on_spawned(self, world: 'World'):
         # TODO: fix shader
-        self.raycast_line_dbg = Line('test_line')
+        self.raycast_line_dbg = Line('test_line', ray_selectable=False, ray_destroyable=False)
         self.raycast_line_dbg.shape_specs[0].material.Ka.z = 10
         self.raycast_line_dbg.transform.scale.z = 10
         # world.spawn(self.raycast_line_dbg)
@@ -97,12 +99,22 @@ class Camera(Element):
     def on_key(self, window, key: int, scancode, action: int, mods):
         # TODO: remove debug
         from app_vars import APP_VARS
-        rays: list[Ray] = list(filter(lambda e: isinstance(e, Ray), APP_VARS.world.elements))
-        if rays:
-            if IS.just_pressed('r'):
-                rays[0].transform.translation.xyz = self.transform.translation.xyz
-                rays[0].direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
-
+        if IS.just_pressed('e'):
+            world = APP_VARS.world
+            selection_ray = SelectionRay('PlayerSelectionRay', show_debug_cube=False)
+            selection_ray.cast(
+                world=world,
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
+                direction=Vec3(*self.cameraFront).normalized()
+            )
+        elif IS.just_pressed('r'):
+            world = APP_VARS.world
+            bullet_ray = BulletRay('PlayerBulletRay', show_debug_cube=True)
+            bullet_ray.cast(
+                world=world,
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
+                direction=Vec3(*self.cameraFront).normalized()
+            )
 
         # TODO: refactor to use forces
         positive_actions = [ glfw.PRESS ]
