@@ -282,7 +282,7 @@ class Element: # TODO: rename to Object
         if self.destroyed:
             # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
             LOGGER.log_warning(
-                f'Trying to destroy already destroyed element {self}')
+                f'Trying to destroy already destroyed element {self.name=}, {type(self)=}, {self.transform.translation=}')
             return
 
         # LOGGER.log_debug(f"{self} marked for destruction")

@@ -18,6 +18,7 @@ from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
 from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
+from objects.wood_target import WoodTarget
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
@@ -103,9 +104,9 @@ class World:
         house.transform.scale.xyz = Vec3(3,3,3)
         self.spawn(house)
 
-        alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'), ray_destroyable=True)
-        alvo2.transform.translation.xyz = Vec3(15, 2.326, 15)
-        self.spawn(alvo2)
+        # alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'), ray_destroyable=True)
+        # alvo2.transform.translation.xyz = Vec3(15, 2.326, 15)
+        # self.spawn(alvo2)
 
         def spawn_bot():
             bot = Bot('Spawned Bot')
@@ -119,12 +120,8 @@ class World:
         )
         self.spawn(bot_spawner)
 
-        def spawn_target():
-            target = CubeTarget('Spawned Target')
-            return target
-
-        target_spawner = Spawner(
-            name='TargetSpawner',
+        house_target_spawner = Spawner(
+            name='HouseTargetSpawner',
             region=SpawnerRegion(Vec3(12.7,0.01,-18), Vec3(17.2,4,-18)),
             spawning_properties=SpawningProperties(
                 max_spawned_elements=2, 
@@ -132,12 +129,27 @@ class World:
                 max_interval=1, 
                 insta_replace_destroyed=True
             ),
-            element_factory=spawn_target,
+            element_factory=lambda: CubeTarget('Spawned Target'),
             show_debug_cube=True
             
         )
-        self.spawn(target_spawner)
+        self.spawn(house_target_spawner)
 
+        ALVO_2_MODEL = load_model('models/alvo2.obj')
+        ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')
+        outside_target_spawner = Spawner(
+            name='OutsideTargetSpawner',
+            region=SpawnerRegion(Vec3(15,2.326,15), Vec3(15,2.326,15)),
+            spawning_properties=SpawningProperties(
+                max_spawned_elements=1, 
+                min_interval=1, 
+                max_interval=2, 
+                insta_replace_destroyed=False
+            ),
+            element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
+            show_debug_cube=True
+        )
+        self.spawn(outside_target_spawner)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
