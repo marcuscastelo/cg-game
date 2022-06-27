@@ -18,7 +18,7 @@ from objects.aux_robot import AuxRobot
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
-from ray import Ray
+from objects.selection_ray import SelectionRay
 
 class World:
     '''
@@ -60,18 +60,19 @@ class World:
         def load_model(filename: str) -> Model:
             return ModelReader().load_model_from_file(filename)
 
-        ground = ModelElement('Ground', texture=Texture2D.from_image_path('textures/ground.png'), model=load_model('models/cube.obj'))
+        ground = ModelElement('Ground', texture=Texture2D.from_image_path('textures/ground.png'), model=load_model('models/cube.obj'), ray_selectable=False)
         ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground)
 
-        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'), model=load_model('models/cube.obj'))
+        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'), model=load_model('models/cube.obj'), ray_selectable=False)
         sky.transform.translation = Vec3(0, -150, 0)
         sky.transform.scale = Vec3(300, 300, 300)
         self.spawn(sky)
 
 
-        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'))
+        # TODO: rename 
+        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False)
         light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
         light_cube.transform.translation.y = 2
         light_cube.transform.scale = Vec3(1,1,1) * 0.1
@@ -93,10 +94,10 @@ class World:
         gun.transform.translation.xyz = Vec3(4,0,-8)
         self.spawn(gun)
 
-        ray = Ray('test_ray')
-        ray.transform.translation.y = 100
-        ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
-        self.spawn(ray)
+        # ray = SelectionRay('test_ray')
+        # ray.transform.translation.y = 100
+        # ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
+        # self.spawn(ray)
 
         house = ModelElement('house', model=load_model('models/house.obj'))
         house.transform.translation.xyz = Vec3(15, 0, -15)

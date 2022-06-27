@@ -244,6 +244,7 @@ class Element: # TODO: rename to Object
     name: str
     shape_specs: list[ShapeSpec]
     transform: Transform = field(default_factory=Transform)
+    ray_selectable: bool = True
 
     def __post_init__(self):
         assert isinstance(self.shape_specs, list), f"Expected 'shape_specs' to be a 'list[ShapeSpec]', but got {type(self.shape_specs)} instead"
