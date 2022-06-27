@@ -10,12 +10,12 @@ from utils.logger import LOGGER
 from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D
 from line import Line
-from objects.cube import Cube
+from objects.cube import CUBE_MODEL, Cube
 from objects.model_element import ModelElement
 from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
-from objects.spawner import Spawner, SpawnerRegion
+from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
@@ -85,13 +85,7 @@ class World:
 
 
         BOT_MODEL = load_model('models/bot.obj')
-        bot = ModelElement('bot', model=BOT_MODEL)
-        bot.transform.translation.xyz = Vec3(-4,0,4)
-        self.spawn(bot)
-
-        # gun = ModelElement('gun', model=load_model('models/gun.obj'), ray_destroyable=False)
-        # gun.transform.translation.xyz = Vec3(4,0,-14)
-        # self.spawn(gun)
+        TARGET_MODEL = load_model('models/alvo2.obj')
 
         alvo = ModelElement('alvo', model=load_model('models/alvo1.obj'), ray_destroyable=True)
         alvo.transform.translation.xyz = Vec3(4,0,-8)
@@ -111,12 +105,35 @@ class World:
         alvo2.transform.translation.xyz = Vec3(15, 2.326, 15)
         self.spawn(alvo2)
 
-        spawner = Spawner(
+        bot_spawner = Spawner(
             name='BotSpawner',
             region=SpawnerRegion(Vec3(-10,0.01,-10), Vec3(-10,0.01,10)),
-            element_factory=lambda: ModelElement('Spawned Bot!', model = BOT_MODEL)
+            element_factory=lambda: ModelElement('Spawned Bot', model = BOT_MODEL)
         )
-        self.spawn(spawner)
+        self.spawn(bot_spawner)
+
+        def spawn_target():
+            target = ModelElement('Spawned Bot!', model = CUBE_MODEL)
+            target.transform.scale *= 0.3
+            target.transform.scale.z *= -1
+            target.transform.scale.xy *= 3
+            return target
+
+        target_spawner = Spawner(
+            name='TargetSpawner',
+            region=SpawnerRegion(Vec3(12.7,0.01,-18), Vec3(17.2,4,-18)),
+            spawning_properties=SpawningProperties(
+                max_spawned_elements=2, 
+                min_interval=0.3, 
+                max_interval=1, 
+                insta_replace_destroyed=True
+            ),
+            element_factory=spawn_target,
+            show_debug_cube=True
+            
+        )
+        self.spawn(target_spawner)
+
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         

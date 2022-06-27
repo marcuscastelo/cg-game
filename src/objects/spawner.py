@@ -15,9 +15,10 @@ class SpawnerRegion:
 
 @dataclass
 class SpawningProperties:
-    min_interval: float = 1
-    max_interval: float = 3
+    min_interval: float = 0.5
+    max_interval: float = 1.5
     max_spawned_elements: int = 5
+    insta_replace_destroyed: bool = False
 
 @dataclass
 class Spawner(Element):
@@ -26,6 +27,8 @@ class Spawner(Element):
     spawning_properties: SpawningProperties = field(default_factory=SpawningProperties)
     shape_specs: list[ShapeSpec] = None
     show_debug_cube: bool = False
+    ray_destroyable: bool = False
+    ray_selectable: bool = False
 
     def __post_init__(self):
         assert self.region, f"region must be provided, got {self.region}"
@@ -47,6 +50,7 @@ class Spawner(Element):
 
         self.spawned_elements: list[Element] = []
         self._last_tried_spawn_time = time.time() # Pretend it has already spawned (to avoid instant spawns)
+        self._max_spawned_elements = 0 # Along all the world history, store the most simultanously spawned count 
         self._update_wait_time()
         return super().__post_init__()
 
@@ -54,19 +58,16 @@ class Spawner(Element):
         self._wait_time = random.random() * (self.spawning_properties.max_interval - self.spawning_properties.min_interval) + self.spawning_properties.min_interval
 
     def _remove_destroyed_elements(self):
+        len_before = len(self.spawned_elements)
         self.spawned_elements = [ element for element in self.spawned_elements if not element.destroyed ]
+        len_after = len(self.spawned_elements)
+
+
 
     def _spawn_element(self):
         good_position = False
-        while not good_position:
-            random_vec = Vec3(random.random(),random.random(),random.random())
-            random_pos = self.region.start + random_vec * (self.region.end - self.region.start)
-
-            good_position = True
-            for new_element in self.spawned_elements:
-                if (new_element.transform.translation - random_pos).magnitude() < 1:
-                    good_position = False
-                    break
+        random_vec = Vec3(random.random(),random.random(),random.random())
+        random_pos = self.region.start + random_vec * (self.region.end - self.region.start)
 
         from app_vars import APP_VARS
         new_element = self.element_factory()
@@ -74,13 +75,14 @@ class Spawner(Element):
 
         APP_VARS.world.spawn(new_element) # TODO: gain access to world in some other form
         self.spawned_elements.append(new_element)
+        self._max_spawned_elements = max(self._max_spawned_elements, len(self.spawned_elements))
         pass
 
     def _physics_update(self, delta_time: float):
+        self._remove_destroyed_elements()
         elapsed_time = time.time() - self._last_tried_spawn_time
         if elapsed_time > self._wait_time:
-            self._remove_destroyed_elements()
-            
+
             self._last_tried_spawn_time = time.time()
             if len(self.spawned_elements) < self.spawning_properties.max_spawned_elements:
                 LOGGER.log_debug(f'Spawned after {self._wait_time}!')
@@ -88,6 +90,12 @@ class Spawner(Element):
             else:
                 LOGGER.log_debug(f'Spawner maximum capacity reached {len(self.spawned_elements)}/{self.spawning_properties.max_spawned_elements}')
             self._update_wait_time()
+
+        
+        if self.spawning_properties.insta_replace_destroyed:
+            elements_to_spawn = max(0, self._max_spawned_elements - len(self.spawned_elements))
+            for _ in range(elements_to_spawn):
+                self._spawn_element()
 
 
         return super()._physics_update(delta_time)
