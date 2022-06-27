@@ -89,9 +89,9 @@ class World:
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
-        gun = ModelElement('gun', model=load_model('models/gun.obj'), ray_destroyable=False)
-        gun.transform.translation.xyz = Vec3(4,0,-14)
-        self.spawn(gun)
+        # gun = ModelElement('gun', model=load_model('models/gun.obj'), ray_destroyable=False)
+        # gun.transform.translation.xyz = Vec3(4,0,-14)
+        # self.spawn(gun)
 
         alvo = ModelElement('alvo', model=load_model('models/alvo1.obj'), ray_destroyable=True)
         alvo.transform.translation.xyz = Vec3(4,0,-8)

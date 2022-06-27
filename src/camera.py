@@ -12,6 +12,7 @@ from line import Line
 from objects.bullet_ray import BulletRay
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
+from objects.model_element import ModelElement
 from objects.physics.momentum import Momentum
 from objects.selection_ray import SelectionRay
 from objects.world import World
@@ -19,7 +20,7 @@ from objects.selection_ray import SelectionRay
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
-
+from wavefront.reader import ModelReader # TODO: rename reader to model_reader
 
 
 @dataclass
@@ -47,6 +48,7 @@ class Camera(Element):
 
         self.raycast_line_dbg: Line = None
         # self.ray: Line = None
+        self.gun: ModelElement = None
 
     def on_spawned(self, world: 'World'):
         # TODO: fix shader
@@ -54,6 +56,10 @@ class Camera(Element):
         self.raycast_line_dbg.shape_specs[0].material.Ka.z = 10
         self.raycast_line_dbg.transform.scale.z = 10
         # world.spawn(self.raycast_line_dbg)
+
+        self.gun = ModelElement('PlayerGun', model=ModelReader().load_model_from_file('models/gun.obj'), ray_selectable=False, ray_destroyable=False)
+        self.gun.transform.scale *= 0.1
+        world.spawn(self.gun)
         return super().on_spawned(world)
 
     @property
@@ -73,6 +79,16 @@ class Camera(Element):
         self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
         self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
         self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
+
+
+        self.gun.transform.translation.xz = self.transform.translation.xz
+        self.gun.transform.translation.y = self.transform.translation.y - 0.25
+        self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
+        self.gun.transform.rotation.xz = self.transform.rotation.xz
+        self.gun.transform.translation += Vec3(*self.cameraFront) * 0.1
+
+        if IS.just_pressed('r'):
+            self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
 
         if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
             self._sprinting = True
@@ -104,7 +120,7 @@ class Camera(Element):
             selection_ray = SelectionRay('PlayerSelectionRay', show_debug_cube=False)
             selection_ray.cast(
                 world=world,
-                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0) + Vec3(*self.cameraFront) * 1,
                 direction=Vec3(*self.cameraFront).normalized()
             )
         elif IS.just_pressed('r'):
@@ -112,7 +128,7 @@ class Camera(Element):
             bullet_ray = BulletRay('PlayerBulletRay', show_debug_cube=True)
             bullet_ray.cast(
                 world=world,
-                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0) + Vec3(*self.cameraFront) * 1,
                 direction=Vec3(*self.cameraFront).normalized()
             )
 
