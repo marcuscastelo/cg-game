@@ -83,8 +83,7 @@ class Camera(Element):
         # TODO: make all gun logic in one place plz
         self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
         self.gun.transform.rotation.xz = self.transform.rotation.xz
-       
-
+        
         if IS.just_pressed('r'):
             self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
 
@@ -168,15 +167,6 @@ class Camera(Element):
                 if action in negative_actions:
                     self._keyboardMovementInput -= direction_vec 
 
-
-        # if key == glfw.KEY_SPACE and action == glfw.PRESS:
-        #     if self.grounded:
-        #         self._keyboardMovementInput += glm.vec3(0, 1, 0)
-        # if key == glfw.KEY_SPACE and action in [glfw.REPEAT, glfw.RELEASE]:
-        #     if not self.grounded:
-        #         self._keyboardMovementInput.y = 0
-
-
     def _rotate_vec_to_face_front(self, vec: glm.vec3) -> glm.vec3:
         aligned_vec = vec
         aligned_vec = glm.rotateY(aligned_vec, math.radians(-self.yaw))
@@ -184,11 +174,6 @@ class Camera(Element):
 
     def on_cursor_pos(self, window, xpos, ypos):
         from app_vars import APP_VARS
-
-        # if APP_VARS.cursor.lastX == None or APP_VARS.cursor.lastY == None:
-        #     # Do not move camera if mouse just returned from pause screen
-        #     APP_VARS.cursor.lastX = xpos
-        #     APP_VARS.cursor.lastY = ypos    
 
         if APP_VARS.cursor.lastX == None:
             APP_VARS.cursor.lastX = xpos
@@ -226,14 +211,6 @@ class Camera(Element):
         self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
 
     def _physics_update(self, delta_time: float):
-        # self._fall_speed += 30 * delta_time**2
-        # self.transform.translation.y -= 0.3 * delta_time * self._fall_speed
-        # if self.transform.translation.y < self._ground_y:
-        #     self.transform.translation.y = self._ground_y
-        #     self._fall_speed = 0
-
-
-    
         input_force = Vec3(*self._rotate_vec_to_face_front(self._keyboardMovementInput))
 
         if not self.grounded:
@@ -249,7 +226,6 @@ class Camera(Element):
             self._momentum.apply_force_walk(Vec3(0, -0.3 * self.transform.translation.y, 0), delta_time=delta_time)
 
         self.transform.translation.xyz += self._momentum.velocity * delta_time * PHYSICS_TPS
-        # self.transform.translation.xyz += Vec3(*(cameraStep * delta_time * self.cameraSpeed))
 
 
         if self.transform.translation.x > constants.WORLD_SIZE//2:
@@ -264,10 +240,11 @@ class Camera(Element):
         if self.transform.translation.y < self._ground_y:
             self.transform.translation.y = self._ground_y
         
+
         # TODO: make all gun logic in one place plz
-        #  self.gun.transform.translation.xyz += (self.transform.translation.xyz + self._momentum.velocity - self.gun.transform.translation.xyz) * delta_time * 10
         self.gun.transform.translation.xz = self.transform.translation.xz
         self.gun.transform.translation.y = self.transform.translation.y - 0.25
+        self.gun.transform.translation.xyz += (Vec3(*self.cameraFront)) / 3
         
 
 
