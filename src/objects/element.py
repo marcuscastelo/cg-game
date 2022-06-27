@@ -270,6 +270,14 @@ class Element: # TODO: rename to Object
     def destroyed(self):
         return self._state.destroyed
 
+    @property
+    def center(self) -> Vec3:
+        return self.transform.translation.xyz
+    
+    @property
+    def pseudo_hitbox_distance(self) -> float:
+        return self.transform.scale.magnitude()
+
     def destroy(self):
         if self.destroyed:
             # raise RuntimeError(f'Trying to destroy already destroyed element {self}')

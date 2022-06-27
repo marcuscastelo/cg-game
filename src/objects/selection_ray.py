@@ -40,17 +40,12 @@ class SelectionRay(Ray):
 
         distances = [ calc_distance(element) for element in self.selectable_elements ]
 
-        # def stop_raycast():
-        #         self.direction = Vec3(0,0,0)
-        #         self.transform.translation.xyz = Vec3(0,100,0)
-        #         keep_iterating = False
-
         sorted_pairs = sorted(zip(distances, self.selectable_elements), key=lambda a: a[0])
         if sorted_pairs:
             element = sorted_pairs[0][1]
             distance = sorted_pairs[0][0]
 
-            if distance < 1:
+            if distance < element.pseudo_hitbox_distance:
                 self.hit_element = element
                 return True
 

@@ -24,34 +24,34 @@ class BulletRay(Ray):
         super().__post_init__()
 
     def on_spawned(self, world: 'World'):
-        self.selectable_elements = world.elements
+        self.destroyable_elements = world.elements
         return super().on_spawned(world)
 
     def _has_hit(self) -> bool:
-        self.selectable_elements = [ element for element in self.selectable_elements if element.ray_selectable ]
+        self.destroyable_elements = [ element for element in self.destroyable_elements if element.ray_destroyable ]
 
         def calc_distance(element: Element) -> float:
-            difference = element.transform.translation.xyz - self.transform.translation.xyz
-            difference = difference * element.transform.scale.xyz
-            # if element._state.selected:
-            #     scaled_difference /= 2 # FIXME: hardcoded value
-
+            try:
+                difference = element.center.xyz - self.center.xyz
+            except AttributeError as e:
+                print(f'{element=}')
+                raise e 
             distance = difference.magnitude()
             return distance
 
-        distances = [ calc_distance(element) for element in self.selectable_elements ]
+        distances = [ calc_distance(element) for element in self.destroyable_elements ]
 
         # def stop_raycast():
         #         self.direction = Vec3(0,0,0)
         #         self.transform.translation.xyz = Vec3(0,100,0)
         #         keep_iterating = False
 
-        sorted_pairs = sorted(zip(distances, self.selectable_elements), key=lambda a: a[0])
+        sorted_pairs = sorted(zip(distances, self.destroyable_elements), key=lambda a: a[0])
         if sorted_pairs:
             element = sorted_pairs[0][1]
             distance = sorted_pairs[0][0]
 
-            if distance < 1:
+            if distance < element.pseudo_hitbox_distance:
                 self.hit_element = element
                 return True
 
@@ -68,8 +68,7 @@ class BulletRay(Ray):
 
         LOGGER.log_debug(f'Bullet hit element {self.hit_element.name}')
         LOGGER.log_debug(f'{self.hit_element.ray_destroyable=}')
-        if self.hit_element.ray_destroyable:
-            self.hit_element.destroy()
+        self.hit_element.destroy()
 
         return super()._on_raycast_stopped(hit)
 
