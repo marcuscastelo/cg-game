@@ -32,6 +32,10 @@ class MainWindow(gui.Window):
         self._last_selected_element = None
         self.mock_obj = Cube('mock_cube')
 
+        self.sync_Ka = True
+        self.sync_Kd = True
+        self.sync_Ks = True
+
     def _update_available_elements(self):
         id = 0
         self.available_elements.clear()
@@ -160,6 +164,8 @@ class MainWindow(gui.Window):
                 el.Text().add(el.TextParams('Ka_z'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Ka_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
 
+                el.CheckBox(self, 'sync_Ka').add(el.CheckboxParams(label='Sync'))
+
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Kd_x'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Kd_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
@@ -170,6 +176,8 @@ class MainWindow(gui.Window):
                 el.Text().add(el.TextParams('Kd_z'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Kd_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
 
+                el.CheckBox(self, 'sync_Kd').add(el.CheckboxParams(label='Sync'))
+
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ks_x'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Ks_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
@@ -179,6 +187,8 @@ class MainWindow(gui.Window):
 
                 el.Text().add(el.TextParams('Ks_z'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+
+                el.CheckBox(self, 'sync_Ks').add(el.CheckboxParams(label='Sync'))
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ns'))
@@ -205,6 +215,15 @@ class MainWindow(gui.Window):
         if self._last_selected_element is not APP_VARS.selected_element:
             self._update_selection(APP_VARS.selected_element)
             self._last_selected_element = APP_VARS.selected_element
+
+        if self.sync_Ka:
+            APP_VARS.lighting_config.Ka_y = APP_VARS.lighting_config.Ka_z = APP_VARS.lighting_config.Ka_x
+
+        if self.sync_Kd:
+            APP_VARS.lighting_config.Kd_y = APP_VARS.lighting_config.Kd_z = APP_VARS.lighting_config.Kd_x
+
+        if self.sync_Ks:
+            APP_VARS.lighting_config.Ks_y = APP_VARS.lighting_config.Ks_z = APP_VARS.lighting_config.Ks_x
 
         return super().update()
 
