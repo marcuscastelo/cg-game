@@ -4,8 +4,9 @@ from time import sleep
 
 from utils.geometry import Vec3
 from utils.logger import LOGGER
-from objects.element import PHYSICS_TPS, Element, ShapeSpec
 from objects.cube import Cube
+from objects.element import PHYSICS_TPS, Element, ShapeSpec
+from objects.model_element import ModelElement
 
 @dataclass
 class Ray(Element):
@@ -27,7 +28,7 @@ class Ray(Element):
 
         selectable_elements = APP_VARS.world.elements
         selectable_elements = [ element for element in selectable_elements if element not in [APP_VARS.camera, self, APP_VARS.camera.raycast_line_dbg] ]
-        selectable_elements = [ element for element in selectable_elements if element.name not in ['Ground', 'light_cube', 'Sky'] ]
+        selectable_elements = [ element for element in selectable_elements if element.name not in ['Ground', 'Aux Robot', 'Sky'] ]
 
         def calc_distance(element: Element) -> float:
             difference = element.transform.translation.xyz - self.transform.translation.xyz
