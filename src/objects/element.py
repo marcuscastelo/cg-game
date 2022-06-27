@@ -122,11 +122,13 @@ class ShapeRenderer:
         self.shader.upload_uniform_vec3('u_Kd', material.Kd.values.astype(np.float32))
         self.shader.upload_uniform_vec3('u_Ks', material.Ks.values.astype(np.float32))
         self.shader.upload_uniform_float('u_Ns', material.Ns)
+        self.shader.upload_uniform_float('u_d', material.d)
 
         self.shader.upload_uniform_vec3('u_GKa', Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
         self.shader.upload_uniform_vec3('u_GKd', Vec3(APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z))
         self.shader.upload_uniform_vec3('u_GKs', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
         self.shader.upload_uniform_float('u_GNs', APP_VARS.lighting_config.Ns)
+
         
         self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
