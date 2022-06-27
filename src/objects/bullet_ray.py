@@ -6,6 +6,7 @@ from utils.logger import LOGGER
 from objects.cube import Cube
 from objects.element import Element
 from objects.ray import Ray
+from wavefront.material import Material
 
 if TYPE_CHECKING:
     from objects.world import World
@@ -19,10 +20,10 @@ class BulletRay(Ray):
             self.transform.scale.xyz = Vec3(0.1,0.1,3) * 0.3
 
             self.shape_specs = a.shape_specs
+            a.shape_specs[0].material = Material('GunShot',Ka=Vec3(1,0,0),Kd=Vec3(1,0,0))
         super().__post_init__()
 
     def on_spawned(self, world: 'World'):
-        from app_vars import APP_VARS
         self.selectable_elements = world.elements
         return super().on_spawned(world)
 

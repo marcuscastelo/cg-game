@@ -80,12 +80,10 @@ class Camera(Element):
         self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
         self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
 
-
-        self.gun.transform.translation.xz = self.transform.translation.xz
-        self.gun.transform.translation.y = self.transform.translation.y - 0.25
+        # TODO: make all gun logic in one place plz
         self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
         self.gun.transform.rotation.xz = self.transform.rotation.xz
-        self.gun.transform.translation += Vec3(*self.cameraFront) * 0.1
+       
 
         if IS.just_pressed('r'):
             self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
@@ -265,6 +263,11 @@ class Camera(Element):
 
         if self.transform.translation.y < self._ground_y:
             self.transform.translation.y = self._ground_y
+        
+        # TODO: make all gun logic in one place plz
+        #  self.gun.transform.translation.xyz += (self.transform.translation.xyz + self._momentum.velocity - self.gun.transform.translation.xyz) * delta_time * 10
+        self.gun.transform.translation.xz = self.transform.translation.xz
+        self.gun.transform.translation.y = self.transform.translation.y - 0.25
         
 
 
