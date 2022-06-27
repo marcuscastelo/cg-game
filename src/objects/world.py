@@ -15,6 +15,7 @@ from objects.model_element import ModelElement
 from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
+from objects.spawner import Spawner, SpawnerRegion
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
@@ -82,7 +83,9 @@ class World:
         tree.transform.translation.xyz = Vec3(4,0,4)
         self.spawn(tree)
 
-        bot = ModelElement('bot', model=load_model('models/bot.obj'))
+
+        BOT_MODEL = load_model('models/bot.obj')
+        bot = ModelElement('bot', model=BOT_MODEL)
         bot.transform.translation.xyz = Vec3(-4,0,4)
         self.spawn(bot)
 
@@ -107,6 +110,13 @@ class World:
         alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'), ray_destroyable=True)
         alvo2.transform.translation.xyz = Vec3(15, 2.326, 15)
         self.spawn(alvo2)
+
+        spawner = Spawner(
+            name='BotSpawner',
+            region=SpawnerRegion(Vec3(-10,0.01,-10), Vec3(-10,0.01,10)),
+            element_factory=lambda: ModelElement('Spawned Bot!', model = BOT_MODEL)
+        )
+        self.spawn(spawner)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
