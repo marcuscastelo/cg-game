@@ -26,6 +26,8 @@ class Ray(Element, metaclass=ABCMeta):
     def cast(self, world: 'World', origin: Vec3, direction: Vec3):
         self.transform.translation = origin.xyz
         self.direction = direction.xyz
+        from app_vars import APP_VARS
+        self.transform.rotation.xyz = APP_VARS.camera.transform.rotation.xyz 
         world.spawn(self)
 
     def on_spawned(self, world: 'World'):

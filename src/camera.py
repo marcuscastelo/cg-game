@@ -9,6 +9,7 @@ import constants
 import glfw
 from gl_abstractions.shader import ShaderDB
 from line import Line
+from objects.bullet_ray import BulletRay
 
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.physics.momentum import Momentum
@@ -98,12 +99,20 @@ class Camera(Element):
     def on_key(self, window, key: int, scancode, action: int, mods):
         # TODO: remove debug
         from app_vars import APP_VARS
-        if IS.just_pressed('r'):
+        if IS.just_pressed('e'):
             world = APP_VARS.world
             selection_ray = SelectionRay('PlayerSelectionRay', show_debug_cube=True, ray_selectable=False)
             selection_ray.cast(
                 world=world,
-                origin=self.transform.translation.xyz,
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
+                direction=Vec3(*self.cameraFront).normalized()
+            )
+        elif IS.just_pressed('r'):
+            world = APP_VARS.world
+            bullet_ray = BulletRay('PlayerBulletRay', show_debug_cube=True, ray_selectable=False)
+            bullet_ray.cast(
+                world=world,
+                origin=self.transform.translation.xyz - Vec3(0,0.1,0),
                 direction=Vec3(*self.cameraFront).normalized()
             )
 
