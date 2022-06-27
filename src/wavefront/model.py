@@ -64,7 +64,7 @@ class Object:
             face_i += 1
 
         # # LOGGER.log_trace('Model convetted to raw vertices list!', 'WaveFront - Model')
-        assert face_vertices
+        # assert face_vertices, f'{self=}'
         # print(f'All vertices:\n {face_vertices=}')
         return all_vertices
 

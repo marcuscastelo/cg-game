@@ -180,16 +180,19 @@ class ElementSpecification:
                 vertex.to_tuple(has_position, has_texcoord, has_normal) for vertex in vertices_list
             ], dtype=np.float32)
 
-            object_shape = ShapeSpec(
-                vertices=vertices_array,
-                # indices= TODO: use indices,
-                shader=shader,
-                render_mode=gl.GL_TRIANGLES,
-                name=f'{object.name}',
-                texture=texture,
-                material=material
-            )
-            elspec.shape_specs.append(object_shape)
+            if len(vertices_array.shape) == 2:
+                object_shape = ShapeSpec(
+                    vertices=vertices_array,
+                    # indices= TODO: use indices,
+                    shader=shader,
+                    render_mode=gl.GL_TRIANGLES,
+                    name=f'{object.name}',
+                    texture=texture,
+                    material=material
+                )
+                elspec.shape_specs.append(object_shape)
+            else:
+                LOGGER.log_warning(f'Object or Group {object.name} has weird shape {vertices_array.shape}')
 
         return elspec
 

@@ -60,7 +60,7 @@ class ModelReader:
             POS_TEX_NORMAL = auto()
             POS_NORMAL = auto()
 
-        if command == 'o':
+        if command in ['o', 'g']:
             self.object = Object(
                 name=' '.join(arguments),
                 positions_ref=self.model.positions,
