@@ -78,6 +78,4 @@ class SelectionRay(Ray):
         return super()._on_raycast_stopped(hit)
 
     def _physics_update(self, delta_time: float):
-        LOGGER.log_debug(f'updating {delta_time}')
-
         return super()._physics_update(delta_time)

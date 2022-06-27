@@ -50,7 +50,7 @@ class Camera(Element):
 
     def on_spawned(self, world: 'World'):
         # TODO: fix shader
-        self.raycast_line_dbg = Line('test_line', ray_selectable=False)
+        self.raycast_line_dbg = Line('test_line', ray_selectable=False, ray_destroyable=False)
         self.raycast_line_dbg.shape_specs[0].material.Ka.z = 10
         self.raycast_line_dbg.transform.scale.z = 10
         # world.spawn(self.raycast_line_dbg)
@@ -101,7 +101,7 @@ class Camera(Element):
         from app_vars import APP_VARS
         if IS.just_pressed('e'):
             world = APP_VARS.world
-            selection_ray = SelectionRay('PlayerSelectionRay', show_debug_cube=True, ray_selectable=False)
+            selection_ray = SelectionRay('PlayerSelectionRay', show_debug_cube=False)
             selection_ray.cast(
                 world=world,
                 origin=self.transform.translation.xyz - Vec3(0,0.1,0),
@@ -109,7 +109,7 @@ class Camera(Element):
             )
         elif IS.just_pressed('r'):
             world = APP_VARS.world
-            bullet_ray = BulletRay('PlayerBulletRay', show_debug_cube=True, ray_selectable=False)
+            bullet_ray = BulletRay('PlayerBulletRay', show_debug_cube=True)
             bullet_ray.cast(
                 world=world,
                 origin=self.transform.translation.xyz - Vec3(0,0.1,0),

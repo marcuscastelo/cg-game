@@ -66,12 +66,13 @@ class BulletRay(Ray):
         assert self.hit_element
 
         LOGGER.log_debug(f'Bullet hit element {self.hit_element.name}')
-        self.hit_element.destroy()
+        LOGGER.log_debug(f'{self.hit_element.ray_destroyable=}')
+        if self.hit_element.ray_destroyable:
+            self.hit_element.destroy()
 
         return super()._on_raycast_stopped(hit)
 
     def _physics_update(self, delta_time: float):
-        LOGGER.log_debug(f'updating {delta_time}')
         self.transform.scale.z *= 1 + (0.1 * delta_time)
 
         return super()._physics_update(delta_time)

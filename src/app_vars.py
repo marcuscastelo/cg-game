@@ -80,6 +80,7 @@ class AppVars:
             self.camera = Camera(
                 name='Main Camera', 
                 transform=Transform(translation=Vec3(0, 1.7, 0)),
-                ray_selectable=False
+                ray_selectable=False,
+                ray_destroyable=False,
             )
 APP_VARS = AppVars()

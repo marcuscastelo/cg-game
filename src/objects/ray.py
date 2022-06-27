@@ -17,6 +17,8 @@ if TYPE_CHECKING:
 class Ray(Element, metaclass=ABCMeta):
     direction: Vec3 = field(default_factory=lambda: Vec3(0,0,0))
     shape_specs: list[ShapeSpec] = None
+    ray_selectable: bool = False
+    ray_destroyable: bool = False
 
     def __post_init__(self):
         self.direction: Union[Vec3, None] = None
