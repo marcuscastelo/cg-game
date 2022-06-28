@@ -65,7 +65,7 @@ void main() {
     if (u_HasTexture)
         fragBaseColor = texture2D(u_Texture, v_TexCoord);
     else
-        fragBaseColor = vec4(u_Ka, 1.0);
+        fragBaseColor = vec4(u_Kd, 1.0);
 
     vec3 combinedLight = ambientLight + ambientDirectionalLight + auxRobotDiffuseLight + bulletDiffuseLight + specularLight;
 
