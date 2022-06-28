@@ -204,22 +204,6 @@ class Camera(Element):
 
         self.cameraFront = glm.vec3(*yaw_pitch_to_front(yaw, pitch))
 
-        # front = glm.vec3()
-        # front.x = math.cos(yaw) * math.cos(pitch)
-        # front.y = math.sin(pitch)
-        # front.z = math.sin(yaw) * math.cos(pitch)
-        # self.cameraFront = glm.normalize(front)
-
-        # cy, cp = front_to_yaw_pitch(self.cameraFront)
-        # self.cameraFront = glm.vec3(*yaw_pitch_to_front(cy ,cp))
-        # print(f'{yaw=}, {cy=}')
-        # print(f'{pitch=}, {cp=}')
-        # # assert abs(yaw - cy) < 0.2
-        # # assert abs(pitch - cp) < 0.2
-        # pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
-        # pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
-
-        # self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
         self.transform.rotation.xyz = front_to_rotation(Vec3(*self.cameraFront))
 
     def _physics_update(self, delta_time: float):

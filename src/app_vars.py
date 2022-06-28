@@ -16,6 +16,7 @@ def _create_world():
     
 if TYPE_CHECKING:
     from objects.world import World
+    from objects.bullet_ray import BulletRay
 
 @dataclass
 class DebugOptions:
@@ -71,6 +72,7 @@ class AppVars:
     camera: Camera = None
     lighting_config: LightingConfig = field(default_factory=LightingConfig)
     selected_element: Union[Element, None] = None
+    last_bullet: Union['BulletRay', None] = None
 
     game_fps: FpsTracker = field(default_factory=FpsTracker)
     gui_fps: FpsTracker = field(default_factory=FpsTracker)
@@ -79,7 +81,7 @@ class AppVars:
         if self.camera is None:
             self.camera = Camera(
                 name='Main Camera', 
-                transform=Transform(translation=Vec3(0, 1.7, 0)),
+                transform=Transform(translation=Vec3(-12, 1.7, -5)),
                 ray_selectable=False,
                 ray_destroyable=False,
             )

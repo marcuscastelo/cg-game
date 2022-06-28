@@ -128,8 +128,13 @@ class ShapeRenderer:
         self.shader.upload_uniform_vec3('u_GKs', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
         self.shader.upload_uniform_float('u_GNs', APP_VARS.lighting_config.Ns)
 
+        if APP_VARS.last_bullet:
+            self.shader.upload_uniform_vec3('u_BulletPos', APP_VARS.last_bullet.transform.translation.values.astype(np.float32) )
+        else:
+            self.shader.upload_uniform_vec3('u_BulletPos',  Vec3(0,-1000,0).values.astype(np.float32))
+
+        self.shader.upload_uniform_vec3('u_AuxRobotPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         
-        self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
         self.shader.upload_bool('u_HasTexture', int(self.texture is not None))
         # Draw the vertices according to the primitive

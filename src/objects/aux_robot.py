@@ -15,8 +15,6 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 from objects.physics.rotation import front_to_rotation
 
-from transform import Transform
-from wavefront.material import Material
 from wavefront.reader import ModelReader
 
 DEFAULT_MODEL = ModelReader().load_model_from_file('models/cube.obj')

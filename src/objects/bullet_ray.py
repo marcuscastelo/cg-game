@@ -20,10 +20,13 @@ class BulletRay(Ray):
             self.transform.scale.xyz = Vec3(0.1,0.1,3) * 0.3
 
             self.shape_specs = a.shape_specs
+            # TODO: make .mtl
             a.shape_specs[0].material = Material('GunShot',Ka=Vec3(1,0,0),Kd=Vec3(1,0,0))
         super().__post_init__()
 
     def on_spawned(self, world: 'World'):
+        from app_vars import APP_VARS
+        APP_VARS.last_bullet = self
         self.destroyable_elements = world.elements
         return super().on_spawned(world)
 
@@ -40,11 +43,6 @@ class BulletRay(Ray):
             return distance
 
         distances = [ calc_distance(element) for element in self.destroyable_elements ]
-
-        # def stop_raycast():
-        #         self.direction = Vec3(0,0,0)
-        #         self.transform.translation.xyz = Vec3(0,100,0)
-        #         keep_iterating = False
 
         sorted_pairs = sorted(zip(distances, self.destroyable_elements), key=lambda a: a[0])
         if sorted_pairs:
@@ -70,9 +68,11 @@ class BulletRay(Ray):
         LOGGER.log_debug(f'{self.hit_element.ray_destroyable=}')
         self.hit_element.destroy()
 
+        if APP_VARS.last_bullet is self:
+           APP_VARS.last_bullet = None 
         return super()._on_raycast_stopped(hit)
 
     def _physics_update(self, delta_time: float):
-        self.transform.scale.z *= 1 + (0.1 * delta_time)
+        # self.transform.scale.z *= 1 + (0.1 * delta_time)
 
         return super()._physics_update(delta_time)
