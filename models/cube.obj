@@ -33,11 +33,11 @@ vt 0 1
 vt 1 1
 vt 1 0
 vt 0 0
-vn 0 0 -1
-vn 1 0 0
-vn 0 0 1
+vn 0 0 +1
 vn -1 0 0
-vn 0 1 0
+vn 0 0 -1
+vn +1 0 0
+vn 0 +1 0
 vn 0 -1 0
 usemtl none
 f 4/4/1 7/3/1 5/2/1 2/1/1
