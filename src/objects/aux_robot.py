@@ -4,6 +4,7 @@ from dis import dis
 import math
 import os
 import random
+import time
 import glm
 import numpy as np
 from OpenGL import GL as gl
@@ -32,12 +33,9 @@ class AuxRobot(ModelElement):
 
         dist = camera.transform.translation - self.transform.translation
         force: Vec3 = dist.normalized()
-        force += Vec3((random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2)
-        if dist.magnitude() < 1:
-            if force.x > force.z:
-                force.z = 1
-            else:
-                force.x = 1
+        # force += Vec3((random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2)
+        if dist.magnitude() < 3:
+            force.x = force.z = 0
         force.y = 0
         
         self._momentum.apply_force(force, delta_time=delta_time)
@@ -47,7 +45,7 @@ class AuxRobot(ModelElement):
         self.transform.rotation = front_to_rotation(dist)
         self.transform.rotation.y -= math.pi/2
         
-
+        self.transform.translation.y = (math.sin(time.time() / 2) / 2 + 1) * (2 - 1.8) + 1.8
 
 
         return super()._physics_update(delta_time)

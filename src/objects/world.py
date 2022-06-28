@@ -59,12 +59,6 @@ class World:
         from app_vars import APP_VARS
         self.spawn(APP_VARS.camera)
 
-        # wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'), ray_destroyable=False)
-        # wall.transform.scale = Vec3(0.1, 3, 3)
-        # wall.transform.translation.xyz = Vec3(4, 0, 0)
-        # wall.transform.rotation.xyz = Vec3(0, 0, 0)
-        # self.spawn(wall)
-
         ground_main = ModelElement('GroundMain', texture=Texture2D.from_image_path('textures/floor3.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         ground_main.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground_main.transform.translation = Vec3(0, -0.1, 0)
@@ -164,6 +158,7 @@ class World:
             element_factory=spawn_bot,
         )
         self.spawn(bot_spawner)
+
         TARGET_SMALL_MODEL = load_model('models/target_small.obj')
         house_target_spawner = Spawner(
             name='HouseTargetSpawner',
@@ -174,7 +169,7 @@ class World:
                 max_interval=1, 
                 insta_replace_destroyed=True,
             ),
-            element_factory=lambda: ModelElement('Spawned Target', model=TARGET_SMALL_MODEL, transform=Transform(scale=Vec3(0.4,0.4,1))),
+            element_factory=lambda: ModelElement('target_small', model=TARGET_SMALL_MODEL, transform=Transform(scale=Vec3(0.4,0.4,1))),
         )
         self.spawn(house_target_spawner)
 
