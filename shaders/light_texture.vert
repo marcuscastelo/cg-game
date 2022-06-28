@@ -17,5 +17,5 @@ void main() {
     gl_Position = vec4(a_Position, 1.0) * u_Model * u_View * u_Projection;
     v_Position = (vec4(a_Position, 1.0) * u_Model).xyz;
     v_TexCoord = a_TexCoord;
-    v_Normal = a_Normal;
+    v_Normal = (vec4(a_Normal, 0.0) * u_Model).xyz;
 }
