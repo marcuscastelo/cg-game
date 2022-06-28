@@ -7,6 +7,7 @@ import glm
 
 from utils.geometry import Vec3
 from objects.model_element import ModelElement
+from objects.physics.rotation import front_to_rotation
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
@@ -44,11 +45,13 @@ class Bot(ModelElement):
 
     def _physics_update(self, delta_time: float):
         from constants import WORLD_SIZE
-        self.momentum.apply_force(Vec3(math.sin(time.time() * self.per_x) * self.amp_x, 0, math.cos(time.time() * self.per_y) * self.amp_y), delta_time=delta_time)
-        self.transform.translation += self.momentum.velocity 
-        self.transform.translation.x = glm.clamp(self.transform.translation.x, -WORLD_SIZE/2, WORLD_SIZE/2)
-        self.transform.translation.y = glm.clamp(self.transform.translation.y, -WORLD_SIZE/2, WORLD_SIZE/2)
-        
+        if not self._dying:
+            self.momentum.apply_force(Vec3(math.sin(time.time() * self.per_x) * self.amp_x, 0, math.cos(time.time() * self.per_y) * self.amp_y), delta_time=delta_time)
+            self.transform.translation += self.momentum.velocity 
+            self.transform.translation.x = glm.clamp(self.transform.translation.x, -WORLD_SIZE/2, WORLD_SIZE/2)
+            self.transform.translation.z = glm.clamp(self.transform.translation.z, 0, WORLD_SIZE/2)
+            self.transform.rotation.xyz = front_to_rotation(self.momentum.velocity)
+            self.transform.rotation.y -= math.pi/2
         
         return super()._physics_update(delta_time)
 

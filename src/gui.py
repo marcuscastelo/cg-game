@@ -154,6 +154,9 @@ class MainWindow(gui.Window):
 
             el.Text().add(el.TextParams('Global Lighting Config:'))
 
+            min_light = 0
+            max_light = 100
+
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ka_x'))
                 el.SliderFloat(APP_VARS.lighting_config, 'Ka_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
@@ -168,31 +171,31 @@ class MainWindow(gui.Window):
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Kd_x'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Kd_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_x').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.Text().add(el.TextParams('Kd_y'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Kd_y').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_y').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.Text().add(el.TextParams('Kd_z'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Kd_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Kd_z').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.CheckBox(self, 'sync_Kd').add(el.CheckboxParams(label='Sync'))
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ks_x'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Ks_x').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_x').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.Text().add(el.TextParams('Ks_y'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Ks_y').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_y').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.Text().add(el.TextParams('Ks_z'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=0, max_value=1, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ks_z').add(el.SliderFloatParams(min_value=min_light, max_value=max_light, width=100))
 
                 el.CheckBox(self, 'sync_Ks').add(el.CheckboxParams(label='Sync'))
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Ns'))
-                el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=0, max_value=1000, width=100))
+                el.SliderFloat(APP_VARS.lighting_config, 'Ns').add(el.SliderFloatParams(min_value=min_light, max_value=max_light * 10, width=100))
 
             with dpg.group(horizontal=True):
                 el.Text().add(el.TextParams('Do daylight cycle?'))

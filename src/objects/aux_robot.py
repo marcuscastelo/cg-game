@@ -13,6 +13,7 @@ from gl_abstractions.texture import Texture, Texture2D
 from objects.model_element import ModelElement
 from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
+from objects.physics.rotation import front_to_rotation
 
 from transform import Transform
 from wavefront.material import Material
@@ -48,7 +49,8 @@ class AuxRobot(ModelElement):
         self._momentum.apply_friction(0.9, delta_time=delta_time)
         self.transform.translation += self._momentum.velocity * delta_time
         # self.transform.translation += force * delta_time
-        
+        self.transform.rotation = front_to_rotation(dist)
+        self.transform.rotation.y -= math.pi/2
         
 
 
