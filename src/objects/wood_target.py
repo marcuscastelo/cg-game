@@ -10,7 +10,8 @@ from objects.cube import Cube
 class WoodTarget(Cube):
     def __post_init__(self):
         self.transform.scale *= 0.3
-        self.transform.scale.xy *= 3
+        self.transform.scale.xy *= 1
+        self.transform.rotation.y = math.pi/2
         return super().__post_init__()
 
     @property

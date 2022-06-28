@@ -1,14 +1,16 @@
 import math
 from glm import pitch
+import glm
 from utils.geometry import Vec3
 
-def front_to_rotation(front_vec: Vec3, up: Vec3) -> Vec3:
+def front_to_rotation(front_vec: Vec3) -> Vec3:
     '''Converts (front, up) to rotation Vec3'''
-    yaw, pitch = front_to_yaw_pitch(front_vec, up)
+    assert isinstance(front_vec, Vec3)
+    yaw, pitch = front_to_yaw_pitch(front_vec)
+    pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
+    pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
 
-    # return Vec3(
-    #     x=
-    # )
+    return Vec3(pitch_x, math.pi/2-yaw, pitch_z)
 
 
 def yaw_pitch_to_front(yaw: float, pitch: float, normalized: bool = True) -> Vec3:
@@ -23,6 +25,8 @@ def yaw_pitch_to_front(yaw: float, pitch: float, normalized: bool = True) -> Vec
 
 def front_to_yaw_pitch(front: Vec3):
     # TODO: implement (precisa do up?)
+
+    front = front.normalized()
 
     sin_pitch = front.y
     pitch = math.asin(sin_pitch)

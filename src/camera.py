@@ -14,7 +14,7 @@ from objects.bullet_ray import BulletRay
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.model_element import ModelElement
 from objects.physics.momentum import Momentum
-from objects.physics.rotation import yaw_pitch_to_front
+from objects.physics.rotation import front_to_rotation, yaw_pitch_to_front
 from objects.selection_ray import SelectionRay
 from objects.world import World
 from objects.selection_ray import SelectionRay
@@ -216,10 +216,11 @@ class Camera(Element):
         # print(f'{pitch=}, {cp=}')
         # # assert abs(yaw - cy) < 0.2
         # # assert abs(pitch - cp) < 0.2
-        pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
-        pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
+        # pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
+        # pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
 
-        self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
+        # self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
+        self.transform.rotation.xyz = front_to_rotation(Vec3(*self.cameraFront))
 
     def _physics_update(self, delta_time: float):
         self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz

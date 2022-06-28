@@ -10,7 +10,7 @@ from objects.cube import Cube
 class CubeTarget(Cube):
     def __post_init__(self):
         self.transform.scale *= 0.3
-        self.transform.scale.z *= -1
+        self.transform.rotation.y = math.pi
         self.transform.scale.xy *= 3
         return super().__post_init__()
 
