@@ -324,8 +324,8 @@ class Element: # TODO: rename to Object
         self._state.selected = False
         # self.transform.scale /= 2
 
-        for idx, shape in enumerate(self.shape_specs):
-            shape.material = self._old_materials[idx]
+        for shape, material in zip(self.shape_specs, self._old_materials):
+            shape.material = material
 
         return # TODO: make a proper selection shader
         for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):

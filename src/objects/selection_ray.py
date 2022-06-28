@@ -30,11 +30,7 @@ class SelectionRay(Ray):
         self.selectable_elements = [ element for element in self.selectable_elements if element.ray_selectable ]
 
         def calc_distance(element: Element) -> float:
-            difference = element.transform.translation.xyz - self.transform.translation.xyz
-            difference = difference * element.transform.scale.xyz
-            # if element._state.selected:
-            #     scaled_difference /= 2 # FIXME: hardcoded value
-
+            difference = element.center.xyz - self.center.xyz
             distance = difference.magnitude()
             return distance
 
