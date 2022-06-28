@@ -2,13 +2,15 @@ from json import load
 import math
 from pickle import APPEND
 import random
+from textwrap import wrap
 import time
 from typing import Text
+import glm
 from utils.geometry import Vec2, Vec3
 from utils.logger import LOGGER
 # from app_vars import APP_VARS
 from gl_abstractions.shader import ShaderDB
-from gl_abstractions.texture import Texture2D
+from gl_abstractions.texture import Texture2D, TextureParameters
 from line import Line
 from objects.bot import Bot
 from objects.cube import CUBE_MODEL, Cube
@@ -19,10 +21,13 @@ import constants
 from objects.aux_robot import AuxRobot
 from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
 from objects.wood_target import WoodTarget
+from wavefront.material import Material
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
 from objects.selection_ray import SelectionRay
+
+from OpenGL import GL as gl
 
 class World:
     '''
@@ -45,35 +50,44 @@ class World:
         '''
         LOGGER.log_trace('Setting up scene', 'world:setup_scene')
 
+        def load_model(filename: str) -> Model:
+            return ModelReader().load_model_from_file(filename)
+
         # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
         # self.elements.clear()
         from app_vars import APP_VARS
         self.spawn(APP_VARS.camera)
 
-        wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'), ray_destroyable=False)
-        wall.transform.scale = Vec3(0.1, 3, 3)
-        wall.transform.translation.xyz = Vec3(4, 0, 0)
-        wall.transform.rotation.xyz = Vec3(0, 0, 0)
-        self.spawn(wall)
+        # wall = Cube('Wall', texture=Texture2D.from_image_path('textures/metal.jpg'), ray_destroyable=False)
+        # wall.transform.scale = Vec3(0.1, 3, 3)
+        # wall.transform.translation.xyz = Vec3(4, 0, 0)
+        # wall.transform.rotation.xyz = Vec3(0, 0, 0)
+        # self.spawn(wall)
 
-        box = Cube('Box', ray_destroyable=False)
+        box = Cube('Box', ray_destroyable=False, model=load_model('models/gun.obj'))
         box.transform.translation.xyz = Vec3(4,0.5,8)
         box.transform.scale = Vec3(0.4, 0.4, 0.4)
         self.spawn(box)
 
-        def load_model(filename: str) -> Model:
-            return ModelReader().load_model_from_file(filename)
+        ground_tex = Texture2D.from_image_path('textures/floor2.png', TextureParameters(
+            wrap_s=gl.GL_REPEAT,
+            wrap_t=gl.GL_REPEAT
+        ))
 
-        ground = ModelElement('Ground', texture=Texture2D.from_image_path('textures/ground.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
+        ground = ModelElement('Ground', texture=ground_tex, model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         ground.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
         ground.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground)
 
         sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky.jpg'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
-        sky.transform.translation = Vec3(0, -150, 0)
-        sky.transform.scale = Vec3(300, 300, 300)
-        self.spawn(sky)
 
+        sky.transform.translation = Vec3(0, -150, 0)
+        sky.transform.scale = Vec3(-300, 300, -300)
+        self.spawn(sky)
+        
+        # TODO: remove hardcode (used for light adjustment)
+        self.sky = sky 
+        self.sky.shape_specs[0].material = Material('Hardcoded Ka always bright', Ka=Vec3(0,0,0)) # Ka = 0 -> no directional light
 
         # TODO: rename 
         light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False, ray_destroyable=False)
@@ -90,18 +104,24 @@ class World:
         BOT_MODEL = load_model('models/bot.obj')
         TARGET_MODEL = load_model('models/alvo2.obj')
 
-        alvo = ModelElement('alvo', model=load_model('models/alvo1.obj'), ray_destroyable=True)
-        alvo.transform.translation.xyz = Vec3(4,0,-8)
-        self.spawn(alvo)
+        # alvo = ModelElement('alvo', model=load_model('models/alvo1.obj'), ray_destroyable=True)
+        # alvo.transform.translation.xyz = Vec3(4,0,-8)
+        # self.spawn(alvo)
 
         # ray = SelectionRay('test_ray')
         # ray.transform.translation.y = 100
         # ray.direction = Vec3(*APP_VARS.camera.cameraFront).normalized()
         # self.spawn(ray)
 
+        HOUSE_XYZ = Vec3(0, 0, -15)
+
         house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
-        house.transform.translation.xyz = Vec3(15, 0, -15)
+        house.transform.translation.xyz = HOUSE_XYZ
         house.transform.scale.xyz = Vec3(3,3,3)
+        for shape in house.shape_specs:
+            shape.material.Kd *= 10
+            shape.material.Kd = shape.material.Kd.normalized()
+            shape.material.Kd /= 4
         self.spawn(house)
 
         # alvo2 = Cube('alvo2', model=load_model('models/alvo2.obj'), texture=Texture2D.from_image_path('textures/wood.jpg'), ray_destroyable=True)
@@ -115,41 +135,46 @@ class World:
 
         bot_spawner = Spawner(
             name='BotSpawner',
-            region=SpawnerRegion(Vec3(-10,0.01,-10), Vec3(-10,0.01,10)),
-            element_factory=spawn_bot
+            region=SpawnerRegion(Vec3(-10,0.01,20), Vec3(10,0.01,0)),
+            element_factory=spawn_bot,
         )
         self.spawn(bot_spawner)
 
         house_target_spawner = Spawner(
             name='HouseTargetSpawner',
-            region=SpawnerRegion(Vec3(12.7,0.01,-18), Vec3(17.2,4,-18)),
+            region=SpawnerRegion(HOUSE_XYZ + Vec3(-1.7, 0.01, -3), HOUSE_XYZ + Vec3(1.7 , 4, -3)),
             spawning_properties=SpawningProperties(
                 max_spawned_elements=2, 
                 min_interval=0.3, 
                 max_interval=1, 
-                insta_replace_destroyed=True
+                insta_replace_destroyed=True,
             ),
             element_factory=lambda: CubeTarget('Spawned Target'),
-            show_debug_cube=True
-            
         )
         self.spawn(house_target_spawner)
 
         ALVO_2_MODEL = load_model('models/alvo2.obj')
         ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')
-        outside_target_spawner = Spawner(
-            name='OutsideTargetSpawner',
-            region=SpawnerRegion(Vec3(15,2.326,15), Vec3(15,2.326,15)),
-            spawning_properties=SpawningProperties(
-                max_spawned_elements=1, 
-                min_interval=1, 
-                max_interval=2, 
-                insta_replace_destroyed=False
-            ),
-            element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
-            show_debug_cube=True
+        outside_target_spawning_properties=SpawningProperties(
+            max_spawned_elements=1, 
+            min_interval=0, 
+            max_interval=10, 
+            insta_replace_destroyed=False
         )
-        self.spawn(outside_target_spawner)
+
+        distances_z = [-3, 0, 3]
+        outside_target_spawners = [
+            Spawner(
+                name=f'OutsideTargetSpawner_{idx}',
+                region=SpawnerRegion(HOUSE_XYZ + Vec3(-3.023,3.5,distance_z), HOUSE_XYZ + Vec3(-3.023,3.5,distance_z)),
+                spawning_properties=outside_target_spawning_properties,
+                element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
+                show_debug_cube=True
+            ) for idx, distance_z in enumerate(distances_z)
+        ]
+
+        for spawner in outside_target_spawners:
+            self.spawn(spawner)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
@@ -189,6 +214,14 @@ class World:
 
         from camera import Camera
         assert isinstance(self.elements[0], Camera), "0th element is not a camera!"
+
+        global_Ka = Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z)
+        global_Ka.x = glm.clamp(global_Ka.x, 0, 1)
+        global_Ka.y = glm.clamp(global_Ka.y, 0, 1)
+        global_Ka.z = glm.clamp(global_Ka.z, 0, 1)
+        inv_global_Ka = Vec3(1/global_Ka.x, 1/global_Ka.y, 1/global_Ka.z,) 
+        
+        self.sky.shape_specs[0].material.Kd = (inv_global_Ka * global_Ka**2)
 
         # for element in self.elements[1:]:
         #     center = element.transform.translation.xyz
