@@ -15,11 +15,13 @@ from line import Line
 from objects.bot import Bot
 from objects.cube import CUBE_MODEL, Cube
 from objects.cube_target import CubeTarget
+from objects.fren import Fren
 from objects.model_element import ModelElement
 from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
 from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
+from objects.target_small import TargetSmall
 from objects.wood_target import WoodTarget
 from transform import Transform
 from wavefront.material import Material
@@ -159,7 +161,6 @@ class World:
         )
         self.spawn(bot_spawner)
 
-        TARGET_SMALL_MODEL = load_model('models/target_small.obj')
         house_target_spawner = Spawner(
             name='HouseTargetSpawner',
             region=SpawnerRegion(HOUSE_XYZ + Vec3(-1.7, 0.69, -3), HOUSE_XYZ + Vec3(1.7 , 4, -3)),
@@ -169,7 +170,7 @@ class World:
                 max_interval=1, 
                 insta_replace_destroyed=True,
             ),
-            element_factory=lambda: ModelElement('target_small', model=TARGET_SMALL_MODEL, transform=Transform(scale=Vec3(0.4,0.4,1))),
+            element_factory=lambda: TargetSmall('target_small', transform=Transform(scale=Vec3(0.4,0.4,1))),
         )
         self.spawn(house_target_spawner)
 
@@ -192,7 +193,7 @@ class World:
             ) for idx, distance_z in enumerate(distances_z)
         ]
 
-        fren = ModelElement('Fren', model=load_model('models/fren.obj'))
+        fren = Fren('Fren')
         fren.transform.translation.xyz = HOUSE_XYZ + Vec3(-2, 0, +3.5)
         fren.transform.rotation.y = math.pi/4 + math.pi/2
         fren.transform.scale *= 0.8

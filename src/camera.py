@@ -3,7 +3,8 @@ from itertools import accumulate
 import math
 from turtle import shape
 import glm
-from utils.geometry import Vec3
+from numpy import mat
+from utils.geometry import Vec2, Vec3
 from utils.sig import metsig
 import constants
 import glfw
@@ -76,36 +77,22 @@ class Camera(Element):
         for attr in self.__dict__.keys():
             setattr(self, attr, getattr(new_camera, attr))
 
+    def _update_from_pitch_yaw(self):
+        if self.pitch >= 89.9: self.pitch = 89.9
+        if self.pitch <= -89.9: self.pitch = -89.9
+
+        yaw = glm.radians(self.yaw)
+        pitch = glm.radians(self.pitch)
+
+        self.cameraFront = glm.vec3(*yaw_pitch_to_front(yaw, pitch))
+
+        self.transform.rotation.xyz = front_to_rotation(Vec3(*self.cameraFront))
+
     def update(self, delta_time: float):
-        # self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
-        # self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
-        # self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
-
-        # # TODO: make all gun logic in one place plz
-        # self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
-        # self.gun.transform.rotation.xz = self.transform.rotation.xz
-        
-        # if IS.just_pressed('r'):
-        #     self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
-
-        # if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
-        #     self._sprinting = True
-        #     self._momentum.max_speed = 0.2
-        #     self._momentum.accel = 0.1
-        # if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
-        #     self._sprinting = False
-        #     self._momentum.max_speed = 0.1
-        #     self._momentum.accel = 0.01
-
-        # if IS.just_pressed('shift') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
-        #     self._ground_y = 1.6
-        # if IS.just_released('shift') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
-        #     self._ground_y = 1.8
-
-        # fov_delta_sig = +1 if self._sprinting else -1
-        # self.fov += fov_delta_sig * delta_time * 60 * 1.5
-        # if self.fov < 70: self.fov = 70
-        # elif self.fov > 90: self.fov = 90
+        yaw = glm.radians(self.yaw)
+        pitch = glm.radians(self.pitch)
+        self.cameraFront = glm.vec3(*yaw_pitch_to_front(yaw, pitch))
+        self.transform.rotation.xyz = front_to_rotation(Vec3(*self.cameraFront))
 
         super().update(delta_time)
         pass
@@ -129,6 +116,11 @@ class Camera(Element):
                 origin=self.transform.translation.xyz - Vec3(0,0.1,0) + Vec3(*self.cameraFront) * 1,
                 direction=Vec3(*self.cameraFront).normalized()
             )
+
+            self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
+            self.gun.transform.translation -= Vec3(*self.cameraUp) * 0.05
+            self.pitch += 3
+            self._update_from_pitch_yaw()
 
         # TODO: refactor to use forces
         positive_actions = [ glfw.PRESS ]
@@ -196,15 +188,7 @@ class Camera(Element):
         self.yaw += xoffset;
         self.pitch += yoffset;
 
-        if self.pitch >= 89.9: self.pitch = 89.9
-        if self.pitch <= -89.9: self.pitch = -89.9
-
-        yaw = glm.radians(self.yaw)
-        pitch = glm.radians(self.pitch)
-
-        self.cameraFront = glm.vec3(*yaw_pitch_to_front(yaw, pitch))
-
-        self.transform.rotation.xyz = front_to_rotation(Vec3(*self.cameraFront))
+        self._update_from_pitch_yaw
 
     def _physics_update(self, delta_time: float):
         self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
@@ -215,8 +199,7 @@ class Camera(Element):
         self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
         self.gun.transform.rotation.xz = self.transform.rotation.xz
         
-        if IS.just_pressed('r'):
-            self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
+      
 
         if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
             self._sprinting = True
@@ -253,7 +236,6 @@ class Camera(Element):
 
         self.transform.translation.xyz += self._momentum.velocity * delta_time * PHYSICS_TPS
 
-
         if self.transform.translation.x > constants.WORLD_SIZE//2:
             self.transform.translation.x = constants.WORLD_SIZE//2
         elif self.transform.translation.x < -constants.WORLD_SIZE//2:
@@ -266,12 +248,12 @@ class Camera(Element):
         if self.transform.translation.y < self._ground_y:
             self.transform.translation.y = self._ground_y
         
-
         # TODO: make all gun logic in one place plz
-        self.gun.transform.translation.xz = self.transform.translation.xz
-        self.gun.transform.translation.y = self.transform.translation.y - 0.25
+        self.gun.transform.translation.xz = self.transform.translation.xz + Vec2(1,-1) * (math.sin(self.transform.translation.x) + math.cos(self.transform.translation.z))/150 + Vec2(-1,1) * (math.cos(self.transform.translation.x) + math.sin(self.transform.translation.z))/150
+        self.gun.transform.translation.y = self.transform.translation.y - 0.25 + (math.sin(self.transform.translation.x) + math.sin(self.transform.translation.z))/40
         self.gun.transform.translation.xyz += (Vec3(*self.cameraFront)) / 3
         
-
+        if IS.is_pressed('f'):
+            self.gun.transform.rotation.y = self.transform.rotation.y
 
         return super()._physics_update(delta_time)

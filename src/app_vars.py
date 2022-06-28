@@ -49,9 +49,9 @@ class LightingConfig:
     Ka_y: float = 0.8
     Ka_z: float = 0.8
 
-    Kd_x: float = 2
-    Kd_y: float = 2
-    Kd_z: float = 2
+    Kd_x: float = 5
+    Kd_y: float = 5
+    Kd_z: float = 5
 
     Ks_x: float = 0.1
     Ks_y: float = 0.1
