@@ -40,12 +40,11 @@ class ShapeSpec:
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
-    texture: Union[Texture, None] = field(default_factory=lambda: Texture2D.from_image_path('textures/white.jpg'))
+    texture: Union[Texture, None] = None
     material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
-        assert self.texture is not None, f"Shape '{self.name}' has no texture"
         self.shader.layout.assert_data_ok(self.vertices)
 
 @dataclass
@@ -132,7 +131,7 @@ class ShapeRenderer:
         
         self.shader.upload_uniform_vec3('u_LightPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
-
+        self.shader.upload_bool('u_HasTexture', int(self.texture is not None))
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self.shape_spec.render_mode, 0,
                         len(self.shape_spec.vertices))
@@ -160,10 +159,7 @@ class ElementSpecification:
 
         if shader is None:
             shader = ShaderDB.get_instance().get_shader('light_texture') # TODO: make shader part of the material
-
-        if texture is None:
-            texture = Texture2D.from_image_path('textures/white.jpg') # TODO: make texture part of something
-
+            
         for object in model.objects:
             vertices_list = object.expand_faces_to_unindexed_vertices() # TODO: instead of unindexed, use indices
             material = object.material

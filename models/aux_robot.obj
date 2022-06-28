@@ -106,8 +106,8 @@ vn -1.0000 0.0000 0.0000
 vn 0.0000 -1.0000 0.0000
 vn 1.0000 0.0000 0.0000
 vn 0.0000 0.0000 -1.0000
-g Cube_Cube_Material
-usemtl Material
+g Cube_Cube_RobotMainColor
+usemtl RobotMainColor
 s off
 f 5/1/1 3/2/1 1/3/1
 f 3/2/2 8/4/2 4/5/2
@@ -147,8 +147,8 @@ f 25/29/5 29/31/5 30/30/5
 f 29/31/4 33/38/4 34/32/4
 f 32/28/4 36/27/4 33/33/4
 f 30/30/4 34/32/4 35/34/4
-g Cube_Cube_Material.001
-usemtl Material.001
+g Cube_Cube_Blue2Robot
+usemtl Blue2Robot
 f 10/39/5 11/40/5 9/41/5
 f 12/42/6 15/13/6 11/40/6
 f 16/43/3 13/37/3 15/13/3
@@ -1567,8 +1567,8 @@ vn -0.9979 -0.0410 0.0499
 vn -0.9979 0.0410 -0.0499
 vn -0.9979 0.0410 0.0499
 vn -1.0000 0.0000 0.0000
-g Circle_Circle_Material.004
-usemtl Material.004
+g Circle_Circle_Lens2
+usemtl Lens2
 s off
 f 65/59/7 96/60/7 97/61/7
 f 52/62/7 83/63/7 84/64/7
@@ -2786,8 +2786,8 @@ f 230/241/25 646/660/25 647/663/25
 f 217/242/26 633/661/26 634/664/26
 f 204/243/10 620/662/10 621/665/10
 f 231/244/28 647/663/28 648/666/28
-g Circle_Circle_Material.005
-usemtl Material.005
+g Circle_Circle_LensCentral
+usemtl LensCentral
 f 620/662/173 644/654/173 636/638/173
 f 620/662/173 619/659/173 617/656/173
 f 617/656/173 618/637/173 648/666/173

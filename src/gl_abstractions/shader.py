@@ -118,6 +118,9 @@ class Shader:
         uniform_loc = gl.glGetUniformLocation(self.program, name)
         gl.glUniform3f(uniform_loc, *value)
 
+    def upload_bool(self, name: str, value: bool):
+        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        gl.glUniform1i(uniform_loc, value)
 
         pass
 

@@ -27,9 +27,6 @@ class AuxRobot(ModelElement):
         from objects.physics.momentum import Momentum
         self._momentum = Momentum(accel=0.5, max_speed=3.5)
         super().__post_init__()
-        self.shape_specs[0].material = Material('lc')
-        self.shape_specs[0].material.Ka.xyz = Vec3(1000,1000,1000)
-        self.shape_specs[0].material.Kd.xyz = Vec3(1,0,0)
 
     def _physics_update(self, delta_time: float):
         from app_vars import APP_VARS

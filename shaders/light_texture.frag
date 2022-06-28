@@ -23,6 +23,7 @@ uniform float u_d;
 
 uniform vec3 u_LightPos;
 uniform vec3 u_CameraPos;
+uniform bool u_HasTexture;
 
 // Constants
 vec3 lightColor = vec3(1.0, 1.0, 1.0);
@@ -53,8 +54,14 @@ void main() {
     float specMultiplier = pow(dotProduct, (u_GNs) * u_Ns); //TODO: check if this multiplication makes sense (u_Ns * (u_GKs))
     vec3 specularLight = max((u_GKs) * u_Ks * specMultiplier * lightColor * 1/log2(distToLight+1), 0);
 
-    vec4 fragTextureColor = texture2D(u_Texture, v_TexCoord);
+    vec4 fragBaseColor;
+    if (u_HasTexture)
+        fragBaseColor = texture2D(u_Texture, v_TexCoord);
+    else
+        fragBaseColor = vec4(u_Kd, 1.0);
+
     vec3 combinedLight = ambientLight + ambientDirectionalLight + diffuseLight + specularLight;
 
-    color = vec4(combinedLight * fragTextureColor.xyz, u_d);
+    // color = vec4((1+0*combinedLight) * fragBaseColor.xyz, u_d);
+    color = vec4((combinedLight) * fragBaseColor.xyz, u_d);
 }
