@@ -14,6 +14,7 @@ from objects.bullet_ray import BulletRay
 from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
 from objects.model_element import ModelElement
 from objects.physics.momentum import Momentum
+from objects.physics.rotation import yaw_pitch_to_front
 from objects.selection_ray import SelectionRay
 from objects.world import World
 from objects.selection_ray import SelectionRay
@@ -76,35 +77,35 @@ class Camera(Element):
             setattr(self, attr, getattr(new_camera, attr))
 
     def update(self, delta_time: float):
-        self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
-        self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
-        self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
+        # self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
+        # self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
+        # self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
 
-        # TODO: make all gun logic in one place plz
-        self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
-        self.gun.transform.rotation.xz = self.transform.rotation.xz
+        # # TODO: make all gun logic in one place plz
+        # self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
+        # self.gun.transform.rotation.xz = self.transform.rotation.xz
         
-        if IS.just_pressed('r'):
-            self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
+        # if IS.just_pressed('r'):
+        #     self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
 
-        if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
-            self._sprinting = True
-            self._momentum.max_speed = 0.2
-            self._momentum.accel = 0.1
-        if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
-            self._sprinting = False
-            self._momentum.max_speed = 0.1
-            self._momentum.accel = 0.01
+        # if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+        #     self._sprinting = True
+        #     self._momentum.max_speed = 0.2
+        #     self._momentum.accel = 0.1
+        # if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+        #     self._sprinting = False
+        #     self._momentum.max_speed = 0.1
+        #     self._momentum.accel = 0.01
 
-        if IS.just_pressed('shift') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
-            self._ground_y = 1.6
-        if IS.just_released('shift') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
-            self._ground_y = 1.8
+        # if IS.just_pressed('shift') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+        #     self._ground_y = 1.6
+        # if IS.just_released('shift') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+        #     self._ground_y = 1.8
 
-        fov_delta_sig = +1 if self._sprinting else -1
-        self.fov += fov_delta_sig * delta_time * 60 * 1.5
-        if self.fov < 70: self.fov = 70
-        elif self.fov > 90: self.fov = 90
+        # fov_delta_sig = +1 if self._sprinting else -1
+        # self.fov += fov_delta_sig * delta_time * 60 * 1.5
+        # if self.fov < 70: self.fov = 70
+        # elif self.fov > 90: self.fov = 90
 
         super().update(delta_time)
         pass
@@ -173,7 +174,9 @@ class Camera(Element):
         return aligned_vec
 
     def on_cursor_pos(self, window, xpos, ypos):
+        # TODO: change on physiscs tick to make gun move smoothly
         from app_vars import APP_VARS
+        from objects.physics.rotation import front_to_yaw_pitch
 
         if APP_VARS.cursor.lastX == None:
             APP_VARS.cursor.lastX = xpos
@@ -204,13 +207,49 @@ class Camera(Element):
         front.y = math.sin(pitch)
         front.z = math.sin(yaw) * math.cos(pitch)
         self.cameraFront = glm.normalize(front)
-        
+
+        cy, cp = front_to_yaw_pitch(self.cameraFront)
+        self.cameraFront = glm.vec3(*yaw_pitch_to_front(cy ,cp))
+        print(f'{yaw=}, {cy=}')
+        print(f'{pitch=}, {cp=}')
+        # assert abs(yaw - cy) < 0.2
+        # assert abs(pitch - cp) < 0.2
         pitch_x = -pitch * (glm.cos(-math.pi/2+yaw))
         pitch_z = -pitch * (glm.sin(-math.pi/2+yaw))
 
         self.transform.rotation.xyz = Vec3(pitch_x, math.pi/2-yaw, pitch_z)
 
     def _physics_update(self, delta_time: float):
+        self.raycast_line_dbg.transform.translation.xz = self.transform.translation.xz
+        self.raycast_line_dbg.transform.translation.y = self._ground_y - 0.05
+        self.raycast_line_dbg.transform.rotation.xyz = self.transform.rotation.xyz
+
+        # TODO: make all gun logic in one place plz
+        self.gun.transform.rotation.y = self.transform.rotation.y - math.pi/2
+        self.gun.transform.rotation.xz = self.transform.rotation.xz
+        
+        if IS.just_pressed('r'):
+            self.gun.transform.translation -= Vec3(*self.cameraFront) * 0.1
+
+        if IS.just_pressed('ctrl') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+            self._sprinting = True
+            self._momentum.max_speed = 0.2
+            self._momentum.accel = 0.1
+        if IS.just_released('ctrl') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+            self._sprinting = False
+            self._momentum.max_speed = 0.1
+            self._momentum.accel = 0.01
+
+        if IS.just_pressed('shift') and Vec3(*self._keyboardMovementInput).magnitude() > 0:
+            self._ground_y = 1.6
+        if IS.just_released('shift') or Vec3(*self._keyboardMovementInput).magnitude() <= 0.01:
+            self._ground_y = 1.8
+
+        fov_delta_sig = +1 if self._sprinting else -1
+        self.fov += fov_delta_sig * delta_time * 60 * 1.5
+        if self.fov < 70: self.fov = 70
+        elif self.fov > 90: self.fov = 90
+
         input_force = Vec3(*self._rotate_vec_to_face_front(self._keyboardMovementInput))
 
         if not self.grounded:
