@@ -88,7 +88,8 @@ class Spawner(Element):
                 LOGGER.log_debug(f'Spawned after {self._wait_time}!')
                 self._spawn_element()
             else:
-                LOGGER.log_debug(f'Spawner maximum capacity reached {len(self.spawned_elements)}/{self.spawning_properties.max_spawned_elements}')
+                # LOGGER.log_debug(f'Spawner maximum capacity reached {len(self.spawned_elements)}/{self.spawning_properties.max_spawned_elements}')
+                pass
             self._update_wait_time()
 
         
