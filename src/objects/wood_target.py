@@ -6,7 +6,7 @@ from gl_abstractions.texture import Texture, Texture2D
 
 from objects.cube import Cube
 from wavefront.model import Model
-from wavefront.reader import ModelReader
+from wavefront.model_reader import ModelReader
 
 ALVO_2_MODEL = ModelReader().load_model_from_file('models/alvo2.obj')
 ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')

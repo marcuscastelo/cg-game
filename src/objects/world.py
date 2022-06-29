@@ -19,7 +19,7 @@ from objects.wood_target import WoodTarget
 from transform import Transform
 from wavefront.material import Material
 from wavefront.model import Model
-from wavefront.reader import ModelReader
+from wavefront.model_reader import ModelReader
 
 class World:
     '''

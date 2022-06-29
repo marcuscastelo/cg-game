@@ -13,7 +13,7 @@ from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 
 from transform import Transform
-from wavefront.reader import ModelReader
+from wavefront.model_reader import ModelReader
 from wavefront.model import Model
 
 @dataclass

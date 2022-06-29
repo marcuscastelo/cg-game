@@ -22,7 +22,7 @@ from objects.selection_ray import SelectionRay
 from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
-from wavefront.reader import ModelReader # TODO: rename reader to model_reader
+from wavefront.model_reader import ModelReader # TODO: rename reader to model_reader
 
 
 @dataclass

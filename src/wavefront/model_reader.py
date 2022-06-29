@@ -8,7 +8,8 @@ import numpy as np
 from utils.logger import LOGGER
 from wavefront.face import Face
 from wavefront.model import Model, Object
-from wavefront.material import Material, MtlReader
+from wavefront.material import Material
+from wavefront.mtl_reader import MtlReader
 
 @dataclass
 class ModelReader:
