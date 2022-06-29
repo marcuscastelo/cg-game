@@ -60,7 +60,7 @@ class World:
         ground_main.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground_main)
 
-        ground_spawn =ModelElement('GroundSpawn', texture=Texture2D.from_image_path('textures/floor4.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
+        ground_spawn = ModelElement('GroundSpawn', texture=Texture2D.from_image_path('textures/floor4.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         ground_spawn.transform.scale = Vec3(20, 0.01, 20)
         ground_spawn.transform.translation = Vec3(0, +0.1, 10)
         self.spawn(ground_spawn)
@@ -138,7 +138,7 @@ class World:
         self.spawn(bot_spawner)
 
         outside_target_spawning_properties=SpawningProperties(
-            max_spawned_elements=1, 
+            spawn_cap=1, 
             min_interval=5, 
             max_interval=10, 
             insta_replace_destroyed=False
@@ -168,7 +168,7 @@ class World:
             name='HouseTargetSpawner',
             region=SpawnerRegion(HOUSE_XYZ + Vec3(-1.7, 0.69, -3), HOUSE_XYZ + Vec3(1.7 , 4, -3)),
             spawning_properties=SpawningProperties(
-                max_spawned_elements=2, 
+                spawn_cap=2, 
                 min_interval=0.3, 
                 max_interval=1, 
                 insta_replace_destroyed=True,
