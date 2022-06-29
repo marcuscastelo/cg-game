@@ -230,7 +230,7 @@ class Camera(Element):
             self._momentum.velocity.y = 0.2
 
         self._momentum.apply_force_walk(input_force, delta_time=delta_time)
-        self._momentum.apply_friction(percentage= 0.99 if not self.grounded else 0.84, delta_time=delta_time)
+        self._momentum.apply_friction(percentage_keep= 0.99 if not self.grounded else 0.84, delta_time=delta_time)
         if not self.grounded:
             self._momentum.apply_force_walk(Vec3(0, -0.3 * self.transform.translation.y, 0), delta_time=delta_time)
 
