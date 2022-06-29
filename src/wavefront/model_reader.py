@@ -19,10 +19,11 @@ class ModelReader:
         model = reader.load_model_from_file('models/cube.obj')
     '''
     # TODO: make it be ModelReader(filename: str).load_model()
+
     def __post_init__(self):
-        self.object: Object = None
-        self.model = Model()
-        self.materials: dict[str, Material] = {}
+        self.model = Model() # Creates an empty model to be filled in later
+        self.materials: dict[str, Material] = {} # Maps material names to materials
+        self.current_object: Object = None
         self.current_material: Union[Material, None] = Material(f'default-{random.random()}') # TODO: change all occurences of Material(something) to a global default
 
     def load_model_from_file(self, filename: str) -> Model:
@@ -71,15 +72,15 @@ class ModelReader:
 
         # Process object/group commands
         if command in ['o', 'g']:
-            self.object = Object(
+            self.current_object = Object(
                 name=' '.join(arguments),
                 positions_ref=self.model.positions,
                 texture_coords_ref=self.model.texture_coords,
                 normals_ref=self.model.normals,
             )
-            self.object.material = self.current_material
-            LOGGER.log_trace(f'Object name: {self.object.name}', 'Wavefront')
-            self.model.objects.append(self.object)
+            self.current_object.material = self.current_material
+            LOGGER.log_trace(f'Object name: {self.current_object.name}', 'Wavefront')
+            self.model.objects.append(self.current_object)
 
             return
 
@@ -127,7 +128,7 @@ class ModelReader:
                 face.normal_indices.append(normal)
                 face.texture_indices.append(texture)
 
-                self.object.faces.append(face)
+                self.current_object.faces.append(face)
 
             return
 
@@ -145,7 +146,7 @@ class ModelReader:
                 material = self.materials[material_name]
                 
             self.current_material = material
-            self.object.material = material
+            self.current_object.material = material
             return
 
         # Process material library commands (ex.: 'mtllib material_library.mtl')
