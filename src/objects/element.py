@@ -1,21 +1,17 @@
-from copy import copy, deepcopy
-import dataclasses
+from copy import deepcopy
 import random
-from turtle import Shape
 import constants
 from dataclasses import dataclass, field
-import math
 import time
 from typing import TYPE_CHECKING, Union
 import glm
 import numpy as np
 
 from OpenGL import GL as gl
-from utils.geometry import Rect2, Vec2, Vec3
+from utils.geometry import Rect2, Vec3
 from utils.logger import LOGGER
 
-import imageio
-from gl_abstractions.texture import Texture, Texture2D, TextureParameters
+from gl_abstractions.texture import Texture
 from gl_abstractions.vertex_array import VertexArray
 from gl_abstractions.vertex_buffer import VertexBuffer
 
@@ -26,13 +22,12 @@ from transform import Transform
 from wavefront.model import Model
 
 if TYPE_CHECKING:
-    from objects._2d._2dworld import World
-
+    from objects.world import World
 
 @dataclass
 class ShapeSpec:
     '''
-    Basic class that tore the vertices data of the object.
+    Basic class that store the vertices data of the object.
     It contains the vertices coordinates and its color
     '''
     vertices: np.ndarray
@@ -41,16 +36,18 @@ class ShapeSpec:
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
     texture: Union[Texture, None] = None
-    material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
+    material: Material = field(
+        default_factory=lambda: Material(f'default-{random.random()}'))
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
         self.shader.layout.assert_data_ok(self.vertices)
 
+
 @dataclass
 class ShapeRenderer:
     '''
-    Basic class that render the object, according to its vertices, texture, shader and primitive.
+    Basic class that renders the object, according to its vertices, texture, shader and primitive.
     '''
     shape_spec: ShapeSpec
     transform: Transform
@@ -83,60 +80,65 @@ class ShapeRenderer:
         # gl.glBindTextureUnit(0, self.texture)
 
         # Calculate MVP
+
+        # Model
         mat_model = self.transform.model_matrix
 
-        # def view(camera: Camera):
+        # View
         camera = APP_VARS.camera
         mat_view = glm.lookAt(glm.vec3(*camera.transform.translation), glm.vec3(
             *camera.transform.translation) + camera.cameraFront, camera.cameraUp)
         mat_view = np.array(mat_view)
-        # return mat_view
 
-        # def projection():
-        # perspective parameters: fovy, aspect, near, far
+        # Projection
         mat_projection = glm.perspective(glm.radians(
             camera.fov), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
         mat_projection = np.array(mat_projection)
-        # return mat_projection
 
-        # Set the transformation matrix
-        try:
-            self.shader.upload_uniform_matrix4f('u_Model', mat_model)
-        except Exception as e:
-            print(f'**********EXCEPTION WITH u_Model********')
-            print(f'{mat_model=}')
-            raise e
-        try:
-            self.shader.upload_uniform_matrix4f('u_View', mat_view) 
-        except Exception as e:
-            print(f'**********EXCEPTION WITH u_View********')
-            print(f'{mat_view=}')
-            raise e
-
+        # Upload MVP Matrices
+        self.shader.upload_uniform_matrix4f('u_Model', mat_model)
+        self.shader.upload_uniform_matrix4f('u_View', mat_view)
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 
+        # Upload Material Properties
         material = self.shape_spec.material
 
-        self.shader.upload_uniform_vec3('u_Ka', material.Ka.values.astype(np.float32))
-        self.shader.upload_uniform_vec3('u_Kd', material.Kd.values.astype(np.float32))
-        self.shader.upload_uniform_vec3('u_Ks', material.Ks.values.astype(np.float32))
+        self.shader.upload_uniform_vec3(
+            'u_Ka', material.Ka.values.astype(np.float32))
+        self.shader.upload_uniform_vec3(
+            'u_Kd', material.Kd.values.astype(np.float32))
+        self.shader.upload_uniform_vec3(
+            'u_Ks', material.Ks.values.astype(np.float32))
         self.shader.upload_uniform_float('u_Ns', material.Ns)
         self.shader.upload_uniform_float('u_d', material.d)
 
-        self.shader.upload_uniform_vec3('u_GKa', Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
-        self.shader.upload_uniform_vec3('u_GKd', Vec3(APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z))
-        self.shader.upload_uniform_vec3('u_GKs', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
+        # Upload Global Lighting Properties
+        self.shader.upload_uniform_vec3('u_GKa', Vec3(
+            APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
+        self.shader.upload_uniform_vec3('u_GKd', Vec3(
+            APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z))
+        self.shader.upload_uniform_vec3('u_GKs', Vec3(
+            APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
         self.shader.upload_uniform_float('u_GNs', APP_VARS.lighting_config.Ns)
 
+        # Upload light sources positions
         if APP_VARS.last_bullet:
-            self.shader.upload_uniform_vec3('u_BulletPos', APP_VARS.last_bullet.transform.translation.values.astype(np.float32) )
+            self.shader.upload_uniform_vec3(
+                'u_BulletPos', APP_VARS.last_bullet.transform.translation.values.astype(np.float32))
         else:
-            self.shader.upload_uniform_vec3('u_BulletPos',  Vec3(0,-1000,0).values.astype(np.float32))
+            self.shader.upload_uniform_vec3('u_BulletPos',  Vec3(
+                0, -1000, 0).values.astype(np.float32))
 
-        self.shader.upload_uniform_vec3('u_AuxRobotPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
-        
-        self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
+        self.shader.upload_uniform_vec3(
+            'u_AuxRobotPos', APP_VARS.lighting_config.light_position.values.astype(np.float32))
+
+        # Upload Camera Position
+        self.shader.upload_uniform_vec3(
+            'u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32))
+
+        # Upload bool to know if the shape should try to read a texture
         self.shader.upload_bool('u_HasTexture', int(self.texture is not None))
+
         # Draw the vertices according to the primitive
         gl.glDrawArrays(self.shape_spec.render_mode, 0,
                         len(self.shape_spec.vertices))
@@ -159,21 +161,26 @@ class ElementSpecification:
                           Transform), f'initial_transform must be of type Transform, not {type(self.initial_transform)}'
 
     @staticmethod
-    def from_model(model: Model, shader: Shader = None, texture = None) -> 'ElementSpecification':
+    def from_model(model: Model, shader: Shader = None, texture=None) -> 'ElementSpecification':
         elspec = ElementSpecification()
 
         if shader is None:
-            shader = ShaderDB.get_instance().get_shader('light_texture') # TODO: make shader part of the material
-            
+            shader = ShaderDB.get_instance().get_shader(
+                'light_texture')  # TODO: make shader part of the material
+
         for object in model.objects:
-            vertices_list = object.expand_faces_to_unindexed_vertices() # TODO: instead of unindexed, use indices
+            # TODO: instead of unindexed, use indices
+            vertices_list = object.expand_faces_to_unindexed_vertices()
             material = object.material
 
             # assert material.name in ['Tree', 'Leaves'], f'{material.name}'
 
-            has_position = 'a_Position' in [ attr[0] for attr in shader.layout.attributes]
-            has_texcoord = 'a_TexCoord' in [ attr[0] for attr in shader.layout.attributes]
-            has_normal = 'a_Normal' in [ attr[0] for attr in shader.layout.attributes]
+            has_position = 'a_Position' in [attr[0]
+                                            for attr in shader.layout.attributes]
+            has_texcoord = 'a_TexCoord' in [attr[0]
+                                            for attr in shader.layout.attributes]
+            has_normal = 'a_Normal' in [attr[0]
+                                        for attr in shader.layout.attributes]
 
             # # TODO: rename this variable to something less confusing
             vertices_array = np.array([
@@ -184,7 +191,7 @@ class ElementSpecification:
             if len(vertices_array.shape) == 2:
                 object_shape = ShapeSpec(
                     vertices=vertices_array,
-                    # indices= TODO: use indices,
+                    # indices= # TODO: use indices,
                     shader=shader,
                     render_mode=gl.GL_TRIANGLES,
                     name=f'{object.name}',
@@ -193,9 +200,11 @@ class ElementSpecification:
                 )
                 elspec.shape_specs.append(object_shape)
             else:
-                LOGGER.log_warning(f'Object or Group {object.name} has weird shape {vertices_array.shape}')
+                LOGGER.log_warning(
+                    f'Object or Group {object.name} has weird shape {vertices_array.shape}')
 
         return elspec
+
 
 @dataclass
 class BoundingBox2DCache:
@@ -236,7 +245,7 @@ class PhysicsState:
 
 
 @dataclass
-class ObjectState:
+class ElementState:
     physics_state: PhysicsState = field(default_factory=PhysicsState)
     destroyed = False
     selected = False  # TODO: remove debug or refactor
@@ -246,18 +255,23 @@ PHYSICS_TPS = 50  # TODO: move to Physics System when it's done
 
 
 @dataclass
-class Element: # TODO: rename to Object
+class Element:
+    ''' Element class that holds the data of a single object in the scene. '''
     name: str
+    # TODO: use ElementSpecification
     shape_specs: list[ShapeSpec]
     transform: Transform = field(default_factory=Transform)
     ray_selectable: bool = True
     ray_destroyable: bool = True
 
     def __post_init__(self):
-        assert isinstance(self.shape_specs, list), f"Expected 'shape_specs' to be a 'list[ShapeSpec]', but got {type(self.shape_specs)} instead"
-        assert isinstance(self.transform, Transform), f"Expected 'transform' to be a 'Transform', but got {type(self.transform)} instead"
-        
-        self._state = ObjectState()
+        ''' Initialize the element. '''
+        assert isinstance(
+            self.shape_specs, list), f"Expected 'shape_specs' to be a 'list[ShapeSpec]', but got {type(self.shape_specs)} instead"
+        assert isinstance(
+            self.transform, Transform), f"Expected 'transform' to be a 'Transform', but got {type(self.transform)} instead"
+
+        self._state = ElementState()
         self._shape_renderers = [
             ShapeRenderer(
                 shape_spec=shape_spec,
@@ -265,45 +279,49 @@ class Element: # TODO: rename to Object
             ) for shape_spec in self.shape_specs]
 
         pass
-    
+
     def on_spawned(self, world: 'World'):
-        '''Please override'''
+        ''' Virtual method that is called when the element is spawned in the world. '''
         pass
 
     @property
     def destroyed(self):
+        ''' Returns whether the element is destroyed or not. '''
         return self._state.destroyed
 
     @property
     def center(self) -> Vec3:
+        ''' Returns the center of the element (some models have its vertices centered around 0,0,0, but this is not the case for all models). '''
         return self.transform.translation.xyz
-    
+
     @property
     def pseudo_hitbox_distance(self) -> float:
+        ''' Instead of using the bounding box, use the distance between the center of the elements to check if the element is hit. '''
         return self.transform.scale.magnitude()
 
     def destroy(self):
         if self.destroyed:
-            # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
             LOGGER.log_warning(
                 f'Trying to destroy already destroyed element {self.name=}, {type(self)=}, {self.transform.translation=}')
             return
 
-        # LOGGER.log_debug(f"{self} marked for destruction")
+        # The world will remove the element from the list of elements
         self._state.destroyed = True
 
     def update(self, delta_time: float):
-        '''Receives a tick every frame'''
+        ''' Virtual method that is called every frame. '''
         self._try_update_physics()
         self._render(delta_time=delta_time)
         pass
 
     def select(self) -> None:
+        ''' Virtual method that is called when the element is selected. '''
         if self._state.selected:
             return
-        self._state.selected = True
-        # self.transform.scale *= 2
 
+        self._state.selected = True
+
+        # Change element material to a new one (red in all light types)
         self._old_materials = []
         for shape in self.shape_specs:
             self._old_materials.append(shape.material)
@@ -313,295 +331,30 @@ class Element: # TODO: rename to Object
             curr_mat.Ka[0] = 3
             curr_mat.Ks[0] = 3
 
-        return # TODO: make a proper selection shader
-        self._old_shaders = []
-        for renderer in self._shape_renderers:
-            self._old_shaders.append(renderer.shader)
-            renderer.shader = ShaderDB.get_instance().get_shader('simple_red')
-
     def unselect(self) -> None:
         if not self._state.selected:
             return
         self._state.selected = False
-        # self.transform.scale /= 2
 
+        # Change back the material to the old one
         for shape, material in zip(self.shape_specs, self._old_materials):
             shape.material = material
 
-        return # TODO: make a proper selection shader
-        for renderer, old_shader in zip(self._shape_renderers, self._old_shaders):
-            renderer.shader = old_shader
-            
-        self._old_shaders = []
     def _try_update_physics(self):
+        ''' Every frame, check if it's time to update the physics, and if so, update it. '''
         if (delta_time := time.time() - self._state.physics_state.last_tick_time) > 1/PHYSICS_TPS:
             self._state.physics_state.last_tick_time = time.time()
             self._physics_update(delta_time)
 
     def _physics_update(self, delta_time: float):
-        '''Receives a tick every physics frame (around 50TPS)'''
+        ''' Virtual method that is called every physics frame (around 50TPS) to update the physics. '''
         pass
 
     def _render(self, delta_time: float):
+        ''' Virtual method that is called every frame to render the element. '''
         for renderer in self._shape_renderers:
             renderer.render()
 
     def __repr__(self) -> str:
-        '''
-        Return a string representation of the element
-        '''
+        ''' Return a string representation of the element '''
         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
-
-
-    pass
-
-
-# class Element:
-#     '''
-#     Basic class that derives all the others ones in the world.
-#     Responsible for defining their size, behavior (translarion, rotation, scale),
-#     rendering, update and boundaries
-#     '''
-
-#     def __init__(self, world: 'World', specs: ElementSpecification):
-#         '''
-#         Initialize the element inside the world, with an optional initial transform
-#         '''
-#         from objects.world import World
-#         assert isinstance(
-#             world, World), f'Expected world to be a World, got {type(world)} instead'
-#         assert isinstance(
-#             specs, ElementSpecification), f'Expected specs to be a ElementSpecification, got {type(specs)} instead'
-
-#         self._transform = specs.initial_transform
-#         self.primitives = specs.shape_specs
-
-#         self._last_physics_update = time.time()  # Used for physics updates
-#         self.__destroyed = False
-#         self._dying = False
-#         self._selected = False
-
-#         # Take all shapes specified in specs and create a list of ShapeRenderers to render them later
-#         self.shape_renderers = [
-#             ShapeRenderer(shape_spec, self.transform) for shape_spec in specs.shape_specs
-#         ]
-
-#     def select(self) -> None:
-#         if self._selected:
-#             return
-#         self._selected = True
-#         self.transform.translation += 10
-
-#     def unselect(self) -> None:
-#         if not self._selected:
-#             return
-#         self._selected = False
-#         self.transform.translation -= 10
-
-#     def die(self):
-#         '''Set the element to start a death animation'''
-#         self._dying = True
-
-#     def _physics_update(self, delta_time: float):
-#         '''
-#         If overriden in sublcass, must call super, updates the element's physics
-#         It is called every physics update (approx. 50 times per second)
-#         '''
-
-#         # try:
-#         #     self_rect = self.get_bounding_box_2d()
-#         #     if not SCREEN_RECT.intersects(self_rect): #TODO: check only when movement is made (to avoid overload of the CPU)
-#         #         self._on_outside_screen()
-#         # except NotImplementedError:
-#         #     LOGGER.log_trace(f'{self.__class__.__name__} does not implement get_bounding_box, skipping outside screen check', self.__class__)
-#         #     pass
-
-#     def update(self, delta_time: float):
-#         '''
-#         Updates the element, called every frame.
-#         If overridden, make sure to call the super method.
-#         Not intended to be overridden.
-#         '''
-#         if self.destroyed:
-#             LOGGER.log_warning(f'Trying to update destroyed element {self}')
-#             return
-
-#         # TODO: move this to world? world is already processing update's delta_time, so why should element calculate physics delta_time?
-#         if (delta_time := time.time() - self._last_physics_update) > 1/50:
-#             self._physics_update(delta_time)
-#             self._last_physics_update = time.time()
-
-#         self._render()
-
-#     def _render(self):
-#         '''
-#         Basic rendering method. Can be overridden in subclass.
-#         '''
-
-#         # Death animation
-#         if self._dying:
-#             self.transform.scale *= 0.9
-#             if self.transform.scale.x < 0.1:
-#                 self.destroy()
-#                 return
-
-#         # Render all the shapes
-#         for shape_renderer in self.shape_renderers:
-#             shape_renderer.render()
-
-#         # Render the bounding box (if enabled)
-#         self._render_debug()
-
-#     def _render_debug(self):
-#         '''
-#         Renders debug information about the element if enabled.
-#         '''
-#         from app_vars import APP_VARS
-#         if APP_VARS.debug.show_bbox:
-#             try:
-#                 # Create a new shape renderer for the bounding box (uses CPU to compute the bounding box and transform its vertices)
-#                 min_x, min_y, max_x, max_y = self.get_bounding_box_2d()
-#                 bounding_box_renderer = ShapeRenderer(
-#                     transform=Transform(),
-#                     shape_spec=ShapeSpec(
-#                         vertices=np.array([
-#                             [*(min_x, min_y, 0.0), *(1, 0, 1)],
-#                             [*(max_x, min_y, 0.0), *(1, 0, 1)],
-
-#                             [*(max_x, min_y, 0.0), *(1, 0, 1)],
-#                             [*(max_x, max_y, 0.0), *(1, 0, 1)],
-
-#                             [*(max_x, max_y, 0.0), *(1, 0, 1)],
-#                             [*(min_x, max_y, 0.0), *(1, 0, 1)],
-
-#                             [*(min_x, max_y, 0.0), *(1, 0, 1)],
-#                             [*(min_x, min_y, 0.0), *(1, 0, 1)],
-#                         ], dtype=np.float32),
-#                         shader=ShaderDB.get_instance().get_shader('colored'),
-#                         render_mode=gl.GL_LINES,
-#                     ),
-#                 )
-#                 bounding_box_renderer.render()
-#             except NotImplementedError:
-#                 # If the element does not implement get_bounding_box, we cannot render the bounding box
-#                 # So we just ignore it
-#                 pass
-
-#     @property
-#     def destroyed(self):
-#         '''
-#         Returns whether the element is destroyed or not
-#         '''
-#         return self.__destroyed
-
-#     def destroy(self):
-#         '''
-#         Destroys the element
-#         '''
-#         if self.destroyed:
-#             # raise RuntimeError(f'Trying to destroy already destroyed element {self}')
-#             LOGGER.log_warning(
-#                 f'Trying to destroy already destroyed element {self}')
-#             return
-
-#         # LOGGER.log_debug(f"{self} marked for destruction")
-#         self.__destroyed = True
-
-#     # def get_bounding_box_2d(self) -> Rect2:
-#     #     '''
-#     #     Returns the bounding box of the element with scale, rotation and translation applied
-#     #     '''
-#     #     return self._bounding_box_cache.get_bounding_box(self._bounding_box_vertices_4d, self.transform.model_matrix)
-
-#     # def _generate_bounding_box_2d_vertices(self) -> np.ndarray:
-#     #     '''
-#     #     Return the bounding box of the element
-#     #     np.array([[x1, y1, z1], [x2, y2, z2], ...])
-#     #     '''
-#     #     raise NotImplementedError(f'{self.__class__.__name__} does not implement _generate_bounding_box_vertices')
-
-#     # TODO: what does this mean for 3D?
-#     # def _on_outside_screen(self):
-#     #     '''
-#     #     Define what to do when the element is outside the screen
-#     #     Can be overridden in subclass
-#     #     '''
-#     #     LOGGER.log_debug(f'{self.__class__.__name__} id={id(self)} is outside screen')
-#     #     self.destroy()
-
-#     # def move_forward(self, intensity: float = 1.0):
-#     #     '''
-#     #     Move the element forward according to the current rotation
-#     #     '''
-#     #     dx = np.cos(self.angle + math.radians(90)) * intensity * self.speed
-#     #     dy = np.sin(self.angle + math.radians(90)) * intensity * self.speed
-#     #     self.transform.translation.xy += Vec2(dx, dy)
-
-#     @property
-#     def transform(self) -> Transform:
-#         '''
-#         Returns the transform of the element
-#         '''
-#         return self._transform
-
-#     @property
-#     def x(self):
-#         '''
-#         Get the x coordinate of the element
-#         '''
-#         return self.transform.translation.x
-
-#     @x.setter
-#     def x(self, value: float):
-#         '''
-#         Set the x coordinate of the element
-#         '''
-#         self.transform.translation.x = value
-
-#     @property
-#     def y(self):
-#         '''
-#         Get the y coordinate of the element
-#         '''
-#         return self.transform.translation.y
-
-#     @y.setter
-#     def y(self, value: float):
-#         '''
-#         Set the y coordinate of the element
-#         '''
-#         self.transform.translation.y = value
-
-#     @property  # No setter, because it's a read-only property (2D only)
-#     def z(self):
-#         '''
-#         Get the z coordinate of the element (no setter available, since we're in 2D)
-#         '''
-#         return self.transform.translation.z
-
-#     @z.setter
-#     def z(self, value: float):
-#         '''
-#         Set the z coordinate of the element
-#         '''
-#         self.transform.translation.z = value
-
-#     # @property
-#     # def angle(self):
-#     #     '''
-#     #     Get the angle of the element on the Z axis
-#     #     '''
-#     #     return self.transform.rotation.z
-
-#     # @angle.setter
-#     # def angle(self, value: float):
-#     #     '''
-#     #     Set the angle of the element on the Z axis
-#     #     '''
-#     #     self.transform.rotation.z = value
-
-#     def __repr__(self) -> str:
-#         '''
-#         Return a string representation of the element
-#         '''
-#         return f'{self.__class__.__name__}(id={str(id(self))[-5:]}, x={self.x}, y={self.y}, z={self.z})'
