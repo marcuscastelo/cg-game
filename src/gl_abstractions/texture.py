@@ -27,7 +27,7 @@ class Texture:
     texture_parameters: TextureParameters = field(default_factory=TextureParameters)
     
     def __post_init__(self):
-        assert glfw.glfwGetCurrentContext() is not None, 'Must call `glfw.init()` before creating a texture'
+        assert glfw.get_current_context() is not None, 'Must call `glfw.init()` before creating a texture'
         assert isinstance(self.texture_type, int), f"Texture type expected to be int, but found '{type(self.texture_type)}'"
         assert isinstance(self.texture_parameters, TextureParameters), f"Texture type expected to be TextureParameters, but found '{type(self.texture_parameters)}'"
 
