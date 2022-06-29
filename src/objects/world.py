@@ -1,20 +1,13 @@
-from json import load
 import math
-from pickle import APPEND
 import random
-from textwrap import wrap
+import sys
 import time
-from typing import Text
 import glm
-from utils.geometry import Vec2, Vec3
+from utils.geometry import Vec3
 from utils.logger import LOGGER
-# from app_vars import APP_VARS
 from gl_abstractions.shader import ShaderDB
 from gl_abstractions.texture import Texture2D, TextureParameters
-from line import Line
 from objects.bot import Bot
-from objects.cube import CUBE_MODEL, Cube
-from objects.cube_target import CubeTarget
 from objects.fren import Fren
 from objects.model_element import ModelElement
 from objects.element import Element
@@ -28,10 +21,6 @@ from wavefront.material import Material
 from wavefront.model import Model
 from wavefront.reader import ModelReader
 
-from objects.selection_ray import SelectionRay
-
-from OpenGL import GL as gl
-
 class World:
     '''
     Class responsible for describing the world.
@@ -41,25 +30,30 @@ class World:
     
     def __init__(self):
         self.elements: list[Element] = []
-        self._updating_inner = False
         self._last_update_time = time.time()
+        self.setup_finished = False
 
-    def setup_scene(self):
+    def setup(self):
         '''
         This function is called when the user presses the 'r' key and when the application starts.
         It populates the world with the elements that are needed to play the game.
 
         Objects declared at the "bottom" of the code (last line) as rendered behind the upper ones.
         '''
-        LOGGER.log_trace('Setting up scene', 'world:setup_scene')
 
+        CURRENT_FUNCTION_NAME = f'{__name__}:{sys._getframe().f_code.co_name}()'
+        LOGGER.log_info('Setting up scene', CURRENT_FUNCTION_NAME)
+
+        assert not self.setup_finished, 'Trying to setup scene twice!'
+        
         def load_model(filename: str) -> Model:
+            '''Shorthand for loading a model from a file.'''
             return ModelReader().load_model_from_file(filename)
 
-        # LOGGER.log_trace('Emptying scene', 'world:setup_scene')
-        # self.elements.clear()
         from app_vars import APP_VARS
         self.spawn(APP_VARS.camera)
+
+        #### External environment #####
 
         ground_main = ModelElement('GroundMain', texture=Texture2D.from_image_path('textures/floor3.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
         ground_main.transform.scale = Vec3(constants.WORLD_SIZE, 0.1, constants.WORLD_SIZE)
@@ -81,13 +75,11 @@ class World:
         self.sky = sky 
         self.sky.shape_specs[0].material = Material('Hardcoded Ka always bright', Ka=Vec3(0,0,0)) # Ka = 0 -> no directional light
 
-        # TODO: rename 
-        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False, ray_destroyable=False)
-        light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
-        light_cube.transform.translation.y = 2
-        light_cube.transform.scale = Vec3(1,1,1) * 0.1
-        self.spawn(light_cube)
-
+        aux_robot = AuxRobot(
+            'Aux Robot',
+            transform=Transform(scale=Vec3(0.1, 0.1, 0.1))
+        )
+        self.spawn(aux_robot)
 
         TREE_MODEL = load_model('models/tree.obj')
         trees_positions = [
@@ -138,28 +130,39 @@ class World:
         for rock in rocks:
             self.spawn(rock)
 
+        bot_spawner = Spawner(
+            name='BotSpawner',
+            region=SpawnerRegion(Vec3(-10,0.01,20), Vec3(10,0.01,0)),
+            element_factory=lambda: Bot('Spawned Bot', transform=Transform(scale=Vec3(1.8,1.8,1.8))),
+        )
+        self.spawn(bot_spawner)
 
-        BOT_MODEL = load_model('models/bot.obj')
-        TARGET_MODEL = load_model('models/alvo2.obj')
+        outside_target_spawning_properties=SpawningProperties(
+            max_spawned_elements=1, 
+            min_interval=5, 
+            max_interval=10, 
+            insta_replace_destroyed=False
+        )
+
+        distances_z = [-3, 0, 3]
+        outside_target_spawners = [
+            Spawner(
+                name=f'OutsideTargetSpawner_{idx}',
+                region=SpawnerRegion(HOUSE_XYZ + Vec3(-3.023,3.5,distance_z), HOUSE_XYZ + Vec3(-3.023,3.5,distance_z)),
+                spawning_properties=outside_target_spawning_properties,
+                element_factory=lambda: WoodTarget(f'Wood Target {idx}'),
+            ) for idx, distance_z in enumerate(distances_z)
+        ]
+
+        #### /External environment #####
+
+        #### Internal environment #####
 
         HOUSE_XYZ = Vec3(0, 0, -15)
-
         house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
         house.transform.translation.xyz = HOUSE_XYZ
         house.transform.scale.xyz = Vec3(3,3,3)
         self.spawn(house)
-
-        def spawn_bot():
-            bot = Bot('Spawned Bot')
-            bot.transform.scale *= 1.8
-            return bot
-
-        bot_spawner = Spawner(
-            name='BotSpawner',
-            region=SpawnerRegion(Vec3(-10,0.01,20), Vec3(10,0.01,0)),
-            element_factory=spawn_bot,
-        )
-        self.spawn(bot_spawner)
 
         house_target_spawner = Spawner(
             name='HouseTargetSpawner',
@@ -174,25 +177,6 @@ class World:
         )
         self.spawn(house_target_spawner)
 
-        ALVO_2_MODEL = load_model('models/alvo2.obj')
-        ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')
-        outside_target_spawning_properties=SpawningProperties(
-            max_spawned_elements=1, 
-            min_interval=5, 
-            max_interval=10, 
-            insta_replace_destroyed=False
-        )
-
-        distances_z = [-3, 0, 3]
-        outside_target_spawners = [
-            Spawner(
-                name=f'OutsideTargetSpawner_{idx}',
-                region=SpawnerRegion(HOUSE_XYZ + Vec3(-3.023,3.5,distance_z), HOUSE_XYZ + Vec3(-3.023,3.5,distance_z)),
-                spawning_properties=outside_target_spawning_properties,
-                element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
-            ) for idx, distance_z in enumerate(distances_z)
-        ]
-
         fren = Fren('Fren')
         fren.transform.translation.xyz = HOUSE_XYZ + Vec3(-2, 0, +3.5)
         fren.transform.rotation.y = math.pi/4 + math.pi/2
@@ -202,45 +186,65 @@ class World:
         for spawner in outside_target_spawners:
             self.spawn(spawner)
 
-        LOGGER.log_info('Done setting up scene', 'world:setup_scene')
+        #### /Internal environment #####
+
+        LOGGER.log_info('Done setting up scene', CURRENT_FUNCTION_NAME)
+        self.setup_finished = True
         
     def spawn(self, element: Element):
+        ''' Spawns an element in the scene, triggering its on_spawned method. '''
         self.elements.append(element)
         element.on_spawned(world=self)
 
     def destroy(self, element: Element):
+        ''' Asks an element to be destroyed (usually marks it as destroyed right away, but each element has its own way of doing this). '''
         element.destroy()
+
+    def _update_daylight(self, delta_time: float):
+        '''Update the daylight (Ambient Light intensity)'''
+        from app_vars import APP_VARS
+        if APP_VARS.lighting_config.do_daylight_cycle:
+            APP_VARS.lighting_config.Ka_x *= 0.999 * delta_time * 60
+            APP_VARS.lighting_config.Ka_y *= 0.999 * delta_time * 60
+            APP_VARS.lighting_config.Ka_z *= 0.999 * delta_time * 60
 
     def update(self):
         '''
         This function is called every frame.
         It updates the world and all the elements in it.
+        Update means:
+            - Update the physics engine
+            - Update the elements visuals
+            - Update the elements logic
+            - Render in OpenGL
         '''
         t = time.time()
         delta_time = t - self._last_update_time
 
-        from app_vars import APP_VARS
-        if APP_VARS.lighting_config.do_daylight_cycle:
-            APP_VARS.lighting_config.Ka_x *= 0.999
-            APP_VARS.lighting_config.Ka_y *= 0.999
-            APP_VARS.lighting_config.Ka_z *= 0.999
-        
-        # Update elements
-        for element in self.elements[::-1]:
-            if not element.destroyed: # In case the element was destroyed while updating
-                element.update(delta_time)
-
-        # Remove elements that are marked for removal
-        self.elements[:] = [ element for element in self.elements if not element.destroyed ]
+        self._update_daylight(delta_time)
+        self._update_elements(delta_time)
+        self._remove_destroyed_elements()
+        self._balance_sky_ambient_light()
 
         self._last_update_time = t
 
-        # SIZE = 0.1
-        # self.diamond_blocks[random.randint(0, len(self.diamond_blocks)-1)].transform.scale *= 1 + (SIZE) - (random.random() * 2 * SIZE)
+    def _update_elements(self, delta_time: float):
+        '''Update all elements in the world'''
+        for element in self.elements[::-1]:
+            if not element.destroyed: # In case the element was destroyed while updating another element
+                element.update(delta_time)
 
-        from camera import Camera
-        assert isinstance(self.elements[0], Camera), "0th element is not a camera!"
+    def _remove_destroyed_elements(self):
+        '''Remove all the destroyed elements from the world'''
+        self.elements[:] = [ element for element in self.elements if not element.destroyed ]
 
+    def _balance_sky_ambient_light(self):
+        '''
+        Balance the ambient light of the sky.
+        This is done by changing the ambient light of the sky based on the ambient light of the sun.
+        '''
+        # TODO: Sky class that does that
+        from app_vars import APP_VARS
         global_Ka = Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z)
         global_Ka.x = glm.clamp(global_Ka.x, 0, 1)
         global_Ka.y = glm.clamp(global_Ka.y, 0, 1)
@@ -248,17 +252,3 @@ class World:
         inv_global_Ka = Vec3(1/(global_Ka.x+0.01), 1/(global_Ka.y+0.01), 1/(global_Ka.z+0.01),) 
         
         self.sky.shape_specs[0].material.Kd = (inv_global_Ka * global_Ka**2)
-
-    def is_player_victory(self) -> bool:
-        '''
-        If no more enemies or garbage is left, the player has won.
-        '''
-        return False
-
-    def is_player_defeat(self) -> bool:
-        '''
-        If the player has been destroyed, he has lost.
-        '''
-        return False
-
-WORLD = World()

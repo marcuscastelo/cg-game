@@ -15,17 +15,26 @@ from objects.model_element import ModelElement
 from objects.element import Element, ElementSpecification, ShapeSpec
 from utils.sig import metsig
 from objects.physics.rotation import front_to_rotation
+from wavefront.model import Model
 
 from wavefront.reader import ModelReader
 
-DEFAULT_MODEL = ModelReader().load_model_from_file('models/cube.obj')
+MODEL = ModelReader().load_model_from_file('models/aux_robot.obj')
 
 @dataclass
 class AuxRobot(ModelElement):
+    model: Model = MODEL
+    ray_selectable: bool = False
+    ray_destroyable: bool = False
     def __post_init__(self):
         from objects.physics.momentum import Momentum
         self._momentum = Momentum(accel=0.5, max_speed=3.5)
         super().__post_init__()
+
+    def update(self, delta_time: float):
+        from app_vars import APP_VARS
+        APP_VARS.lighting_config.light_position = self.transform.translation
+        return super().update(delta_time)
 
     def _physics_update(self, delta_time: float):
         from app_vars import APP_VARS

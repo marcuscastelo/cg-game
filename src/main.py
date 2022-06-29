@@ -1,5 +1,5 @@
 '''
-Entrega 1 - Computação Gráfica (SCC 0250)
+Entrega 2 - Computação Gráfica (SCC 0250)
 Membros:       
     Dalton Hiroshi Sato
     Marcus Vinicius Castelo Branco Martins
@@ -8,9 +8,6 @@ Membros:
     Vitor Souza Amim
 '''
 
-from asyncore import read
-from cgi import test
-import math
 from threading import Thread
 import time
 
@@ -18,8 +15,6 @@ import glfw
 import OpenGL.GL as gl
 
 from threading import Thread
-import glm
-from utils.geometry import Vec3
 
 from utils.logger import LOGGER
 from app_vars import APP_VARS
@@ -28,7 +23,6 @@ from constants import GUI_WIDTH, WINDOW_SIZE
 from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 
 from gui import AppGui
-from wavefront.material import MtlReader
 
 def create_window():
     '''
@@ -59,7 +53,6 @@ def create_window():
 
     LOGGER.log_info("Window created", 'create_window')
 
-
     # gl.glEnable(gl.GL_CULL_FACE);  
     # gl.glCullFace(gl.GL_FRONT);  
     # gl.glFrontFace(gl.GL_CW);  
@@ -74,15 +67,18 @@ def glfw_thread():
     '''
     LOGGER.log_trace("Creating window", 'glfw_thread')
     window = create_window()
+    
+    # Enable blending
+    gl.glEnable(gl.GL_BLEND)
+    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
-    gl.glEnable(gl.GL_BLEND) # Enable blending
-    gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA) # Set blending function
-
+    LOGGER.log_trace("Enabling Depth Test", 'glfw_thread')
     gl.glEnable(gl.GL_DEPTH_TEST)
+    gl.glDepthFunc(gl.GL_LESS)
 
-    camera = APP_VARS.camera
-
+    LOGGER.log_trace("Setting up input system", 'glfw_thread')
     def key_callback(window, key: int, scancode, action: int, mods: int):
+        ''''''
         if APP_VARS.cursor.capturing and key == glfw.KEY_ESCAPE and action == glfw.RELEASE:
             APP_VARS.cursor.capturing = False
             glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_NORMAL);
@@ -99,36 +95,48 @@ def glfw_thread():
             APP_VARS.cursor.capturing = True
             glfw.set_input_mode(window, glfw.CURSOR, glfw.CURSOR_DISABLED);
 
+    # Make InputSystem class register its callbacks to the GLFW input system
     setup_input_system(window)
+
+    # Register callbacks into our input system (can have more than one callback per event)
     IS.add_key_callback(key_callback)
     IS.add_mouse_button_callback(mouse_button_callback)
     IS.add_cursor_pos_callback(cursor_pos_callback)
 
-    # Create the scene (world)
-    LOGGER.log_info("Preparing world", 'glfw_thread')
+    LOGGER.log_trace("Setting up world", 'glfw_thread')
     world = APP_VARS.world
-    world.setup_scene()
+    world.setup()
 
-    # Background color
+    LOGGER.log_trace("Running main loop", 'glfw_thread')
+    camera = APP_VARS.camera
+
+    # Background color: generally, the skybox will hide the background color
     R: float = 32/255 
     G: float = 31/255 
     B: float = 65/255 
 
     while not glfw.window_should_close(window) and not APP_VARS.closing:
-        glfw.poll_events() # Process input events (keyboard, mouse, etc)
+        glfw.poll_events() # Update input events (keyboard, mouse, etc)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
         gl.glClearColor(R, G, B, 1.0)
 
-        def render():
+        def update():
+            '''
+            Update world state and render its scene into the current framebuffer (usually the screen)
+            '''
             world.update()
 
-        render()
+        update() # Currently, the screen is bound as the framebuffer
 
+        # Update game FPS every frame
         APP_VARS.game_fps.update_calc_fps(time.time())
-        glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
+
+        # Swap the buffers (drawing buffer -> screen)
+        glfw.swap_buffers(glfw.get_current_context()) 
 
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
-    APP_VARS.closing = True # Make the GUI close too
+    # Make the GUI close too
+    APP_VARS.closing = True 
 
 def _set_signal_handler():
     '''
@@ -145,6 +153,12 @@ def _set_signal_handler():
 
 
 def main():
+    '''
+    This is the main function.
+    First, it creates a thread to run the OpenGL application.
+    Then, it creates the GUI on the main thread.
+    After that, it waits for the threads to end.
+    '''
     _set_signal_handler() # Handle CTRL+C (SIGINT) signal to close the app (2 threads)
     
     LOGGER.log_info("Starting app", 'main')
@@ -152,17 +166,19 @@ def main():
     LOGGER.log_trace("Init Glfw", 'main')
     glfw.init()
     
-
     LOGGER.log_trace("Start GLFW thread", 'main')
     t = Thread(target=glfw_thread)
     t.start() # GLFW thread (2nd thread)
 
     _tries = 0
-    while len(APP_VARS.world.elements) < 2: # TODO: remove gambiarra feia
-        LOGGER.log_debug("Hack: waiting for cube to be spawned...", 'main')
-        time.sleep(0.1)
-        if _tries > 10:
-            exit(1)
+    _max_tries = 10
+    world = APP_VARS.world
+    while not world.setup_finished:
+        LOGGER.log_info(f'Waiting for world to initialize ({_tries}/{_max_tries})', 'main')
+        time.sleep(1)
+        if _tries > _max_tries:
+            LOGGER.log_error('World initialization timeout', 'main')
+            raise RuntimeError('World initialization timeout')
         _tries += 1
 
     LOGGER.log_trace("Init GUI", 'main')
@@ -179,36 +195,5 @@ def main():
     glfw.terminate()
     LOGGER.log_info("App has been closed gracefully", 'main')
 
-def test_wavefront():
-    from wavefront.reader import ModelReader
-
-    reader = ModelReader()
-    model = reader.load_model_from_file('models/bot.obj')
-    # print(reader.materials)
-
-    # reader = MtlReader('models/tree.mtl')
-    # print(reader.read_materials())
-
-    # face1 = model.faces[0]
-    # print(face1)
-
-    print(f'{model.name=} has {len(model.objects)} objects')
-    for object in model.objects:
-        print(f'\t{object.name=}')
-        print(f'\t\t{object.material.name=}')
-
-    pass
-
 if __name__ == "__main__":
-    # test_wavefront()
     main()
-    # x, z = 1, 0
-    # la = glm.lookAt(glm.vec3(0,0,0), glm.vec3(x,0,z), glm.vec3(0,1,0))
-    # print(la)
-    
-    # a = math.acos(la[0][0])
-    # if x < 0:
-    #     print(math.degrees(a))
-    # else:
-    #     print(180 - math.degrees(a))
-

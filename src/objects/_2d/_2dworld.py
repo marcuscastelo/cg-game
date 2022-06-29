@@ -18,7 +18,7 @@ class _2DWorld(World):
     When they are marked for removal, they are removed from the list in the next update.
     '''
     
-    def setup_scene(self):
+    def setup(self):
         '''
         This function is called when the user presses the 'r' key and when the application starts.
         It populates the world with the elements that are needed to play the game.
