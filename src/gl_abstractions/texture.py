@@ -2,12 +2,13 @@ from abc import ABCMeta
 from dataclasses import dataclass, field
 import imageio
 from utils.sig import metsig
-
+import glfw
 from OpenGL import GL as gl
 import numpy as np
 
 @dataclass
 class TextureParameters:
+    ''' OpenGL Parameters for a texture '''
     wrap_s: int = gl.GL_CLAMP_TO_BORDER
     wrap_t: int = gl.GL_CLAMP_TO_BORDER
     min_filter: int = gl.GL_LINEAR
@@ -18,10 +19,15 @@ class TextureParameters:
 
 @dataclass
 class Texture:
+    '''
+    Base class for all textures.
+    When instantiated, a texture is created in OpenGL and its parameters are set.
+    '''
     texture_type: int
     texture_parameters: TextureParameters = field(default_factory=TextureParameters)
     
     def __post_init__(self):
+        assert glfw.glfwGetCurrentContext() is not None, 'Must call `glfw.init()` before creating a texture'
         assert isinstance(self.texture_type, int), f"Texture type expected to be int, but found '{type(self.texture_type)}'"
         assert isinstance(self.texture_parameters, TextureParameters), f"Texture type expected to be TextureParameters, but found '{type(self.texture_parameters)}'"
 
@@ -46,10 +52,14 @@ class Texture:
 
 @dataclass
 class Texture2D(Texture):
+    '''
+    Specialized texture class for 2D textures.
+    '''
     texture_type: int = gl.GL_TEXTURE_2D
 
     @classmethod
     def from_image_path(cls, image_path: str, tex2d_params: TextureParameters = None) -> 'Texture2D':
+        ''' Loads a 2D texture from a image file '''
         image = np.array(imageio.imread(image_path))[::-1,:,:]
 
         # TODO: support RGBA
@@ -64,6 +74,7 @@ class Texture2D(Texture):
         return obj
 
     def upload_raw_texture(self, texture: np.ndarray) -> None:
+        ''' Uploads a raw texture to the GPU '''
         self.bind()
         gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, self.texture_parameters.internal_format, texture.shape[1], texture.shape[0], 0, self.texture_parameters.format, self.texture_parameters.type, texture)
         self.unbind()
