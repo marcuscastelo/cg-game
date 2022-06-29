@@ -2,15 +2,18 @@
 
 from ast import arg
 from dataclasses import dataclass, field
-#https://en.wikipedia.org/wiki/Wavefront_.obj_file#Basic_materials
 from enum import Enum
-from modulefinder import LOAD_CONST
 from typing import Union
 
-from utils.geometry import Vec2, Vec3, VecN
-from utils.logger import LOGGER
+from utils.geometry import Vec3
+
+'''
+This file contains all properties of a material.
+As specified in: https://en.wikipedia.org/wiki/Wavefront_.obj_file#Basic_materials
+'''
 
 class Illum(Enum):
+    ''' Types of illumination '''
     COLOR_ON_AMBIENT_OFF = 0
     COLOR_ON_AMBIENT_ON = 1
     HIGHLIGHT_ON = 2
@@ -24,6 +27,7 @@ class Illum(Enum):
 
 @dataclass
 class Material:
+    ''' Properties of a material '''
     name: str
     Ns: float = 1000
     Ka: Vec3 = field(default_factory=lambda: Vec3(1,1,1))
@@ -40,7 +44,7 @@ class Material:
     map_Ns: Union[str, None] = None
     map_d: Union[str, None] = None
 
-    # Also bump instead of map_bump
+    # TODO: Also bump instead of map_bump
     map_bump: Union[str, None] = None
 
     disp: Union[str, None] = None
