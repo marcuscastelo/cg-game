@@ -143,6 +143,7 @@ class World:
             max_interval=10, 
             insta_replace_destroyed=False
         )
+        HOUSE_XYZ = Vec3(0, 0, -15)
 
         distances_z = [-3, 0, 3]
         outside_target_spawners = [
@@ -158,7 +159,6 @@ class World:
 
         #### Internal environment #####
 
-        HOUSE_XYZ = Vec3(0, 0, -15)
         house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
         house.transform.translation.xyz = HOUSE_XYZ
         house.transform.scale.xyz = Vec3(3,3,3)
