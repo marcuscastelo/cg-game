@@ -22,6 +22,8 @@ class Shader:
         self._compile()
         self._link()
 
+        self.uniform_locations: dict[str, int] = {}
+
     def _load_source(self, path: str) -> str:
         with open(path, 'r') as f:
             return f.read()
@@ -102,24 +104,32 @@ class Shader:
     def use(self):
         gl.glUseProgram(self.program)
 
+    def get_uniform_location(self, name: str):
+        loc = self.uniform_locations.get(name, None)
+        if loc is None:
+            loc = gl.glGetUniformLocation(self.program, name)
+            self.uniform_locations[name] = loc
+        return loc
+
     def upload_uniform_matrix4f(self, name: str, value: np.ndarray):
-        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        uniform_loc = self.get_uniform_location(name)
         gl.glUniformMatrix4fv(uniform_loc, 1, gl.GL_FALSE, value)
 
     def upload_uniform_int(self, name: str, value: int):
-        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        uniform_loc = self.get_uniform_location(name)
         gl.glUniform1i(uniform_loc, value)
 
     def upload_uniform_float(self, name: str, value: float):
-        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        uniform_loc = self.get_uniform_location(name)
         gl.glUniform1f(uniform_loc, value)
 
+
     def upload_uniform_vec3(self, name: str, value: np.ndarray):
-        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        uniform_loc = self.get_uniform_location(name)
         gl.glUniform3f(uniform_loc, *value)
 
     def upload_bool(self, name: str, value: bool):
-        uniform_loc = gl.glGetUniformLocation(self.program, name)
+        uniform_loc = self.get_uniform_location(name)
         gl.glUniform1i(uniform_loc, value)
 
         pass

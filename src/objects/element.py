@@ -85,8 +85,7 @@ class ShapeRenderer:
         # self.ibo = VertexBuffer(self.shape_spec.indices)
         self.vao.upload_vertex_buffer(self.vbo)
 
-    def render(self):
-        from app_vars import APP_VARS
+    def render__bind_stuff(self):
         # Bind the shader and VAO (VBO is bound in the VAO)
         self.vao.bind()
 
@@ -97,61 +96,88 @@ class ShapeRenderer:
 
         # gl.glBindTextureUnit(0, self.texture)
 
-        # Calculate MVP
-        mat_model = self.transform.model_matrix
+    def render__calc_model_matrix(self):
+        return self.transform.model_matrix
 
+    def render__calc_view_matrix(self):
+        from app_vars import APP_VARS
         # def view(camera: Camera):
         camera = APP_VARS.camera
         mat_view = camera.calc_view_matrix()
         mat_view = np.array(mat_view)
-        # return mat_view
+        return mat_view
+        pass
 
+    def render__calc_projection_matrix(self):
+        from app_vars import APP_VARS
         # def projection():
+        camera = APP_VARS.camera
         # perspective parameters: fovy, aspect, near, far
         mat_projection = camera.calc_projection_matrix()
         mat_projection = np.array(mat_projection)
-        # return mat_projection
+        return mat_projection
 
+    def render__upload_uniform_matrices(self, model_matrix, view_matrix, projection_matrix):
         # Set the transformation matrix
-        self.shader.upload_uniform_matrix4f('u_Model', mat_model)
-        self.shader.upload_uniform_matrix4f('u_View', mat_view) 
+        self.shader.upload_uniform_matrix4f('u_Model', model_matrix)
+        self.shader.upload_uniform_matrix4f('u_View', view_matrix)
+        self.shader.upload_uniform_matrix4f('u_Projection', projection_matrix)
 
-        self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
-
-        material = self.shape_spec.material
-
+    def render__upload_uniform_material(self, material: Material):
         self.shader.upload_uniform_vec3('u_Ka', material.Ka.values.astype(np.float32))
         self.shader.upload_uniform_vec3('u_Kd', material.Kd.values.astype(np.float32))
         self.shader.upload_uniform_vec3('u_Ks', material.Ks.values.astype(np.float32))
         self.shader.upload_uniform_float('u_Ns', material.Ns)
         self.shader.upload_uniform_float('u_d', material.d)
 
+    def render__upload_uniform_global_light(self):
+        from app_vars import APP_VARS
         self.shader.upload_uniform_vec3('u_GKa', Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
         self.shader.upload_uniform_vec3('u_GKd', Vec3(APP_VARS.lighting_config.Kd_x, APP_VARS.lighting_config.Kd_y, APP_VARS.lighting_config.Kd_z))
         self.shader.upload_uniform_vec3('u_GKs', Vec3(APP_VARS.lighting_config.Ks_x, APP_VARS.lighting_config.Ks_y, APP_VARS.lighting_config.Ks_z))
         self.shader.upload_uniform_float('u_GNs', APP_VARS.lighting_config.Ns)
 
+    def render__upload_uniform_light_sources(self):
+        from app_vars import APP_VARS
         if APP_VARS.last_bullet:
             self.shader.upload_uniform_vec3('u_BulletPos', APP_VARS.last_bullet.transform.translation.values.astype(np.float32) )
         else:
             self.shader.upload_uniform_vec3('u_BulletPos',  Vec3(0,-1000,0).values.astype(np.float32))
 
         self.shader.upload_uniform_vec3('u_AuxRobotPos', APP_VARS.lighting_config.light_position.values.astype(np.float32) )
-        
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
+        
+    def render__upload_texture_bool(self):
         self.shader.upload_bool('u_HasTexture', int(self.texture is not None))
+
+    def render__draw(self):
         # Draw the vertices according to the primitive
         primitive = self.shape_spec.render_mode
-
-        LOGGER.log_trace(f'Drawing {self.shape_name} with primitive {primitive}')
+        # LOGGER.log_trace(f'Drawing {self.shape_name} with primitive {primitive}')
         if self.shape_spec.vertices_spec.is_indexed:
             LOGGER.log_debug(f'Drawing {self.shape_name} with indices: {self.shape_spec.vertices_spec.indices}')
             gl.glDrawElements(primitive, self.shape_spec.vertices_spec.indices.size, gl.GL_UNSIGNED_INT, None)
         else:
             gl.glDrawArrays(primitive, 0, self.shape_spec.vertices_spec.vertices.size)
 
-        # gl.glDrawArrays(self.shape_spec.render_mode, 0,
-        #                 len(self.shape_spec.vertices_spec))
+    def render(self):
+        from app_vars import APP_VARS
+        self.render__bind_stuff()
+
+        # Calculate MVP
+        mat_model = self.render__calc_model_matrix()
+        mat_view = self.render__calc_view_matrix()
+        mat_projection = self.render__calc_projection_matrix()
+
+        self.render__upload_uniform_matrices(mat_model, mat_view, mat_projection)
+        material = self.shape_spec.material
+
+        self.render__upload_uniform_material(material)
+        self.render__upload_uniform_global_light()
+        self.render__upload_uniform_light_sources()
+        self.render__upload_texture_bool()
+
+        self.render__draw()
 
 
 @dataclass
