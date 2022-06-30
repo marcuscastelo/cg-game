@@ -45,7 +45,7 @@ class Projectile(Element):
         # TODO: avoid scale overwriting somehow (if user already set scale before)
         self.specs.initial_transform.scale.y = self.specs.length
         self.specs.shape_specs = [
-            ShapeSpec(vertices=np.array([
+            ShapeSpec(vertices_spec=np.array([
                 [*(0.0,  -1.0,   0.0)],
                 [*(0.0,  +1.0,   0.0)],
             ], dtype=np.float32),

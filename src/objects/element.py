@@ -28,6 +28,21 @@ from wavefront.model import Model
 if TYPE_CHECKING:
     from objects._2d._2dworld import World
 
+@dataclass
+class VerticesSpecification:
+    vertices: np.ndarray
+    indices: np.ndarray = None
+
+    is_indexed: bool = True
+
+    def __post_init__(self):
+        if self.is_indexed:
+            assert self.indices is not None, 'indices must be provided if is_indexed is True'
+            self.indices = np.array(self.indices, dtype=np.uint32)
+        else:
+            self.indices = None
+        self.vertices = np.array(self.vertices, dtype=np.float32)
+        assert self.indices is None or self.indices.dtype == np.uint32, f'indices must be of type np.uint32, not {self.indices.dtype}'
 
 @dataclass
 class ShapeSpec:
@@ -35,8 +50,7 @@ class ShapeSpec:
     Basic class that tore the vertices data of the object.
     It contains the vertices coordinates and its color
     '''
-    vertices: np.ndarray
-    indices: np.ndarray = None
+    vertices_spec: VerticesSpecification
     render_mode: int = field(default=gl.GL_TRIANGLES)
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance()[
                            'simple_red'])  # TODO: more readable way to do this?
@@ -45,7 +59,8 @@ class ShapeSpec:
     name: str = 'Unnamed Shape'
 
     def __post_init__(self):
-        self.shader.layout.assert_data_ok(self.vertices)
+        assert isinstance(self.vertices_spec, VerticesSpecification), f'VerticesSpecification expected, got {type(self.vertices_spec)}'
+        self.shader.layout.assert_data_ok(vertex_data=self.vertices_spec.vertices)
 
 @dataclass
 class ShapeRenderer:
@@ -64,7 +79,7 @@ class ShapeRenderer:
         self.vao.bind()
         self.vbo = VertexBuffer(
             layout=self.shader.layout,
-            data=self.shape_spec.vertices,
+            data=self.shape_spec.vertices_spec.vertices,
             usage=gl.GL_DYNAMIC_DRAW
         )
         # self.ibo = VertexBuffer(self.shape_spec.indices)
@@ -126,8 +141,17 @@ class ShapeRenderer:
         self.shader.upload_uniform_vec3('u_CameraPos', APP_VARS.camera.transform.translation.values.astype(np.float32) )
         self.shader.upload_bool('u_HasTexture', int(self.texture is not None))
         # Draw the vertices according to the primitive
-        gl.glDrawArrays(self.shape_spec.render_mode, 0,
-                        len(self.shape_spec.vertices))
+        primitive = self.shape_spec.render_mode
+
+        LOGGER.log_trace(f'Drawing {self.shape_name} with primitive {primitive}')
+        if self.shape_spec.vertices_spec.is_indexed:
+            LOGGER.log_debug(f'Drawing {self.shape_name} with indices: {self.shape_spec.vertices_spec.indices}')
+            gl.glDrawElements(primitive, self.shape_spec.vertices_spec.indices.size, gl.GL_UNSIGNED_INT, None)
+        else:
+            gl.glDrawArrays(primitive, 0, self.shape_spec.vertices_spec.vertices.size)
+
+        # gl.glDrawArrays(self.shape_spec.render_mode, 0,
+        #                 len(self.shape_spec.vertices_spec))
 
 
 @dataclass
@@ -154,7 +178,8 @@ class ElementSpecification:
             shader = ShaderDB.get_instance().get_shader('light_texture') # TODO: make shader part of the material
             
         for object in model.objects:
-            vertices_list = object.expand_faces_to_unindexed_vertices() # TODO: instead of unindexed, use indices
+            vertices = object.expand_faces_to_unindexed_vertices() # TODO: instead of unindexed, use indices
+            # vertices, indices = object.expand_faces_to_vertices_and_indices()
             material = object.material
 
             # assert material.name in ['Tree', 'Leaves'], f'{material.name}'
@@ -166,13 +191,18 @@ class ElementSpecification:
             # # TODO: rename this variable to something less confusing
             vertices_array = np.array([
                 # Example Vertex: (posX, posY, posZ, texU, texV, normX, normY, normZ)
-                vertex.to_tuple(has_position, has_texcoord, has_normal) for vertex in vertices_list
+                vertex.to_tuple(has_position, has_texcoord, has_normal) for vertex in vertices
             ], dtype=np.float32)
+
+            # indices_array = np.array(indices, dtype=np.uint32)
 
             if len(vertices_array.shape) == 2:
                 object_shape = ShapeSpec(
-                    vertices=vertices_array,
-                    # indices= TODO: use indices,
+                    vertices_spec=VerticesSpecification(
+                        vertices=vertices_array,
+                        # indices=indices_array,
+                        is_indexed=False,
+                    ),
                     shader=shader,
                     render_mode=gl.GL_TRIANGLES,
                     name=f'{object.name}',

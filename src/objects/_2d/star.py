@@ -36,7 +36,7 @@ class Star(Element):
                 # These vertices were based on a pentagram,
                 # consisting of 3 triangles and 3 lines intersection
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*( 0.00,  1.00, +0.0), *(yellow)],
                         [*(-0.58, -0.81, +0.0), *(yellow)],
                         [*( 0.36, -0.12, +0.0), *(yellow)],

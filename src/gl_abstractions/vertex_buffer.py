@@ -7,6 +7,8 @@ from gl_abstractions.layout import Layout
 
 class VertexBuffer:
     def __init__(self, layout: Layout, data: np.ndarray, usage: int = gl.GL_STATIC_DRAW):
+        assert isinstance(layout, Layout), f'layout must be of type Layout, not {type(layout)}'
+        assert isinstance(data, np.ndarray), f'data must be of type np.ndarray, not {type(data)}'
         self.vbo = gl.glGenBuffers(1)
         self.data = data
         self.layout = layout

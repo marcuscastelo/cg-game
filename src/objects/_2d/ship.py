@@ -129,7 +129,7 @@ class Ship(Element):
             ),
             shape_specs=[
                 ShapeSpec( 
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         # Ship's body
                         [*(-0.075, -0.075, 0.0), *(light_silver)],
                         [*( 0.075, -0.075, 0.0), *(dark_silver)],
@@ -163,7 +163,7 @@ class Ship(Element):
                 ),
 
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         #Wings
                         [*(0.075, 0.0, 0.0), *(silver)],
                         [*(0.075, -0.01, 0.0), *(silver)],

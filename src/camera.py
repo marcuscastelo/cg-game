@@ -63,7 +63,7 @@ class Camera(Element):
 
         self.gun = ModelElement('PlayerGun', model=ModelReader().load_model_from_file('models/gun.obj'), ray_selectable=False, ray_destroyable=False)
         self.gun.transform.scale *= 0.1
-        world.spawn(self.gun)
+        # world.spawn(self.gun)
         return super().on_spawned(world)
 
     @property

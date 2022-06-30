@@ -14,6 +14,39 @@ class Object:
     material: Material = field(default_factory=lambda: Material(f'default-{random.random()}'))
     faces: list[Face] = field(default_factory=list)
 
+    def expand_faces_to_vertices_and_indices(self) -> tuple[list[RawVertex], list[int]]:
+        raise NotImplementedError('Only worth it in meshes (probably wont be used in this project)')
+        vertices_zip = zip(self.positions_ref, self.texture_coords_ref, self.normals_ref)
+        vertices = [RawVertex(position=position, texture_coords=texture_coords, normal=normal) for position, texture_coords, normal in vertices_zip]
+
+        all_vertices: list[RawVertex] = vertices
+        all_indices: list[int] = []
+
+        FACE_PENTA = 5
+        FACE_QUAD = 4
+        FACE_TRIANGLE = 3
+
+        face_i = 1
+        for face in self.faces:
+            assert len(face.position_indices) == len(face.texture_indices) == len(face.normal_indices), f'Mismatch between {len(face.position_indices)=}, {len(face.texture_indices)=}, {len(face.normal_indices)=}'
+            vertice_count = len(face.position_indices)
+
+            if vertice_count == FACE_TRIANGLE:
+                all_indices += face.position_indices
+            elif vertice_count == FACE_QUAD:
+                all_indices += face.position_indices[0:3]
+                all_indices += [face.position_indices[2], face.position_indices[3], face.position_indices[0]]
+            elif vertice_count == FACE_PENTA:
+                all_indices += face.position_indices[0:3]
+                all_indices += [face.position_indices[2], face.position_indices[3], face.position_indices[4]]
+                all_indices += [face.position_indices[4], face.position_indices[0], face.position_indices[2]]
+            else:
+                raise RuntimeError(f'Face has a weird number of vertices: {vertice_count}, expected {FACE_TRIANGLE} or {FACE_QUAD} or {FACE_PENTA} \n\t{face=}')
+
+            face_i += 1
+
+        return (all_vertices, all_indices)
+
     def expand_faces_to_unindexed_vertices(self) -> list[RawVertex]:
         all_vertices: list[RawVertex] = []
 

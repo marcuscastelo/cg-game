@@ -24,7 +24,7 @@ class Layout:
             if not isinstance(count, int):
                 raise TypeError(f'Attribute count must be an integer, got {type(count)}')
 
-    def assert_data_ok(self, data: np.ndarray) -> bool:
+    def assert_data_ok(self, vertex_data: np.ndarray) -> bool:
         '''
         Checks if the data is compatible with the layout.
         '''
@@ -32,18 +32,18 @@ class Layout:
 
         SUPPORTED_DTYPES = [np.float32, np.float64]
 
-        assert isinstance(data, np.ndarray), f'Only numpy arrays are supported, got {type(data)}'
-        assert data.dtype in SUPPORTED_DTYPES, f'Only {SUPPORTED_DTYPES=} data types are supported, got {data.dtype}'
-        assert len(data.shape) == 2, f'Data must be 2D (series of attributes), got {len(data.shape)}D'
-        assert data.shape[1] * FLOAT_SIZE == self.calc_stride(), f'Data must have a stride of {self.calc_stride()}, got {data.shape[1]}'
+        assert isinstance(vertex_data, np.ndarray), f'Only numpy arrays are supported, got {type(vertex_data)}'
+        assert vertex_data.dtype in SUPPORTED_DTYPES, f'Only {SUPPORTED_DTYPES=} data types are supported, got {vertex_data.dtype}'
+        assert len(vertex_data.shape) == 2, f'Data must be 2D (series of attributes), got {len(vertex_data.shape)}D'
+        assert vertex_data.shape[1] * FLOAT_SIZE == self.calc_stride(), f'Data must have a stride of {self.calc_stride()}, got {vertex_data.shape[1]}'
 
         # In case it has been sent with other types such as float64
-        data = data.astype(np.float32) 
+        vertex_data = vertex_data.astype(np.float32) 
 
-        for vertex in range(data.shape[0]):
+        for vertex in range(vertex_data.shape[0]):
             offset = 0
             for name, count in self.attributes:
-                vertex_attrib_values = data[vertex, offset:offset+count]
+                vertex_attrib_values = vertex_data[vertex, offset:offset+count]
 
                 # print(f'{name}: {vertex_attrib_values}')
                 assert len(vertex_attrib_values.shape) == 1, f'Attribute values must be 1D, got {len(vertex_attrib_values.shape)}D'

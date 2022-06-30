@@ -27,7 +27,7 @@ class WinScreen(Element):
             ),
             shape_specs=[
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*(-1.0, -0.75, 0.0), *(0.0, 0.0)],
                         [*( 1.0, -0.75, 0.0), *(1.0, 0.0)],
                         [*(-1.0,  0.75, 0.0), *(0.0, 1.0)],

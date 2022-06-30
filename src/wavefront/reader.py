@@ -62,7 +62,7 @@ class ModelReader:
 
         if command in ['o', 'g']:
             self.object = Object(
-                name=' '.join(arguments),
+                name=f"{self.model.name}::{' '.join(arguments)}",
                 positions_ref=self.model.positions,
                 texture_coords_ref=self.model.texture_coords,
                 normals_ref=self.model.normals,

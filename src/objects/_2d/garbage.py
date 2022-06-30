@@ -36,7 +36,7 @@ class Garbage(Element):
             shape_specs=[
                 # Garbage outer draw
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*(-0.025, -0.040, +0.0), *(garbage_color),],
                         [*( 0.025, -0.040, +0.0), *(dark_garbage_color),],
                         [*(-0.025,  0.040, +0.0), *(garbage_color),],
@@ -49,7 +49,7 @@ class Garbage(Element):
 
                 # Garbage inner draw
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*(0.000, 0.0375, +0.0), *(diamond_color)],
                         [*(-0.015, 0.000, +0.0), *(diamond_color)],
                         [*(0.015, 0.0, +0.0), *(diamond_color)],

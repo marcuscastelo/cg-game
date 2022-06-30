@@ -66,141 +66,141 @@ class World:
         ground_main.transform.translation = Vec3(0, -0.1, 0)
         self.spawn(ground_main)
 
-        ground_spawn =ModelElement('GroundSpawn', texture=Texture2D.from_image_path('textures/floor4.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
-        ground_spawn.transform.scale = Vec3(20, 0.01, 20)
-        ground_spawn.transform.translation = Vec3(0, +0.1, 10)
-        self.spawn(ground_spawn)
+        # ground_spawn =ModelElement('GroundSpawn', texture=Texture2D.from_image_path('textures/floor4.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
+        # ground_spawn.transform.scale = Vec3(20, 0.01, 20)
+        # ground_spawn.transform.translation = Vec3(0, +0.1, 10)
+        # self.spawn(ground_spawn)
 
-        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky_wave.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
+        # sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky_wave.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
 
-        sky.transform.translation = Vec3(0, -150, 0)
-        sky.transform.scale = Vec3(-300, 300, -300)
-        self.spawn(sky)
+        # sky.transform.translation = Vec3(0, -150, 0)
+        # sky.transform.scale = Vec3(-300, 300, -300)
+        # self.spawn(sky)
         
-        # TODO: remove hardcode (used for light adjustment)
-        self.sky = sky 
-        self.sky.shape_specs[0].material = Material('Hardcoded Ka always bright', Ka=Vec3(0,0,0)) # Ka = 0 -> no directional light
+        # # TODO: remove hardcode (used for light adjustment)
+        # self.sky = sky 
+        # self.sky.shape_specs[0].material = Material('Hardcoded Ka always bright', Ka=Vec3(0,0,0)) # Ka = 0 -> no directional light
 
-        # TODO: rename 
-        light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False, ray_destroyable=False)
-        light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
-        light_cube.transform.translation.y = 2
-        light_cube.transform.scale = Vec3(1,1,1) * 0.1
-        self.spawn(light_cube)
-
-
-        TREE_MODEL = load_model('models/tree.obj')
-        trees_positions = [
-            Vec3(10, 0, -10),
-            Vec3(13, 0, -10),
-            Vec3(11, 0, -9),
-            Vec3(9, 0, -9),
-            Vec3(7, 0, -12.3),
-            Vec3(6, 0, -14),
-            Vec3(13, 0, -18),
-            Vec3(14, 0, -10.4),
-            Vec3(-9, 0, -12),
-        ]
-
-        trees = [
-            ModelElement(
-                name=f'Tree_{index}', 
-                model=TREE_MODEL, 
-                ray_destroyable=False,
-                transform=Transform(
-                    translation=translation,
-                    rotation=Vec3(0,random.random() * 2 * math.pi,0)
-                )
-            ) for index, translation in enumerate(trees_positions)
-
-        ]
-
-        for rock in trees:
-            self.spawn(rock)
-
-        ROCK_MODEL = load_model('models/rock.obj')
-        rocks_transforms = [
-            Transform(Vec3(-10, 0, -10), Vec3(0, 1, 0), Vec3(1, 1, 1)),
-            Transform(Vec3(-13, 0, -13), Vec3(0, 4, 0), Vec3(1, 2, 1)),
-            Transform(Vec3(-13, 0, -12), Vec3(0, 12, 0), Vec3(3, 3, 3)),
-            Transform(Vec3(13, 0, -18))
-        ]
-
-        rocks = [
-            ModelElement(
-                name=f'Rock_{index}', 
-                model=ROCK_MODEL, 
-                ray_destroyable=False,
-                transform=transform
-            ) for index, transform in enumerate(rocks_transforms)
-
-        ]
-        for rock in rocks:
-            self.spawn(rock)
+        # # TODO: rename 
+        # light_cube = AuxRobot('Aux Robot', model=load_model('models/aux_robot.obj'), ray_selectable=False, ray_destroyable=False)
+        # light_cube.transform.translation = APP_VARS.lighting_config.light_position # TODO: remove this hacky stuff (also hack_is_light)
+        # light_cube.transform.translation.y = 2
+        # light_cube.transform.scale = Vec3(1,1,1) * 0.1
+        # self.spawn(light_cube)
 
 
-        BOT_MODEL = load_model('models/bot.obj')
-        TARGET_MODEL = load_model('models/alvo2.obj')
+        # TREE_MODEL = load_model('models/tree.obj')
+        # trees_positions = [
+        #     Vec3(10, 0, -10),
+        #     Vec3(13, 0, -10),
+        #     Vec3(11, 0, -9),
+        #     Vec3(9, 0, -9),
+        #     Vec3(7, 0, -12.3),
+        #     Vec3(6, 0, -14),
+        #     Vec3(13, 0, -18),
+        #     Vec3(14, 0, -10.4),
+        #     Vec3(-9, 0, -12),
+        # ]
 
-        HOUSE_XYZ = Vec3(0, 0, -15)
+        # trees = [
+        #     ModelElement(
+        #         name=f'Tree_{index}', 
+        #         model=TREE_MODEL, 
+        #         ray_destroyable=False,
+        #         transform=Transform(
+        #             translation=translation,
+        #             rotation=Vec3(0,random.random() * 2 * math.pi,0)
+        #         )
+        #     ) for index, translation in enumerate(trees_positions)
 
-        house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
-        house.transform.translation.xyz = HOUSE_XYZ
-        house.transform.scale.xyz = Vec3(3,3,3)
-        self.spawn(house)
+        # ]
 
-        def spawn_bot():
-            bot = Bot('Spawned Bot')
-            bot.transform.scale *= 1.8
-            return bot
+        # for rock in trees:
+        #     self.spawn(rock)
 
-        bot_spawner = Spawner(
-            name='BotSpawner',
-            region=SpawnerRegion(Vec3(-10,0.01,20), Vec3(10,0.01,0)),
-            element_factory=spawn_bot,
-        )
-        self.spawn(bot_spawner)
+        # ROCK_MODEL = load_model('models/rock.obj')
+        # rocks_transforms = [
+        #     Transform(Vec3(-10, 0, -10), Vec3(0, 1, 0), Vec3(1, 1, 1)),
+        #     Transform(Vec3(-13, 0, -13), Vec3(0, 4, 0), Vec3(1, 2, 1)),
+        #     Transform(Vec3(-13, 0, -12), Vec3(0, 12, 0), Vec3(3, 3, 3)),
+        #     Transform(Vec3(13, 0, -18))
+        # ]
 
-        house_target_spawner = Spawner(
-            name='HouseTargetSpawner',
-            region=SpawnerRegion(HOUSE_XYZ + Vec3(-1.7, 0.69, -3), HOUSE_XYZ + Vec3(1.7 , 4, -3)),
-            spawning_properties=SpawningProperties(
-                max_spawned_elements=2, 
-                min_interval=0.3, 
-                max_interval=1, 
-                insta_replace_destroyed=True,
-            ),
-            element_factory=lambda: TargetSmall('target_small', transform=Transform(scale=Vec3(0.4,0.4,1))),
-        )
-        self.spawn(house_target_spawner)
+        # rocks = [
+        #     ModelElement(
+        #         name=f'Rock_{index}', 
+        #         model=ROCK_MODEL, 
+        #         ray_destroyable=False,
+        #         transform=transform
+        #     ) for index, transform in enumerate(rocks_transforms)
 
-        ALVO_2_MODEL = load_model('models/alvo2.obj')
-        ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')
-        outside_target_spawning_properties=SpawningProperties(
-            max_spawned_elements=1, 
-            min_interval=5, 
-            max_interval=10, 
-            insta_replace_destroyed=False
-        )
+        # ]
+        # for rock in rocks:
+        #     self.spawn(rock)
 
-        distances_z = [-3, 0, 3]
-        outside_target_spawners = [
-            Spawner(
-                name=f'OutsideTargetSpawner_{idx}',
-                region=SpawnerRegion(HOUSE_XYZ + Vec3(-3.023,3.5,distance_z), HOUSE_XYZ + Vec3(-3.023,3.5,distance_z)),
-                spawning_properties=outside_target_spawning_properties,
-                element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
-            ) for idx, distance_z in enumerate(distances_z)
-        ]
 
-        fren = Fren('Fren')
-        fren.transform.translation.xyz = HOUSE_XYZ + Vec3(-2, 0, +3.5)
-        fren.transform.rotation.y = math.pi/4 + math.pi/2
-        fren.transform.scale *= 0.8
-        self.spawn(fren)
+        # BOT_MODEL = load_model('models/bot.obj')
+        # TARGET_MODEL = load_model('models/alvo2.obj')
 
-        for spawner in outside_target_spawners:
-            self.spawn(spawner)
+        # HOUSE_XYZ = Vec3(0, 0, -15)
+
+        # house = ModelElement('house', model=load_model('models/house.obj'), ray_destroyable=False)
+        # house.transform.translation.xyz = HOUSE_XYZ
+        # house.transform.scale.xyz = Vec3(3,3,3)
+        # self.spawn(house)
+
+        # def spawn_bot():
+        #     bot = Bot('Spawned Bot')
+        #     bot.transform.scale *= 1.8
+        #     return bot
+
+        # bot_spawner = Spawner(
+        #     name='BotSpawner',
+        #     region=SpawnerRegion(Vec3(-10,0.01,20), Vec3(10,0.01,0)),
+        #     element_factory=spawn_bot,
+        # )
+        # self.spawn(bot_spawner)
+
+        # house_target_spawner = Spawner(
+        #     name='HouseTargetSpawner',
+        #     region=SpawnerRegion(HOUSE_XYZ + Vec3(-1.7, 0.69, -3), HOUSE_XYZ + Vec3(1.7 , 4, -3)),
+        #     spawning_properties=SpawningProperties(
+        #         max_spawned_elements=2, 
+        #         min_interval=0.3, 
+        #         max_interval=1, 
+        #         insta_replace_destroyed=True,
+        #     ),
+        #     element_factory=lambda: TargetSmall('target_small', transform=Transform(scale=Vec3(0.4,0.4,1))),
+        # )
+        # self.spawn(house_target_spawner)
+
+        # ALVO_2_MODEL = load_model('models/alvo2.obj')
+        # ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')
+        # outside_target_spawning_properties=SpawningProperties(
+        #     max_spawned_elements=1, 
+        #     min_interval=5, 
+        #     max_interval=10, 
+        #     insta_replace_destroyed=False
+        # )
+
+        # distances_z = [-3, 0, 3]
+        # outside_target_spawners = [
+        #     Spawner(
+        #         name=f'OutsideTargetSpawner_{idx}',
+        #         region=SpawnerRegion(HOUSE_XYZ + Vec3(-3.023,3.5,distance_z), HOUSE_XYZ + Vec3(-3.023,3.5,distance_z)),
+        #         spawning_properties=outside_target_spawning_properties,
+        #         element_factory=lambda: WoodTarget('alvo2', model=ALVO_2_MODEL, texture=ALVO_2_TEXTURE, ray_selectable=True, ray_destroyable=True),
+        #     ) for idx, distance_z in enumerate(distances_z)
+        # ]
+
+        # fren = Fren('Fren')
+        # fren.transform.translation.xyz = HOUSE_XYZ + Vec3(-2, 0, +3.5)
+        # fren.transform.rotation.y = math.pi/4 + math.pi/2
+        # fren.transform.scale *= 0.8
+        # self.spawn(fren)
+
+        # for spawner in outside_target_spawners:
+        #     self.spawn(spawner)
 
         LOGGER.log_info('Done setting up scene', 'world:setup_scene')
         
@@ -247,7 +247,7 @@ class World:
         global_Ka.z = glm.clamp(global_Ka.z, 0, 1)
         inv_global_Ka = Vec3(1/(global_Ka.x+0.01), 1/(global_Ka.y+0.01), 1/(global_Ka.z+0.01),) 
         
-        self.sky.shape_specs[0].material.Kd = (inv_global_Ka * global_Ka**2)
+        # self.sky.shape_specs[0].material.Kd = (inv_global_Ka * global_Ka**2)
 
     def is_player_victory(self) -> bool:
         '''

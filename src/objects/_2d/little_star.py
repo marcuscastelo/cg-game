@@ -39,7 +39,7 @@ class LittleStar(Element):
 
                 # Little star vertices, making 3 triangles
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*( 0.00,  1.00, +0.0), *(white)],
                         [*(-0.58, -0.81, +0.0), *(white)],
                         [*( 0.38, -0.10, +0.0), *(white)],

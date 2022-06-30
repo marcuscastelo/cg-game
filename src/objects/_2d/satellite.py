@@ -39,7 +39,7 @@ class Satellite(Element):
 
                 # Circle part of the satellite, summing up to 30 vertices
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [* ( 4.89084832e-02,  1.03903916e-02,  0.00000000e+00), *(darker_silver), ], 
                         [* ( 4.56815921e-02,  2.03271322e-02,  0.00000000e+00), *(darker_silver),],
                         [* ( 4.04602103e-02,  2.93763764e-02,  0.00000000e+00), *(darker_silver),],
@@ -78,7 +78,7 @@ class Satellite(Element):
 
                 # "Square" parts of the satellite
                 ShapeSpec(
-                    vertices=np.array([
+                    vertices_spec=np.array([
                         [*(-0.051, 0.01, 0.0),        *(0.290, 0.290, 0.290)],
                         [*(-0.08, -0.01, 0.0),       *(0.290, 0.290, 0.290)],
                         [*(-0.08, 0.01, 0.0),        *(0.290, 0.290, 0.290)],

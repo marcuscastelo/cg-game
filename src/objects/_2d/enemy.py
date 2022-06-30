@@ -43,7 +43,7 @@ class Enemy(Element):
                 scale=Vec3(1, 1, 1),
             ),
             shape_specs=[
-                ShapeSpec(vertices=np.array([
+                ShapeSpec(vertices_spec=np.array([
                     #Left
                     [*(-0.075, -0.075, 0.0), *(orange)],
                     [*(-0.075, 0.0, 0.0), *(orange)],
