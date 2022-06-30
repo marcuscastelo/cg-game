@@ -87,31 +87,19 @@ class ShapeRenderer:
 
         # def view(camera: Camera):
         camera = APP_VARS.camera
-        mat_view = glm.lookAt(glm.vec3(*camera.transform.translation), glm.vec3(
-            *camera.transform.translation) + camera.cameraFront, camera.cameraUp)
+        mat_view = camera.calc_view_matrix()
         mat_view = np.array(mat_view)
         # return mat_view
 
         # def projection():
         # perspective parameters: fovy, aspect, near, far
-        mat_projection = glm.perspective(glm.radians(
-            camera.fov), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
+        mat_projection = camera.calc_projection_matrix()
         mat_projection = np.array(mat_projection)
         # return mat_projection
 
         # Set the transformation matrix
-        try:
-            self.shader.upload_uniform_matrix4f('u_Model', mat_model)
-        except Exception as e:
-            print(f'**********EXCEPTION WITH u_Model********')
-            print(f'{mat_model=}')
-            raise e
-        try:
-            self.shader.upload_uniform_matrix4f('u_View', mat_view) 
-        except Exception as e:
-            print(f'**********EXCEPTION WITH u_View********')
-            print(f'{mat_view=}')
-            raise e
+        self.shader.upload_uniform_matrix4f('u_Model', mat_model)
+        self.shader.upload_uniform_matrix4f('u_View', mat_view) 
 
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
 

@@ -30,6 +30,9 @@ from input.input_system import setup_input_system, INPUT_SYSTEM as IS
 from gui import AppGui
 from wavefront.material import MtlReader
 
+import cProfile, pstats, io
+from pstats import SortKey
+
 def create_window():
     '''
     Creates a GLFW window and returns it.
@@ -113,7 +116,9 @@ def glfw_thread():
     R: float = 32/255 
     G: float = 31/255 
     B: float = 65/255 
-
+    
+    pr = cProfile.Profile()
+    pr.enable()
     while not glfw.window_should_close(window) and not APP_VARS.closing:
         glfw.poll_events() # Process input events (keyboard, mouse, etc)
         gl.glClear(gl.GL_COLOR_BUFFER_BIT | gl.GL_DEPTH_BUFFER_BIT)
@@ -127,6 +132,9 @@ def glfw_thread():
         APP_VARS.game_fps.update_calc_fps(time.time())
         glfw.swap_buffers(glfw.get_current_context()) # Swap the buffers (drawing buffer -> screen)
 
+    pr.disable()
+    pr.print_stats(sort='time')
+    pr.dump_stats('profile.prof')
     LOGGER.log_info("GLFW thread is closing", 'glfw_thread')
     APP_VARS.closing = True # Make the GUI close too
 
@@ -202,6 +210,9 @@ def test_wavefront():
 if __name__ == "__main__":
     # test_wavefront()
     main()
+    
+    # pstats.Stats('profile.prof').strip_dirs().sort_stats('cumulative').print_stats(20)
+
     # x, z = 1, 0
     # la = glm.lookAt(glm.vec3(0,0,0), glm.vec3(x,0,z), glm.vec3(0,1,0))
     # print(la)

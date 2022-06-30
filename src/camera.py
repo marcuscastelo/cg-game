@@ -52,6 +52,8 @@ class Camera(Element):
         # self.ray: Line = None
         self.gun: ModelElement = None
 
+        self.baked_projection_matrices: dict[float, glm.mat4x4] = {}
+
     def on_spawned(self, world: 'World'):
         # TODO: fix shader
         self.raycast_line_dbg = Line('test_line', ray_selectable=False, ray_destroyable=False)
@@ -71,6 +73,26 @@ class Camera(Element):
     @property
     def grounded(self):
         return self.transform.translation.y <= self._ground_y * 1.01
+
+    def calc_view_matrix(self):
+        pos = glm.vec3(*self.transform.translation.xyz)
+        center = pos + self.cameraFront
+        up = self.cameraUp
+
+        return glm.lookAt(pos, center, up)
+
+    def calc_projection_matrix(self):
+        fov = glm.radians(self.fov)
+        aspect = constants.ASPECT_RATIO
+        near = 0.1
+        far = 1000.0
+
+        if self.fov in self.baked_projection_matrices:
+            return self.baked_projection_matrices[self.fov]
+
+        projection_matrix = glm.perspective(fov, aspect, near, far)
+        self.baked_projection_matrices[self.fov] = projection_matrix
+        return projection_matrix
 
     def reset(self):
         new_camera = Camera(self.name)
