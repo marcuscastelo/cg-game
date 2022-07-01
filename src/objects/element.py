@@ -86,16 +86,19 @@ class ShapeRenderer:
 
         # View
         camera = APP_VARS.camera
+        # TODO: stop using glm for that (assignment requisite)
         mat_view = glm.lookAt(glm.vec3(*camera.transform.translation), glm.vec3(
             *camera.transform.translation) + camera.cameraFront, camera.cameraUp)
         mat_view = np.array(mat_view)
 
         # Projection
+        # TODO: stop using glm for that (assignment requisite)
         mat_projection = glm.perspective(glm.radians(
             camera.fov), constants.WINDOW_SIZE[0]/constants.WINDOW_SIZE[1], 0.1, 1000.0)
         mat_projection = np.array(mat_projection)
 
         # Upload MVP Matrices
+        # TODO: only upload if changed (to increase performance)
         self.shader.upload_uniform_matrix4f('u_Model', mat_model)
         self.shader.upload_uniform_matrix4f('u_View', mat_view)
         self.shader.upload_uniform_matrix4f('u_Projection', mat_projection)
@@ -113,6 +116,7 @@ class ShapeRenderer:
         self.shader.upload_uniform_float('u_d', material.d)
 
         # Upload Global Lighting Properties
+        # TODO: only upload if changed (to increase performance)
         self.shader.upload_uniform_vec3('u_GKa', Vec3(
             APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z))
         self.shader.upload_uniform_vec3('u_GKd', Vec3(
@@ -162,14 +166,15 @@ class ElementSpecification:
 
     @staticmethod
     def from_model(model: Model, shader: Shader = None, texture=None) -> 'ElementSpecification':
+        ''' Create an ElementSpecification from a model. '''
         elspec = ElementSpecification()
 
         if shader is None:
             shader = ShaderDB.get_instance().get_shader(
-                'light_texture')  # TODO: make shader part of the material
+                'light_texture')  # TODO: make shader part of the material?
 
         for object in model.objects:
-            # TODO: instead of unindexed, use indices
+            # TODO: instead of unindexed, use indices (make a GUI option)
             vertices_list = object.expand_faces_to_unindexed_vertices()
             material = object.material
 
@@ -191,7 +196,7 @@ class ElementSpecification:
             if len(vertices_array.shape) == 2:
                 object_shape = ShapeSpec(
                     vertices=vertices_array,
-                    # indices= # TODO: use indices,
+                    # indices= # TODO: use indices (if GUI option is enabled),
                     shader=shader,
                     render_mode=gl.GL_TRIANGLES,
                     name=f'{object.name}',
@@ -241,7 +246,11 @@ class BoundingBox2DCache:
 
 @dataclass
 class PhysicsState:
+    ''' Class that defines the physics state of an object. '''
     last_tick_time: float = field(default_factory=lambda: time.time())
+    # TODO: add momentum and velocity here
+    # TODO: collision system
+    # TODO: physics material? probably not here
 
 
 @dataclass
@@ -332,6 +341,7 @@ class Element:
             curr_mat.Ks[0] = 3
 
     def unselect(self) -> None:
+        ''' Virtual method that is called when the element is unselected. '''
         if not self._state.selected:
             return
         self._state.selected = False
