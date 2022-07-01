@@ -22,10 +22,10 @@ class Bot(ModelElement):
         from objects.physics.momentum import Momentum
         self._dying = False
         self.momentum = Momentum()
-        self.amp_x = random.random()
-        self.amp_z = random.random()
-        self.per_x = random.random()
-        self.per_z = random.random()
+        self.amp_x = random.uniform(0.3, 1.7)
+        self.amp_z = random.uniform(0.3, 1.7)
+        self.per_x = random.uniform(0.3, 1.7)
+        self.per_z = random.uniform(0.3, 1.7)
         return super().__post_init__()
 
     @property
