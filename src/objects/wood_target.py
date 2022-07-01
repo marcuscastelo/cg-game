@@ -11,6 +11,8 @@ ALVO_2_MODEL = ModelReader().load_model_from_file('models/alvo2.obj')
 ALVO_2_TEXTURE = None 
 def get_tex():
     # TODO: remove this and make a TextureDB and ModelDB
+    
+    # Load it after WoodTarget instantiation because Texture2D needs an OpenGL context to be created
     global ALVO_2_TEXTURE
     if ALVO_2_TEXTURE is None:
         ALVO_2_TEXTURE = Texture2D.from_image_path('textures/wood.jpg')

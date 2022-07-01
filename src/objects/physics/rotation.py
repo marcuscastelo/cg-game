@@ -1,4 +1,5 @@
 import math
+from typing import NamedTuple
 from glm import pitch
 import glm
 from utils.geometry import Vec3
@@ -23,22 +24,18 @@ def yaw_pitch_to_front(yaw: float, pitch: float, normalized: bool = True) -> Vec
 
     return front.normalized() if normalized else front
 
-def front_to_yaw_pitch(front: Vec3):
-    # TODO: implement (precisa do up?)
-
+YawPitchTuple = NamedTuple('YawPitchTuple', [('yaw', float), ('pitch', float)])
+def front_to_yaw_pitch(front: Vec3) -> YawPitchTuple:
+    '''Converts front vector to (yaw, pitch) tuple'''
     front = front.normalized()
 
     sin_pitch = front.y
     pitch = math.asin(sin_pitch)
-    cos_pitch = math.cos(pitch)
 
     cos_yaw_cos_pitch = front.x
     sin_yaw_cos_pitch = front.z
-    # tan_yaw = sin_yaw_cos_pitch/cos_yaw_cos_pitch
     yaw_atan2 = math.atan2(sin_yaw_cos_pitch, cos_yaw_cos_pitch)
     
     return yaw_atan2, pitch
-
-    raise NotImplementedError()
 
     

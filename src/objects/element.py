@@ -24,6 +24,8 @@ from wavefront.model import Model
 if TYPE_CHECKING:
     from objects.world import World
 
+# TODO: move classes out of this file (too many lines)
+
 @dataclass
 class ShapeSpec:
     '''
@@ -49,6 +51,7 @@ class ShapeRenderer:
     '''
     Basic class that renders the object, according to its vertices, texture, shader and primitive.
     '''
+    element_name: str
     shape_spec: ShapeSpec
     transform: Transform
 
@@ -68,6 +71,7 @@ class ShapeRenderer:
         self.vao.upload_vertex_buffer(self.vbo)
 
     def render(self):
+        # TODO: refactor and comment this (maybe Shader.upload_uniforms()? no idea)
         from app_vars import APP_VARS
         # Bind the shader and VAO (VBO is bound in the VAO)
         self.vao.bind()
@@ -206,7 +210,7 @@ class ElementSpecification:
                 elspec.shape_specs.append(object_shape)
             else:
                 LOGGER.log_warning(
-                    f'Object or Group {object.name} has weird shape {vertices_array.shape}')
+                    f'Object or Group {model.name}::{object.name} has weird shape {vertices_array.shape}')
 
         return elspec
 
@@ -283,6 +287,7 @@ class Element:
         self._state = ElementState()
         self._shape_renderers = [
             ShapeRenderer(
+                element_name=self.name,
                 shape_spec=shape_spec,
                 transform=self.transform
             ) for shape_spec in self.shape_specs]

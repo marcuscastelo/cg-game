@@ -14,12 +14,15 @@ BOT_MODEL = ModelReader().load_model_from_file('models/bot.obj')
 
 @dataclass
 class Bot(ModelElement):
+    ''' Enemy bot that wanders around the world '''
     model: Model = BOT_MODEL
+    ray_destroyable: bool = True # The player can shoot the bot
+    ray_selectable: bool = True # For debugging purposes
 
     def __post_init__(self):
         from objects.physics.momentum import Momentum
         self._dying = False # Used to animate the bot dying
-        self.momentum = Momentum()
+        self.momentum = Momentum() # Physics momentum (velocity and force)
 
         # Define the amplitude of the movement in the x and z axis
         self.amp_x = random.uniform(0.3, 1.7)
@@ -39,6 +42,7 @@ class Bot(ModelElement):
         return super().pseudo_hitbox_distance * 0.5
 
     def update(self, delta_time: float):
+        ''' Override of Element method. '''
         # Check if the bot is dying (hit by a bullet or marked to be destroyed by some means)
         if self._dying:
             # Animate scaling down the bot until it becomes too small
