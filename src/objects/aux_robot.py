@@ -38,9 +38,16 @@ class AuxRobot(ModelElement):
 
     def _physics_update(self, delta_time: float):
         from app_vars import APP_VARS
-        camera = APP_VARS.camera
+        import constants
 
-        dist = camera.transform.translation - self.transform.translation
+        look_target = APP_VARS.camera if APP_VARS.last_bullet is None or (APP_VARS.last_bullet.center - APP_VARS.camera.center).magnitude() > constants.WORLD_SIZE else APP_VARS.last_bullet
+        follow_target = APP_VARS.camera
+
+        dist = follow_target.transform.translation - self.transform.translation
+
+        if dist.magnitude() > constants.WORLD_SIZE:
+            self.transform.translation.xyz = follow_target.transform.translation.xyz
+
         force: Vec3 = dist.normalized()
         # force += Vec3((random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2, (random.random() * 2 - 1)/2)
         if dist.magnitude() < 3:
@@ -51,9 +58,20 @@ class AuxRobot(ModelElement):
         self._momentum.apply_friction(0.9, delta_time=delta_time)
         self.transform.translation += self._momentum.velocity * delta_time
         # self.transform.translation += force * delta_time
-        self.transform.rotation = front_to_rotation(dist)
-        self.transform.rotation.y -= math.pi/2
-        
+        target_rotation = front_to_rotation(look_target.transform.translation - self.transform.translation)
+        target_rotation.y -= math.pi/2
+
+        # Delta rotation is the difference between the target rotation and the current rotation
+        delta_rot = target_rotation - self.transform.rotation
+        # Check if the delta rotation should be inverted
+        if delta_rot.y > math.pi:
+            delta_rot.y -= 2 * math.pi
+        elif delta_rot.y < -math.pi:
+            delta_rot.y += 2 * math.pi
+        # Apply the delta rotation
+
+        self.transform.rotation += delta_rot * delta_time * 2
+
         self.transform.translation.y = (math.sin(time.time() / 2) / 2 + 1) * (2 - 1.8) + 1.8
 
 

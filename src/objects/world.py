@@ -13,6 +13,7 @@ from objects.model_element import ModelElement
 from objects.element import Element
 import constants
 from objects.aux_robot import AuxRobot
+from objects.sky import Sky
 from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
 from objects.target_small import TargetSmall
 from objects.wood_target import WoodTarget
@@ -65,19 +66,27 @@ class World:
         ground_spawn.transform.translation = Vec3(0, +0.1, 10)
         self.spawn(ground_spawn)
 
-        sky = ModelElement('Sky', texture=Texture2D.from_image_path('textures/sky_wave.png'), model=load_model('models/cube.obj'), ray_selectable=False, ray_destroyable=False)
-
-        sky.transform.translation = Vec3(0, -150, 0)
-        sky.transform.scale = Vec3(-300, 300, -300)
+        BASE_SKY_SIZE = 340
+        sky = Sky(
+            name='Sky', 
+            transform=Transform(
+                scale=Vec3(
+                    -(BASE_SKY_SIZE-constants.WORLD_SIZE), 
+                    (BASE_SKY_SIZE-constants.WORLD_SIZE), 
+                    (BASE_SKY_SIZE-constants.WORLD_SIZE),
+                ),
+                translation=Vec3(
+                    0,
+                    -(BASE_SKY_SIZE-constants.WORLD_SIZE)/2,
+                    0,
+                ),
+            ),
+        )
         self.spawn(sky)
         
-        # TODO: remove hardcode (used for light adjustment)
-        self.sky = sky 
-        self.sky.shape_specs[0].material = Material('Hardcoded Ka always bright', Ka=Vec3(0,0,0)) # Ka = 0 -> no directional light
-
         aux_robot = AuxRobot(
             'Aux Robot',
-            transform=Transform(scale=Vec3(0.1, 0.1, 0.1))
+            transform=Transform(scale=Vec3(0.1, 0.1, 0.1), translation=Vec3(0, APP_VARS.camera._ground_y, 0)),
         )
         self.spawn(aux_robot)
 
@@ -224,7 +233,6 @@ class World:
         self._update_daylight(delta_time)
         self._update_elements(delta_time)
         self._remove_destroyed_elements()
-        self._balance_sky_ambient_light()
 
         self._last_update_time = t
 
@@ -237,18 +245,4 @@ class World:
     def _remove_destroyed_elements(self):
         '''Remove all the destroyed elements from the world'''
         self.elements[:] = [ element for element in self.elements if not element.destroyed ]
-
-    def _balance_sky_ambient_light(self):
-        '''
-        Balance the ambient light of the sky.
-        This is done by changing the ambient light of the sky based on the ambient light of the sun.
-        '''
-        # TODO: Sky class that does that
-        from app_vars import APP_VARS
-        global_Ka = Vec3(APP_VARS.lighting_config.Ka_x, APP_VARS.lighting_config.Ka_y, APP_VARS.lighting_config.Ka_z)
-        global_Ka.x = glm.clamp(global_Ka.x, 0, 1)
-        global_Ka.y = glm.clamp(global_Ka.y, 0, 1)
-        global_Ka.z = glm.clamp(global_Ka.z, 0, 1)
-        inv_global_Ka = Vec3(1/(global_Ka.x+0.01), 1/(global_Ka.y+0.01), 1/(global_Ka.z+0.01),) 
         
-        self.sky.shape_specs[0].material.Kd = (inv_global_Ka * global_Ka**2)

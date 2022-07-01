@@ -66,7 +66,7 @@ class ModelReader:
         # Process vertex data commands (positions, normals and texture coords)
         if command in VERTEX_COMMANDS_TO_LIST:
             vertex_data_list = VERTEX_COMMANDS_TO_LIST[command]
-            vertex_data_list.append(tuple(arguments))
+            vertex_data_list.append(tuple(map(float, arguments)))
             return
 
 
@@ -123,6 +123,8 @@ class ModelReader:
                 elif decl_type == FaceDeclType.POS_NORMAL:
                     position, normal = values
                     texture = 0 # Random texture coordinate (it's not used anyway)
+                else:
+                    raise RuntimeError(f"Couldn't read line {line}, face decl_type: {decl_type}")
 
                 face.position_indices.append(position)
                 face.normal_indices.append(normal)
