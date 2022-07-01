@@ -20,10 +20,12 @@ def get_tex():
 
 @dataclass
 class WoodTarget(Cube):
+    ''' An element that represents a wood target. '''
     model: Model = field(default_factory= lambda: ALVO_2_MODEL)
     texture: Texture = field(default_factory=get_tex)
     ray_selectable: bool = True
     ray_destroyable: bool = True
+    
     def __post_init__(self):
         self.transform.scale *= 0.3
         self.transform.scale.xy *= 1

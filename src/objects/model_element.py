@@ -18,6 +18,7 @@ from wavefront.model import Model
 
 @dataclass
 class ModelElement(Element):
+    ''' A general class for elements that use a model. '''
     model: Model = None
     shader: Shader = None
     texture: Texture = None
@@ -30,6 +31,8 @@ class ModelElement(Element):
             shader=self.shader,
             texture=self.texture,
         )
+        # TODO: stop using shape_specs here, it doesn't make sense
+        # it should be self.element_spec = ElementSpecification.from_model(...)
         self.shape_specs = elspec.shape_specs
         return super().__post_init__()
 
