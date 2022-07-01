@@ -1,7 +1,6 @@
 from dataclasses import dataclass, field
 import math
 
-from utils.geometry import Vec3
 from gl_abstractions.texture import Texture, Texture2D
 
 from objects.cube import Cube

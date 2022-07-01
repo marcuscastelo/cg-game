@@ -1,9 +1,7 @@
-from cgi import print_arguments
 from dataclasses import dataclass
 import math
 import random
 import time
-import glm
 
 from utils.geometry import Vec3
 from objects.model_element import ModelElement

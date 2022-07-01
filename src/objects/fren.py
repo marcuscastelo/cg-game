@@ -1,13 +1,9 @@
-from cgi import print_arguments
 from dataclasses import dataclass
 import math
-import random
 import time
-import glm
 
 from utils.geometry import Vec3
 from objects.model_element import ModelElement
-from objects.physics.rotation import front_to_rotation
 from wavefront.model import Model
 from wavefront.model_reader import ModelReader
 

@@ -2,11 +2,9 @@ import math
 import random
 import sys
 import time
-import glm
 from utils.geometry import Vec3
 from utils.logger import LOGGER
-from gl_abstractions.shader import ShaderDB
-from gl_abstractions.texture import Texture2D, TextureParameters
+from gl_abstractions.texture import Texture2D
 from objects.bot import Bot
 from objects.fren import Fren
 from objects.model_element import ModelElement
@@ -18,7 +16,6 @@ from objects.spawner import Spawner, SpawnerRegion, SpawningProperties
 from objects.target_small import TargetSmall
 from objects.wood_target import WoodTarget
 from transform import Transform
-from wavefront.material import Material
 from wavefront.model import Model
 from wavefront.model_reader import ModelReader
 

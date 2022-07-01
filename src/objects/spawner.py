@@ -3,7 +3,6 @@ import random
 import time
 from typing import Callable
 from utils.geometry import Vec3
-from utils.logger import LOGGER
 from objects.element import Element, ElementSpecification, ShapeSpec
 from objects.cube import CUBE_MODEL
 from wavefront.material import Material

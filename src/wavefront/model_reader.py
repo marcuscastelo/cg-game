@@ -1,10 +1,7 @@
-from ast import arg
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import Enum, auto
 import random
 from typing import Union
-from unittest import mock
-import numpy as np
 from utils.logger import LOGGER
 from wavefront.face import Face
 from wavefront.model import Model, Object

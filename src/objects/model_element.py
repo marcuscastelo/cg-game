@@ -1,19 +1,8 @@
-from cgitb import text
-from dataclasses import dataclass, field
-import os
-from re import M
-import time
-import numpy as np
-from OpenGL import GL as gl
-from utils.geometry import Vec3
-from utils.logger import LOGGER
-from gl_abstractions.shader import Shader, ShaderDB
-from gl_abstractions.texture import Texture, Texture2D
+from dataclasses import dataclass
+from gl_abstractions.shader import Shader
+from gl_abstractions.texture import Texture
 from objects.element import Element, ElementSpecification, ShapeSpec
-from utils.sig import metsig
 
-from transform import Transform
-from wavefront.model_reader import ModelReader
 from wavefront.model import Model
 
 @dataclass

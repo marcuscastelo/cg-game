@@ -1,14 +1,10 @@
-from abc import ABC, ABCMeta, abstractmethod
+from abc import ABCMeta, abstractmethod
 from dataclasses import dataclass, field
-from dis import dis
-from time import sleep
 from typing import TYPE_CHECKING, Union
 
 from utils.geometry import Vec3
 from utils.logger import LOGGER
-from objects.cube import Cube
 from objects.element import PHYSICS_TPS, Element, ShapeSpec
-from objects.model_element import ModelElement
 
 if TYPE_CHECKING:
     from objects.world import World

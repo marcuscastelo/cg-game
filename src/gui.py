@@ -1,5 +1,3 @@
-from curses import textpad
-from typing import Text
 from dpgext import gui
 from dpgext.elements import elements as el
 import dearpygui.dearpygui as dpg
@@ -7,10 +5,8 @@ from utils.sig import metsig
 from utils.logger import LOGGER
 
 from app_vars import APP_VARS
-from camera import Camera
 from constants import GUI_WIDTH
 from objects.cube import Cube
-from objects.model_element import ModelElement
 from objects.element import Element
 
 class MainWindow(gui.Window):

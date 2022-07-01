@@ -1,6 +1,5 @@
 # TODO: reader mtllib
 
-from ast import arg
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Union

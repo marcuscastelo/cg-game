@@ -1,6 +1,5 @@
 from dataclasses import dataclass, field
 from gl_abstractions.shader import Shader, ShaderDB
-from gl_abstractions.texture import Texture2D
 from objects.element import Element, ShapeSpec
 
 from OpenGL import GL as gl

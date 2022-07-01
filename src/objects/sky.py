@@ -3,11 +3,8 @@ import glm
 
 from utils.geometry import Vec3
 from gl_abstractions.texture import Texture, Texture2D
-from objects.cube import CUBE_MODEL, Cube
+from objects.cube import Cube
 
-from objects.model_element import ModelElement
-from wavefront.material import Material
-from wavefront.model import Model
 from wavefront.model_reader import ModelReader
 
 @dataclass

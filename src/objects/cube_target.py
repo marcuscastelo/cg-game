@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 import math
 
-from utils.geometry import Vec3
-
 from objects.cube import Cube
 
 

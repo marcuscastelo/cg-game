@@ -1,19 +1,8 @@
-from cgitb import text
-from dataclasses import dataclass, field
-from dis import dis
+from dataclasses import dataclass
 import math
-import os
-import random
 import time
-import glm
-import numpy as np
-from OpenGL import GL as gl
 from utils.geometry import Vec3
-from gl_abstractions.shader import Shader, ShaderDB
-from gl_abstractions.texture import Texture, Texture2D
 from objects.model_element import ModelElement
-from objects.element import Element, ElementSpecification, ShapeSpec
-from utils.sig import metsig
 from objects.physics.rotation import front_to_rotation
 from wavefront.model import Model
 

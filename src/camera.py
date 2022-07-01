@@ -1,28 +1,22 @@
 from dataclasses import dataclass, field
-from itertools import accumulate
 import math
-from turtle import shape
 import glm
-from numpy import mat
 from utils.geometry import Vec2, Vec3
-from utils.sig import metsig
 import constants
 import glfw
-from gl_abstractions.shader import ShaderDB
 from line import Line
 from objects.bullet_ray import BulletRay
 
-from objects.element import PHYSICS_TPS, Element, ElementSpecification, ShapeSpec
+from objects.element import PHYSICS_TPS, Element, ShapeSpec
 from objects.model_element import ModelElement
 from objects.physics.momentum import Momentum
 from objects.physics.rotation import front_to_rotation, yaw_pitch_to_front
 from objects.selection_ray import SelectionRay
 from objects.world import World
 from objects.selection_ray import SelectionRay
-from transform import Transform
 
 from input.input_system import INPUT_SYSTEM as IS
-from wavefront.model_reader import ModelReader # TODO: rename reader to model_reader
+from wavefront.model_reader import ModelReader
 
 
 @dataclass
