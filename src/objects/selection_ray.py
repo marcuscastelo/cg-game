@@ -61,6 +61,8 @@ class SelectionRay(Ray):
         return False
 
     def _on_raycast_stopped(self, hit: bool):
+        ''' Override of Ray method. '''
+        
         LOGGER.log_debug('SelectionRay Stopped!')
         from app_vars import APP_VARS
 

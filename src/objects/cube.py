@@ -15,4 +15,5 @@ class Cube(ModelElement):
 
     @property
     def center(self) -> Vec3:
+        # The cube.obj model is centered at the origin on x and z, but not on y.
         return self.transform.translation.xyz + Vec3(0,0.5,0) * self.transform.scale.y

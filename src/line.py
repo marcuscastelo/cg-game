@@ -7,6 +7,7 @@ import numpy as np
 
 @dataclass
 class Line(Element):
+    ''' A line element. '''
     shape_specs: list[ShapeSpec] = None
     shader: Shader = field(default_factory=lambda: ShaderDB.get_instance().get_shader('light_texture'))
 

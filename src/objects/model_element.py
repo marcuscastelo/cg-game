@@ -24,6 +24,3 @@ class ModelElement(Element):
         # it should be self.element_spec = ElementSpecification.from_model(...)
         self.shape_specs = elspec.shape_specs
         return super().__post_init__()
-
-    def _physics_update(self, delta_time: float):
-        return super()._physics_update(delta_time)
