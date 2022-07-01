@@ -10,7 +10,8 @@ CUBE_MODEL = ModelReader().load_model_from_file('models/cube.obj')
 
 @dataclass
 class Cube(ModelElement):
-    model: Model = CUBE_MODEL
+    ''' An element that represents a cube. '''
+    model: Model = CUBE_MODEL # Pre-loaded model
 
     @property
     def center(self) -> Vec3:
