@@ -224,7 +224,7 @@ class Element:
         Renders debug information about the element if enabled.
         '''
         from app_vars import APP_VARS
-        if APP_VARS.debug.show_bbox:
+        if APP_VARS.debug_options.show_bbox:
             try:
                 # Create a new shape renderer for the bounding box (uses CPU to compute the bounding box and transform its vertices)
                 min_x, min_y, max_x, max_y = self.get_bounding_box()

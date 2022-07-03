@@ -59,13 +59,9 @@ class Object:
                 raise RuntimeError(f'Face has a weird number of vertices: {vertice_count}, expected {FACE_TRIANGLE} or {FACE_QUAD} or {FACE_PENTA} \n\t{face=}')
             
 
-            # print(f'Face {face_i} vertices: \n {face_vertices=}')
             all_vertices += face_vertices
             face_i += 1
 
-        # # LOGGER.log_trace('Model convetted to raw vertices list!', 'WaveFront - Model')
-        # assert face_vertices, f'{self=}'
-        # print(f'All vertices:\n {face_vertices=}')
         return all_vertices
 
 @dataclass

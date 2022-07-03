@@ -1,23 +1,13 @@
-from cgitb import text
-from dataclasses import dataclass, field
-import os
-from re import M
-import time
-import numpy as np
-from OpenGL import GL as gl
-from utils.geometry import Vec3
-from utils.logger import LOGGER
-from gl_abstractions.shader import Shader, ShaderDB
-from gl_abstractions.texture import Texture, Texture2D
+from dataclasses import dataclass
+from gl_abstractions.shader import Shader
+from gl_abstractions.texture import Texture
 from objects.element import Element, ElementSpecification, ShapeSpec
-from utils.sig import metsig
 
-from transform import Transform
-from wavefront.reader import ModelReader
 from wavefront.model import Model
 
 @dataclass
 class ModelElement(Element):
+    ''' A general class for elements that use a model. '''
     model: Model = None
     shader: Shader = None
     texture: Texture = None
@@ -30,8 +20,7 @@ class ModelElement(Element):
             shader=self.shader,
             texture=self.texture,
         )
+        # TODO: stop using shape_specs here, it doesn't make sense
+        # it should be self.element_spec = ElementSpecification.from_model(...)
         self.shape_specs = elspec.shape_specs
         return super().__post_init__()
-
-    def _physics_update(self, delta_time: float):
-        return super()._physics_update(delta_time)
