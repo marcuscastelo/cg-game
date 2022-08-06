@@ -58,3 +58,13 @@ Clone the repository with `git clone --recursive https://github.com/marcuscastel
 or
 
 `python src/main.py`
+
+# Controls / Keybinds
+
+- WASD: move the character
+- Space: jump
+- R: shoot
+- E: select object to manipulate in GUI
+- Mouse: direction of the character's view
+- Ctrl: run (changes FOV and character speed)
+- F: inspect weapon 
