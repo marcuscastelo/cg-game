@@ -29,9 +29,16 @@ class Layout:
         Checks if the data is compatible with the layout.
         '''
         # LOGGER.log_trace(f'Checking data compatibility with layout: {self}')
-        assert data.dtype == np.float32, f'Only float32 data is supported, got {data.dtype}'
+
+        SUPPORTED_DTYPES = [np.float32, np.float64]
+
+        assert isinstance(data, np.ndarray), f'Only numpy arrays are supported, got {type(data)}'
+        assert data.dtype in SUPPORTED_DTYPES, f'Only {SUPPORTED_DTYPES=} data types are supported, got {data.dtype}'
         assert len(data.shape) == 2, f'Data must be 2D (series of attributes), got {len(data.shape)}D'
         assert data.shape[1] * FLOAT_SIZE == self.calc_stride(), f'Data must have a stride of {self.calc_stride()}, got {data.shape[1]}'
+
+        # In case it has been sent with other types such as float64
+        data = data.astype(np.float32) 
 
         for vertex in range(data.shape[0]):
             offset = 0

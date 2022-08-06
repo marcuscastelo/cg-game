@@ -1,18 +1,14 @@
-from dataclasses import dataclass
+from abc import ABCMeta
+from dataclasses import dataclass, field
 import imageio
 from utils.sig import metsig
-
+import glfw
 from OpenGL import GL as gl
 import numpy as np
 
-class Texture:
-    def __init__(self):
-        self.id = gl.glGenTextures(1)
-        pass
-
-
 @dataclass
-class Texture2DParameters:
+class TextureParameters:
+    ''' OpenGL Parameters for a texture '''
     wrap_s: int = gl.GL_CLAMP_TO_BORDER
     wrap_t: int = gl.GL_CLAMP_TO_BORDER
     min_filter: int = gl.GL_LINEAR
@@ -21,40 +17,64 @@ class Texture2DParameters:
     format: int = gl.GL_RGB
     type: int = gl.GL_UNSIGNED_BYTE
 
-class Texture2D(Texture):
-    def __init__(self, tex2d_params: Texture2DParameters = None):
-        super().__init__()
-        self.params = tex2d_params if tex2d_params is not None else Texture2DParameters()
+@dataclass
+class Texture:
+    '''
+    Base class for all textures.
+    When instantiated, a texture is created in OpenGL and its parameters are set.
+    '''
+    texture_type: int
+    texture_parameters: TextureParameters = field(default_factory=TextureParameters)
+    
+    def __post_init__(self):
+        assert glfw.get_current_context() is not None, 'Must call `glfw.init()` before creating a texture'
+        assert isinstance(self.texture_type, int), f"Texture type expected to be int, but found '{type(self.texture_type)}'"
+        assert isinstance(self.texture_parameters, TextureParameters), f"Texture type expected to be TextureParameters, but found '{type(self.texture_parameters)}'"
+
+        self.texture_type = self.texture_type
+        self.id = gl.glGenTextures(1)
         self._upload_parameters()
+        pass
+
+    def bind(self) -> None:
+        gl.glBindTexture(self.texture_type, self.id)
+    
+    def unbind(self) -> None:
+        gl.glBindTexture(self.texture_type, 0)
+
+    def _upload_parameters(self):
+        self.bind()
+        gl.glTexParameteri(self.texture_type, gl.GL_TEXTURE_WRAP_S, self.texture_parameters.wrap_s)
+        gl.glTexParameteri(self.texture_type, gl.GL_TEXTURE_WRAP_T, self.texture_parameters.wrap_t)
+        gl.glTexParameteri(self.texture_type, gl.GL_TEXTURE_MIN_FILTER, self.texture_parameters.min_filter)
+        gl.glTexParameteri(self.texture_type, gl.GL_TEXTURE_MAG_FILTER, self.texture_parameters.mag_filter)
+        self.unbind()    
+
+@dataclass
+class Texture2D(Texture):
+    '''
+    Specialized texture class for 2D textures.
+    '''
+    texture_type: int = gl.GL_TEXTURE_2D
 
     @classmethod
-    def from_image_path(cls, image_path: str, tex2d_params: Texture2DParameters = None) -> 'Texture2D':
+    def from_image_path(cls, image_path: str, tex2d_params: TextureParameters = None) -> 'Texture2D':
+        ''' Loads a 2D texture from a image file '''
         image = np.array(imageio.imread(image_path))[::-1,:,:]
 
         # TODO: support RGBA
         if image.shape[2] == 4: # if image is RGBA (png)
-            image = image[:,:-1,:3] # remove alpha channel and remove last column
-        
+            image = image[:,:,:3] # remove alpha channel and remove last column
 
-        obj = cls(tex2d_params=tex2d_params)
+        obj = Texture2D(
+            # texture_type=gl.GL_TEXTURE_2D,
+            # texture_parameters=tex2d_params
+        )
         obj.upload_raw_texture(image)
         return obj
 
-    def _upload_parameters(self):
-        self.bind()
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_S, self.params.wrap_s)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_WRAP_T, self.params.wrap_t)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MIN_FILTER, self.params.min_filter)
-        gl.glTexParameteri(gl.GL_TEXTURE_2D, gl.GL_TEXTURE_MAG_FILTER, self.params.mag_filter)
-        self.unbind()
-
     def upload_raw_texture(self, texture: np.ndarray) -> None:
+        ''' Uploads a raw texture to the GPU '''
         self.bind()
-        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, self.params.internal_format, texture.shape[1], texture.shape[0], 0, self.params.format, self.params.type, texture)
+        gl.glTexImage2D(gl.GL_TEXTURE_2D, 0, self.texture_parameters.internal_format, texture.shape[1], texture.shape[0], 0, self.texture_parameters.format, self.texture_parameters.type, texture)
         self.unbind()
-
-    def bind(self) -> None:
-        gl.glBindTexture(gl.GL_TEXTURE_2D, self.id)
-
-    def unbind(self) -> None:
-        gl.glBindTexture(gl.GL_TEXTURE_2D, 0)
